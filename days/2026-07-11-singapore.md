@@ -5,7 +5,7 @@ status: planned
 title: Arrival in Singapore
 coordinates: [103.8365, 1.2906]
 zoom: 13
-pois: ["changi-airport", "robertson-quay"]
+pois: ["changi-airport", "robertson-quay", "chinatown"]
 ---
 
 ## Welcome to Singapore
@@ -15,7 +15,7 @@ Arrive at [Changi Airport](poi:changi-airport) around 11:10. Transfer to [Robert
 ### Afternoon
 - Check into serviced apartment
 - Settle in, freshen up after the overnight flight
-- Explore [Robertson Quay](poi:robertson-quay) neighbourhood on foot
+- Casual stroll through [Chinatown](poi:chinatown) — temples, shophouses, street markets
 
 ### Evening
 - Walk along the Singapore River pedestrian paths

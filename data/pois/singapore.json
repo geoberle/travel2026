@@ -96,6 +96,54 @@
       "image": "https://images.unsplash.com/photo-1563789031959-4c02bcb0b1e4?w=800",
       "description": "Award-winning airport with Jewel Changi indoor waterfall and gardens.",
       "category": "transport"
+    },
+    {
+      "id": "botanic-gardens",
+      "name": "Singapore Botanic Gardens",
+      "coordinates": [103.8162, 1.3150],
+      "image": "https://images.unsplash.com/photo-4L5uPIHDe9M?w=800",
+      "description": "UNESCO World Heritage tropical garden with orchid garden. Free entry, shaded paths, near Orchard Road.",
+      "category": "nature"
+    },
+    {
+      "id": "bugis-plus",
+      "name": "Bugis+",
+      "coordinates": [103.8541, 1.2997],
+      "image": "https://images.unsplash.com/photo-Gf_KqXHU-PY?w=800",
+      "description": "Mall near Bugis MRT with anime, manga, and figure shops across several floors.",
+      "category": "shopping"
+    },
+    {
+      "id": "bugis-street-market",
+      "name": "Bugis Street Market",
+      "coordinates": [103.8557, 1.2995],
+      "image": "https://images.unsplash.com/photo-i2HK5PLpSDw?w=800",
+      "description": "Bustling street market with cheap clothes, accessories, and souvenirs. Haggling expected.",
+      "category": "shopping"
+    },
+    {
+      "id": "haji-lane",
+      "name": "Haji Lane",
+      "coordinates": [103.8593, 1.3005],
+      "image": "https://images.unsplash.com/photo-smXi8qgr_fo?w=800",
+      "description": "Narrow street of indie boutiques, vintage shops, and street art in Kampong Glam.",
+      "category": "shopping"
+    },
+    {
+      "id": "kinokuniya",
+      "name": "Kinokuniya (Ngee Ann City)",
+      "coordinates": [103.8346, 1.3026],
+      "image": "https://images.unsplash.com/photo-O37Ab5ftD08?w=800",
+      "description": "Massive Japanese bookstore with huge manga section in English and Japanese.",
+      "category": "shopping"
+    },
+    {
+      "id": "science-centre",
+      "name": "Science Centre Singapore",
+      "coordinates": [103.7357, 1.3338],
+      "image": "https://images.unsplash.com/photo-3AG0Y8qjea0?w=800",
+      "description": "Hands-on science museum with 1,000+ exhibits on physics, engineering, and space. Observatory on-site.",
+      "category": "attraction"
     }
   ]
 }

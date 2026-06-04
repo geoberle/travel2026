@@ -16,14 +16,14 @@
     "seoul": "pois/seoul.json"
   },
   "dayFiles": [
-    "day-02-singapore-arrival.md",
-    "day-03-singapore.md",
-    "day-04-singapore.md",
-    "day-05-seoul-arrival.md",
-    "day-06-seoul.md",
-    "day-07-seoul.md",
-    "day-08-seoul.md",
-    "day-09-seoul.md",
-    "day-10-seoul.md"
+    "2026-07-11-singapore.md",
+    "2026-07-12-singapore.md",
+    "2026-07-13-singapore.md",
+    "2026-07-14-seoul.md",
+    "2026-07-15-seoul.md",
+    "2026-07-16-seoul.md",
+    "2026-07-17-seoul.md",
+    "2026-07-18-seoul.md",
+    "2026-07-19-seoul.md"
   ]
 }
