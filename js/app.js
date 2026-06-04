@@ -48,6 +48,7 @@ async function init() {
 
   const chapters = buildChapters(flightsData.journeys, days);
   renderStory(chapters, trip, flightsData);
+  initTimeline(chapters);
 
   const map = initMap('map', MAPBOX_TOKEN);
 
@@ -61,6 +62,7 @@ async function init() {
     initScroll(chapters, (chapter) => {
       stopGlobeRotation();
       clearPoiMarkers(map);
+      updateTimelineActive(chapter.type === 'hero' ? 'hero' : chapter.type === 'overview' ? 'overview' : chapter.id);
 
       if (chapter.type === 'hero' || chapter.type === 'overview') {
         flyToGlobe(map);
