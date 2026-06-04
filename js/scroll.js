@@ -12,6 +12,8 @@ function initScroll(chapters, onChapterChange) {
 
         if (activeId === 'hero') {
           onChapterChange({ type: 'hero' });
+        } else if (activeId === 'overview') {
+          onChapterChange({ type: 'overview' });
         } else {
           const chapter = chapters.find(c => c.id === activeId);
           if (chapter) onChapterChange(chapter);

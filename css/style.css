@@ -8,6 +8,11 @@
   --accent-warm: #ff6b6b;
   --card-radius: 16px;
   --blur: 20px;
+  --airline-tk: #e31837;
+  --airline-sq: #1a3c6e;
+  --airline-lh: #daad00;
+  --city-singapore: #00b894;
+  --city-seoul: #e84393;
 }
 
 *, *::before, *::after {
@@ -57,30 +62,32 @@ body {
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
   border-radius: var(--card-radius);
-  padding: 3rem 4rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 3.5rem 5rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   animation: fadeIn 1.5s ease-out;
 }
 
 .hero h1 {
-  font-size: 3rem;
-  font-weight: 300;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  font-size: 3.5rem;
+  font-weight: 200;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
 }
 
 .hero .subtitle {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 300;
   opacity: 0.6;
   margin-top: 0.5rem;
+  animation: fadeInUp 1.5s ease-out 0.3s both;
 }
 
 .scroll-hint {
-  margin-top: 2.5rem;
+  margin-top: 3rem;
   font-size: 0.85rem;
   opacity: 0.4;
-  animation: pulse 2.5s ease-in-out infinite;
+  animation: bounce 2s ease-in-out infinite;
 }
 
 @keyframes fadeIn {
@@ -88,9 +95,14 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 0.2; }
-  50% { opacity: 0.6; }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.3; }
+  50% { transform: translateY(6px); opacity: 0.7; }
 }
 
 /* ───────── Chapters ───────── */
@@ -99,46 +111,66 @@ body {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  padding: 4rem 5vw;
-  margin-bottom: 30vh;
+  padding: 5rem 5vw;
+  margin-bottom: 35vh;
 }
 
 .chapter:last-child {
-  margin-bottom: 40vh;
+  margin-bottom: 50vh;
 }
 
 /* ───────── Cards ───────── */
 
 .card {
-  max-width: 420px;
+  max-width: 400px;
   padding: 2rem 2.25rem;
   border-radius: var(--card-radius);
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
   opacity: 0.25;
-  transform: translateY(12px);
-  transition: opacity 0.7s ease, transform 0.7s ease, box-shadow 0.4s ease;
+  transform: translateX(-20px) translateY(8px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
 }
 
 .chapter.active .card {
   opacity: 1;
-  transform: translateY(0);
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.35);
+  transform: translateX(0) translateY(0);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Flight card */
 .flight-card {
-  background: var(--bg-dark);
+  background: rgba(12, 12, 24, 0.85);
   color: var(--text-dark);
-  border: 1px solid rgba(78, 205, 196, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 /* Day card */
 .day-card {
-  background: var(--bg-light);
+  background: rgba(255, 252, 248, 0.93);
   color: var(--text-light);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
+
+/* ───────── Airline accents ───────── */
+
+.flight-card[data-airline="tk"] { border-left: 3px solid var(--airline-tk); }
+.flight-card[data-airline="sq"] { border-left: 3px solid var(--airline-sq); }
+.flight-card[data-airline="lh"] { border-left: 3px solid var(--airline-lh); }
+
+.flight-card[data-airline="tk"] .duration { background: rgba(227, 24, 55, 0.12); color: #e31837; }
+.flight-card[data-airline="sq"] .duration { background: rgba(26, 60, 110, 0.15); color: #6b8ec4; }
+.flight-card[data-airline="lh"] .duration { background: rgba(218, 173, 0, 0.15); color: #daad00; }
+
+/* ───────── City accents ───────── */
+
+.day-card[data-city="singapore"] { border-top: 3px solid var(--city-singapore); }
+.day-card[data-city="seoul"] { border-top: 3px solid var(--city-seoul); }
+
+.day-card[data-city="singapore"] .day-content h3 { color: var(--city-singapore); }
+.day-card[data-city="seoul"] .day-content h3 { color: var(--city-seoul); }
 
 /* ───────── Card header ───────── */
 
@@ -157,6 +189,7 @@ body {
   font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: -0.01em;
+  line-height: 1.25;
   margin-bottom: 1.25rem;
 }
 
@@ -270,15 +303,19 @@ body {
   font-size: 1.15rem;
   font-weight: 600;
   margin: 1.25rem 0 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   color: var(--text-light);
 }
 
 .day-content h3 {
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin: 1rem 0 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin: 1.25rem 0 0.4rem;
   color: var(--text-light);
-  opacity: 0.8;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .day-content p {
@@ -351,6 +388,50 @@ body {
   top: 3.5px;
   left: 3.5px;
   transform: rotate(45deg);
+}
+
+/* ───────── Overview card ───────── */
+
+.overview-card {
+  background: var(--bg-dark);
+  color: var(--text-dark);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  max-width: 480px;
+  backdrop-filter: blur(var(--blur));
+  -webkit-backdrop-filter: blur(var(--blur));
+}
+
+.overview-stats {
+  display: flex;
+  justify-content: space-around;
+  margin: 1.5rem 0;
+  padding: 1.25rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.5;
+  margin-top: 0.25rem;
+}
+
+.overview-status {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 /* ───────── Map markers ───────── */
@@ -493,8 +574,20 @@ body {
 .footer {
   text-align: center;
   padding: 4rem 2rem 6rem;
-  color: rgba(255, 255, 255, 0.3);
-  font-size: 0.8rem;
+}
+
+.footer-stats {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.footer-route {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  letter-spacing: 0.04em;
 }
 
 /* ───────── Responsive ───────── */

@@ -47,7 +47,7 @@ async function init() {
   )).filter(Boolean);
 
   const chapters = buildChapters(flightsData.journeys, days);
-  renderStory(chapters, trip);
+  renderStory(chapters, trip, flightsData);
 
   const map = initMap('map', MAPBOX_TOKEN);
 
@@ -62,7 +62,7 @@ async function init() {
       stopGlobeRotation();
       clearPoiMarkers(map);
 
-      if (chapter.type === 'hero') {
+      if (chapter.type === 'hero' || chapter.type === 'overview') {
         flyToGlobe(map);
         map.once('moveend', () => startGlobeRotation(map));
       } else {
@@ -133,8 +133,15 @@ function buildChapters(journeys, days) {
   return chapters;
 }
 
-function renderStory(chapters, trip) {
+function renderStory(chapters, trip, flightsData) {
   const story = document.getElementById('story');
+
+  const dayChapters = chapters.filter(c => c.type === 'day');
+  const flightCount = chapters.filter(c => c.type === 'flight').length;
+  const confirmedCount = dayChapters.filter(c => c.day.meta.status === 'confirmed').length;
+  const plannedCount = dayChapters.filter(c => c.day.meta.status === 'planned').length;
+  const openCount = dayChapters.filter(c => c.day.meta.status === 'open').length;
+  const totalKm = calculateTotalDistance(flightsData.journeys);
 
   let html = `
     <section class="hero" id="hero">
@@ -142,6 +149,24 @@ function renderStory(chapters, trip) {
         <h1>${trip.title}</h1>
         <p class="subtitle">${trip.subtitle}</p>
         <div class="scroll-hint">Scroll to explore ↓</div>
+      </div>
+    </section>
+
+    <section class="chapter overview" id="overview">
+      <div class="card overview-card">
+        <div class="card-label">Trip Overview</div>
+        <h2>${formatDate(trip.dates.start)} — ${formatDate(trip.dates.end)}</h2>
+        <div class="overview-stats">
+          <div class="stat"><span class="stat-value">3</span><span class="stat-label">Countries</span></div>
+          <div class="stat"><span class="stat-value">${flightCount}</span><span class="stat-label">Flights</span></div>
+          <div class="stat"><span class="stat-value">${dayChapters.length}</span><span class="stat-label">Days</span></div>
+          <div class="stat"><span class="stat-value">${trip.travelers}</span><span class="stat-label">Travelers</span></div>
+        </div>
+        <div class="overview-status">
+          ${confirmedCount ? `<span class="status confirmed">${confirmedCount} confirmed</span>` : ''}
+          ${plannedCount ? `<span class="status planned">${plannedCount} planned</span>` : ''}
+          ${openCount ? `<span class="status open">${openCount} open</span>` : ''}
+        </div>
       </div>
     </section>
   `;
@@ -153,9 +178,34 @@ function renderStory(chapters, trip) {
     html += `<section class="chapter ${ch.type}" id="${ch.id}">${inner}</section>`;
   });
 
-  html += `<div class="footer">Klagenfurt → Singapore → Seoul → Home</div>`;
+  html += `
+    <div class="footer">
+      <div class="footer-stats">3 countries · ${flightCount} flights · ${dayChapters.length} days · ${totalKm.toLocaleString()} km</div>
+      <div class="footer-route">Klagenfurt → Singapore → Seoul → Home</div>
+    </div>
+  `;
 
   story.innerHTML = html;
+}
+
+function calculateTotalDistance(journeys) {
+  let total = 0;
+  journeys.forEach(j => {
+    j.legs.forEach(leg => {
+      const [lon1, lat1] = leg.departure.coordinates;
+      const [lon2, lat2] = leg.arrival.coordinates;
+      total += haversine(lat1, lon1, lat2, lon2);
+    });
+  });
+  return Math.round(total);
+}
+
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 function renderFlightCard(journey) {
@@ -199,8 +249,11 @@ function renderFlightCard(journey) {
     `<div class="layover">${l.duration} layover in ${l.city}</div>`
   ).join('');
 
+  const mainLeg = journey.legs.find(l => l.mode !== 'drive');
+  const airlineCode = mainLeg ? mainLeg.flightNumber.substring(0, 2).toLowerCase() : '';
+
   return `
-    <div class="card flight-card">
+    <div class="card flight-card" data-airline="${airlineCode}">
       <div class="card-label">✈ Flight · ${formatDate(journey.date)}</div>
       <h2>${journey.label}</h2>
       <div class="flight-legs">${legs}</div>
@@ -216,7 +269,7 @@ function renderDayCard(day) {
   const content = marked.parse(preprocessed);
 
   return `
-    <div class="card day-card">
+    <div class="card day-card" data-city="${day.meta.city || ''}">
       <div class="card-label">
         <span class="status ${status}">${status}</span>
         ${formatDate(day.meta.date)}
