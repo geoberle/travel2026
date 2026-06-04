@@ -9,13 +9,17 @@ async function init() {
     fetch('data/accommodations.json').then(r => r.json())
   ]);
 
-  const days = await Promise.all(
+  const days = (await Promise.all(
     trip.dayFiles.map(file =>
       fetch(`days/${file}`)
-        .then(r => r.text())
+        .then(r => {
+          if (!r.ok) throw new Error(`${file}: ${r.status}`);
+          return r.text();
+        })
         .then(text => ({ ...parseFrontmatter(text), file }))
+        .catch(err => { console.warn('Skipping day file:', err.message); return null; })
     )
-  );
+  )).filter(Boolean);
 
   const chapters = buildChapters(flightsData.journeys, days);
   renderStory(chapters, trip);
