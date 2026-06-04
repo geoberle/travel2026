@@ -255,6 +255,152 @@ function resetRouteHighlights(map) {
 }
 
 let activePoiMarkers = [];
+let activeFlightAnimation = null;
+let activePulseMarkers = [];
+let activePlaneMarker = null;
+
+function interpolateCoords(coords, numPoints) {
+  const result = [];
+  for (let i = 0; i < coords.length - 1; i++) {
+    const [x1, y1] = coords[i];
+    const [x2, y2] = coords[i + 1];
+    const steps = Math.max(1, Math.round(numPoints / (coords.length - 1)));
+    for (let s = 0; s < steps; s++) {
+      const t = s / steps;
+      result.push([x1 + (x2 - x1) * t, y1 + (y2 - y1) * t]);
+    }
+  }
+  result.push(coords[coords.length - 1]);
+  return result;
+}
+
+function animateFlightArc(map, journey) {
+  cancelFlightAnimation();
+
+  const coords = [];
+  journey.legs.forEach(leg => {
+    if (coords.length === 0) coords.push(leg.departure.coordinates);
+    coords.push(leg.arrival.coordinates);
+  });
+
+  const interpolated = interpolateCoords(coords, 120);
+  const departure = coords[0];
+  const arrival = coords[coords.length - 1];
+
+  const dist = haversine(departure[1], departure[0], arrival[1], arrival[0]);
+  const duration = Math.min(4000, Math.max(2000, dist / 5));
+
+  const staticLayerId = `route-${journey.id}`;
+  if (map.getLayer(staticLayerId)) {
+    map.setPaintProperty(staticLayerId, 'line-opacity', 0);
+  }
+
+  const animSourceId = `anim-${journey.id}`;
+  const animLayerId = `anim-line-${journey.id}`;
+  const glowLayerId = `anim-glow-${journey.id}`;
+
+  if (map.getSource(animSourceId)) {
+    map.removeLayer(glowLayerId);
+    map.removeLayer(animLayerId);
+    map.removeSource(animSourceId);
+  }
+
+  map.addSource(animSourceId, {
+    type: 'geojson',
+    data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [interpolated[0]] } }
+  });
+
+  map.addLayer({
+    id: glowLayerId,
+    type: 'line',
+    source: animSourceId,
+    paint: {
+      'line-color': '#4ecdc4',
+      'line-width': 10,
+      'line-opacity': 0.15,
+      'line-blur': 8
+    }
+  });
+
+  map.addLayer({
+    id: animLayerId,
+    type: 'line',
+    source: animSourceId,
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: {
+      'line-color': '#4ecdc4',
+      'line-width': 3.5,
+      'line-opacity': 1
+    }
+  });
+
+  addPulseMarker(map, departure);
+
+  const planeEl = document.createElement('div');
+  planeEl.className = 'plane-marker';
+  planeEl.textContent = '✈';
+  activePlaneMarker = new mapboxgl.Marker({ element: planeEl, anchor: 'center', rotationAlignment: 'map' })
+    .setLngLat(interpolated[0])
+    .addTo(map);
+
+  let frame = 0;
+  const startTime = performance.now();
+
+  function step(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(1, elapsed / duration);
+    const eased = 1 - Math.pow(1 - progress, 3);
+
+    const idx = Math.min(Math.floor(eased * (interpolated.length - 1)), interpolated.length - 1);
+    const currentCoords = interpolated.slice(0, idx + 1);
+
+    map.getSource(animSourceId).setData({
+      type: 'Feature',
+      geometry: { type: 'LineString', coordinates: currentCoords }
+    });
+
+    const pos = interpolated[idx];
+    activePlaneMarker.setLngLat(pos);
+
+    if (idx > 0) {
+      const prev = interpolated[Math.max(0, idx - 3)];
+      const bearing = Math.atan2(pos[0] - prev[0], pos[1] - prev[1]) * 180 / Math.PI;
+      activePlaneMarker.setRotation(bearing);
+    }
+
+    if (progress < 1) {
+      activeFlightAnimation = requestAnimationFrame(step);
+    } else {
+      addPulseMarker(map, arrival);
+      activeFlightAnimation = null;
+    }
+  }
+
+  activeFlightAnimation = requestAnimationFrame(step);
+}
+
+function cancelFlightAnimation() {
+  if (activeFlightAnimation) {
+    cancelAnimationFrame(activeFlightAnimation);
+    activeFlightAnimation = null;
+  }
+  if (activePlaneMarker) {
+    activePlaneMarker.remove();
+    activePlaneMarker = null;
+  }
+  activePulseMarkers.forEach(m => m.remove());
+  activePulseMarkers = [];
+}
+
+function addPulseMarker(map, coords) {
+  const el = document.createElement('div');
+  el.className = 'pulse-marker';
+  el.innerHTML = '<div class="pulse-ring"></div><div class="pulse-dot"></div>';
+  const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
+    .setLngLat(coords)
+    .addTo(map);
+  activePulseMarkers.push(marker);
+}
 
 function showPoiMarkers(map, pois, showLabels) {
   pois.forEach(poi => {

@@ -62,6 +62,7 @@ async function init() {
     initScroll(chapters, (chapter) => {
       stopGlobeRotation();
       clearPoiMarkers(map);
+      cancelFlightAnimation();
       updateTimelineActive(chapter.type === 'hero' ? 'hero' : chapter.type === 'overview' ? 'overview' : chapter.id);
 
       if (chapter.type === 'hero' || chapter.type === 'overview') {
@@ -69,6 +70,9 @@ async function init() {
         map.once('moveend', () => startGlobeRotation(map));
       } else {
         flyToChapter(map, chapter);
+        if (chapter.type === 'flight') {
+          map.once('moveend', () => animateFlightArc(map, chapter.journey));
+        }
         if (chapter.type === 'day' && chapter.day.meta.pois) {
           const dayPois = resolvePois(chapter.day.meta.pois);
           const acc = accommodationsData.accommodations.find(
