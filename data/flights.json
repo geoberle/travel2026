@@ -4,6 +4,7 @@
       "id": "outbound",
       "label": "Klagenfurt → Singapore",
       "date": "2026-07-10",
+      "image": "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800",
       "mapView": { "center": [21, 44], "zoom": 4, "pitch": 20 },
       "legs": [
         {
@@ -71,6 +72,7 @@
       "id": "singapore-seoul",
       "label": "Singapore → Seoul",
       "date": "2026-07-14",
+      "image": "https://images.unsplash.com/photo-1546874177-9e664107314e?w=800",
       "mapView": { "center": [115, 20], "zoom": 3.5, "pitch": 15 },
       "legs": [
         {
@@ -99,6 +101,7 @@
       "id": "return",
       "label": "Seoul → Klagenfurt",
       "date": "2026-07-20",
+      "image": "https://images.unsplash.com/photo-1617469955236-f60e2a4c2f0d?w=800",
       "mapView": { "center": [70, 45], "zoom": 2.5, "pitch": 15 },
       "legs": [
         {

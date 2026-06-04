@@ -82,7 +82,21 @@ async function init() {
           fitToPoiBounds(map, dayPois, acc);
         }
       }
+
+      const hashId = chapter.type === 'hero' ? '' : (chapter.id || '');
+      if (hashId) {
+        history.replaceState(null, '', `#${hashId}`);
+      } else {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
     });
+
+    if (window.location.hash) {
+      const target = document.getElementById(window.location.hash.slice(1));
+      if (target) {
+        setTimeout(() => target.scrollIntoView({ behavior: 'smooth' }), 500);
+      }
+    }
   });
 }
 
@@ -258,8 +272,13 @@ function renderFlightCard(journey) {
   const mainLeg = journey.legs.find(l => l.mode !== 'drive');
   const airlineCode = mainLeg ? mainLeg.flightNumber.substring(0, 2).toLowerCase() : '';
 
+  const flightImage = journey.image
+    ? `<div class="flight-image"><img src="${journey.image}" alt="${journey.label}" loading="lazy" onerror="this.parentElement.remove()"></div>`
+    : '';
+
   return `
     <div class="card flight-card" data-airline="${airlineCode}">
+      ${flightImage}
       <div class="card-label">✈ Flight · ${formatDate(journey.date)}</div>
       <h2>${journey.label}</h2>
       <div class="flight-legs">${legs}</div>
@@ -274,8 +293,17 @@ function renderDayCard(day) {
   const preprocessed = processPoiLinks(day.content);
   const content = marked.parse(preprocessed);
 
+  const dayPois = resolvePois(day.meta.pois || []);
+  const images = dayPois.filter(p => p.image).slice(0, 4);
+  const imageStrip = images.length > 0
+    ? `<div class="day-images">${images.map(p =>
+        `<img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.remove()">`
+      ).join('')}</div>`
+    : '';
+
   return `
     <div class="card day-card" data-city="${day.meta.city || ''}">
+      ${imageStrip}
       <div class="card-label">
         <span class="status ${status}">${status}</span>
         ${formatDate(day.meta.date)}
