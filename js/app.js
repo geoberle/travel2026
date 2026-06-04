@@ -1,17 +1,42 @@
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiZ2VyZG9iZXJsZWNobmVyIiwiYSI6ImNtcHpwNjdzYjA2d3EycnBnZWJkZ2p5ODUifQ.vl5h0bVgSuSaW_ZPIH0CKA';
 
 let rotationFrame = null;
+let allPois = {};
+
+const CATEGORY_COLORS = {
+  attraction: '#4ecdc4',
+  food: '#ff9f43',
+  culture: '#a55eea',
+  shopping: '#fd79a8',
+  nature: '#00b894',
+  transport: '#636e72'
+};
 
 async function init() {
+  const bust = Date.now();
   const [trip, flightsData, accommodationsData] = await Promise.all([
-    fetch('data/trip.json').then(r => r.json()),
-    fetch('data/flights.json').then(r => r.json()),
-    fetch('data/accommodations.json').then(r => r.json())
+    fetch(`data/trip.json?v=${bust}`).then(r => r.json()),
+    fetch(`data/flights.json?v=${bust}`).then(r => r.json()),
+    fetch(`data/accommodations.json?v=${bust}`).then(r => r.json())
   ]);
+
+  const poiEntries = Object.entries(trip.poiFiles || {});
+  const poiResults = await Promise.all(
+    poiEntries.map(([city, path]) =>
+      fetch(`data/${path}?v=${bust}`)
+        .then(r => r.ok ? r.json() : null)
+        .catch(() => null)
+    )
+  );
+  poiEntries.forEach(([city], i) => {
+    if (poiResults[i]) {
+      poiResults[i].pois.forEach(poi => { allPois[poi.id] = poi; });
+    }
+  });
 
   const days = (await Promise.all(
     trip.dayFiles.map(file =>
-      fetch(`days/${file}`)
+      fetch(`days/${file}?v=${bust}`)
         .then(r => {
           if (!r.ok) throw new Error(`${file}: ${r.status}`);
           return r.text();
@@ -35,14 +60,29 @@ async function init() {
 
     initScroll(chapters, (chapter) => {
       stopGlobeRotation();
+      clearPoiMarkers(map);
+
       if (chapter.type === 'hero') {
         flyToGlobe(map);
         map.once('moveend', () => startGlobeRotation(map));
       } else {
         flyToChapter(map, chapter);
+        if (chapter.type === 'day' && chapter.day.meta.pois) {
+          const dayPois = resolvePois(chapter.day.meta.pois);
+          const acc = accommodationsData.accommodations.find(
+            a => a.city.toLowerCase() === chapter.day.meta.city
+          );
+          showPoiMarkers(map, dayPois, true);
+          fitToPoiBounds(map, dayPois, acc);
+        }
       }
     });
   });
+}
+
+function resolvePois(poiIds) {
+  if (!Array.isArray(poiIds)) return [];
+  return poiIds.map(id => allPois[id]).filter(Boolean);
 }
 
 function parseFrontmatter(text) {
@@ -172,7 +212,8 @@ function renderFlightCard(journey) {
 
 function renderDayCard(day) {
   const status = day.meta.status || 'open';
-  const content = marked.parse(day.content);
+  const preprocessed = processPoiLinks(day.content);
+  const content = marked.parse(preprocessed);
 
   return `
     <div class="card day-card">
@@ -184,6 +225,15 @@ function renderDayCard(day) {
       <div class="day-content">${content}</div>
     </div>
   `;
+}
+
+function processPoiLinks(markdown) {
+  return markdown.replace(/\[([^\]]+)\]\(poi:([^)]+)\)/g, (match, text, poiId) => {
+    const poi = allPois[poiId];
+    if (!poi) return text;
+    const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+    return `<span class="poi-link"><span class="poi-inline-pin"><span class="poi-inline-pin-body" style="background:${color}"></span><span class="poi-inline-pin-tail" style="border-top-color:${color}"></span><span class="poi-inline-pin-inner"></span></span>${text}</span>`;
+  });
 }
 
 function formatTime(isoString) {

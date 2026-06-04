@@ -11,6 +11,10 @@
     "end": "2026-07-20"
   },
   "travelers": 4,
+  "poiFiles": {
+    "singapore": "pois/singapore.json",
+    "seoul": "pois/seoul.json"
+  },
   "dayFiles": [
     "day-02-singapore-arrival.md",
     "day-03-singapore.md",

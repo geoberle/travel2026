@@ -302,6 +302,57 @@ body {
   font-weight: 600;
 }
 
+/* ───────── POI inline links ───────── */
+
+.poi-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  font-weight: 500;
+  color: var(--text-light);
+}
+
+.poi-inline-pin {
+  display: inline-block;
+  position: relative;
+  width: 12px;
+  height: 16px;
+  flex-shrink: 0;
+  transform: translateY(2px);
+}
+
+.poi-inline-pin-body {
+  width: 12px;
+  height: 12px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.poi-inline-pin-tail {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+}
+
+.poi-inline-pin-inner {
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  position: absolute;
+  top: 3.5px;
+  left: 3.5px;
+  transform: rotate(45deg);
+}
+
 /* ───────── Map markers ───────── */
 
 .airport-marker {
@@ -326,6 +377,92 @@ body {
   border-radius: 50%;
   box-shadow: 0 0 12px rgba(255, 107, 107, 0.4), 0 2px 6px rgba(0, 0, 0, 0.5);
   pointer-events: none;
+}
+
+.poi-marker-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
+}
+
+.poi-pin {
+  position: relative;
+  width: 26px;
+  height: 38px;
+}
+
+.poi-pin-body {
+  width: 26px;
+  height: 26px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.poi-pin-body::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 6px;
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 12px solid inherit;
+  transform: rotate(45deg);
+}
+
+.poi-pin-tail {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+}
+
+.poi-pin-inner {
+  width: 10px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  transform: rotate(45deg);
+}
+
+.poi-pin::after {
+  content: '';
+  width: 8px;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 50%;
+  position: absolute;
+  bottom: -3px;
+  left: 9px;
+  filter: blur(2px);
+}
+
+.poi-marker-label {
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.6rem;
+  font-weight: 600;
+  font-family: var(--font);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.6);
+  margin-top: 2px;
+  text-align: center;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .origin-marker {

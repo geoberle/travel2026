@@ -81,7 +81,7 @@ zoom: 14
 - [x] Flight chapters: dark translucent cards with flight details
 - [x] Day chapters: light translucent cards with rendered markdown
 - [x] Card fade-in on scroll (opacity transition)
-- [ ] **Verify it actually works** (blank page bug — needs Playwright MCP)
+- [x] **Verify it actually works** (fixed: marked.js CDN path)
 
 ---
 
@@ -89,16 +89,16 @@ zoom: 14
 
 **Goal:** Fix blank page, verify all features work, establish dev feedback loop.
 
-- [ ] Set up Playwright MCP for browser testing
-- [ ] Start local HTTP server (`python3 -m http.server`)
-- [ ] Debug blank page (likely JS error — check console via Playwright)
-- [ ] Verify: hero renders, globe rotates, cards load
-- [ ] Verify: scroll triggers map flyTo transitions
-- [ ] Verify: flight routes render as arcs on globe
-- [ ] Verify: markdown renders in day cards
-- [ ] Verify: status badges display (planned/confirmed/open)
-- [ ] Test on mobile viewport (responsive layout)
-- [ ] Fix any issues found
+- [x] Set up Playwright MCP for browser testing
+- [x] Start local HTTP server (`python3 -m http.server`)
+- [x] Debug blank page (fixed: marked.js UMD path)
+- [x] Verify: hero renders, globe rotates, cards load
+- [x] Verify: scroll triggers map flyTo transitions
+- [x] Verify: flight routes render as arcs on globe
+- [x] Verify: markdown renders in day cards
+- [x] Verify: status badges display (planned/confirmed/open)
+- [x] Test on mobile viewport (responsive layout)
+- [x] Fix any issues found
 
 ---
 
@@ -159,8 +159,11 @@ zoom: 14
 - [ ] Booking links: direct links to SG Arrival Card portal, K-ETA portal
 - [ ] Weather widget or static weather expectations per city
 - [ ] Day status progression: update markdown frontmatter as plans firm up
-- [ ] POI markers: `data/pois.json` with named points of interest per city
-- [ ] POI markers visible on map during day chapters
+- [x] POI data: per-city JSON files (`data/pois/singapore.json`, `data/pois/seoul.json`) with id, name, coordinates, image, description, category
+- [x] POI markers on map: pin-style markers in category colors, shown only for active day, with name labels
+- [x] Map auto-zoom: fitBounds to day's POIs + accommodation
+- [x] Day→POI linking: frontmatter `pois` array + inline `[Name](poi:id)` markdown syntax
+- [x] Inline POI rendering: mini pin icons in category colors next to POI names in day cards
 
 ---
 
@@ -168,10 +171,11 @@ zoom: 14
 
 **Goal:** Live on the internet. Shareable URL.
 
-- [ ] GitHub repo init + first commit
-- [ ] Enable GitHub Pages (from main branch)
-- [ ] Domain-restrict Mapbox token to `username.github.io` + `localhost`
-- [ ] Verify site works on GitHub Pages (relative paths, CORS)
+- [x] GitHub repo init + first commit
+- [x] Enable GitHub Pages (from main branch)
+- [x] `.nojekyll` added for raw file serving
+- [ ] Domain-restrict Mapbox token to `geoberle.github.io` + `localhost` (in progress — 403 on tiles)
+- [ ] Verify site works on GitHub Pages
 - [ ] Share URL with family
 - [ ] Optional: custom domain via CNAME
 

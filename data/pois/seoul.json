@@ -1,0 +1,117 @@
+{
+  "city": "Seoul",
+  "pois": [
+    {
+      "id": "myeongdong",
+      "name": "Myeongdong",
+      "coordinates": [126.9857, 37.5636],
+      "image": "https://images.unsplash.com/photo-1583400225968-3d6e7e8e6f8c?w=800",
+      "description": "Energetic shopping and street food district. Giant ice creams, character cotton candy, Korean snacks.",
+      "category": "food"
+    },
+    {
+      "id": "gyeongbokgung",
+      "name": "Gyeongbokgung Palace",
+      "coordinates": [126.9770, 37.5796],
+      "image": "https://images.unsplash.com/photo-1546874177-9e664107314e?w=800",
+      "description": "Grand Joseon dynasty palace with changing of the guard ceremony. Hanbok rental available.",
+      "category": "culture"
+    },
+    {
+      "id": "bukchon-hanok",
+      "name": "Bukchon Hanok Village",
+      "coordinates": [126.9849, 37.5824],
+      "image": "https://images.unsplash.com/photo-1573047571536-fe69674e1e89?w=800",
+      "description": "Hillside neighbourhood of traditional Korean houses between two palaces.",
+      "category": "culture"
+    },
+    {
+      "id": "insadong",
+      "name": "Insadong",
+      "coordinates": [126.9856, 37.5738],
+      "image": "https://images.unsplash.com/photo-1597655601841-214a4cfe8b2c?w=800",
+      "description": "Art and antiques district with galleries, traditional tea houses, and craft shops.",
+      "category": "culture"
+    },
+    {
+      "id": "lotte-world",
+      "name": "Lotte World",
+      "coordinates": [127.0980, 37.5111],
+      "image": "https://images.unsplash.com/photo-1578377375762-ee96d63b6773?w=800",
+      "description": "Massive indoor and outdoor theme park in Jamsil. Great rainy day option.",
+      "category": "attraction"
+    },
+    {
+      "id": "dongdaemun-design-plaza",
+      "name": "Dongdaemun Design Plaza",
+      "coordinates": [127.0096, 37.5671],
+      "image": "https://images.unsplash.com/photo-1578469550956-0e16b69c6a3d?w=800",
+      "description": "Zaha Hadid-designed futuristic landmark with exhibitions, shops, and night market nearby.",
+      "category": "culture"
+    },
+    {
+      "id": "coex-starfield",
+      "name": "COEX Mall & Starfield Library",
+      "coordinates": [127.0590, 37.5116],
+      "image": "https://images.unsplash.com/photo-1583225214464-9296029427aa?w=800",
+      "description": "Massive underground mall with the stunning open Starfield Library at its centre.",
+      "category": "shopping"
+    },
+    {
+      "id": "bongeunsa",
+      "name": "Bongeunsa Temple",
+      "coordinates": [127.0579, 37.5153],
+      "image": "https://images.unsplash.com/photo-1578469645742-46cae010e5d6?w=800",
+      "description": "Peaceful 8th-century Buddhist temple hidden in the heart of Gangnam.",
+      "category": "culture"
+    },
+    {
+      "id": "garosu-gil",
+      "name": "Garosu-gil",
+      "coordinates": [127.0234, 37.5194],
+      "image": "https://images.unsplash.com/photo-1553653924-39b70295e044?w=800",
+      "description": "Tree-lined street in Sinsa-dong with trendy cafes, boutiques, and galleries.",
+      "category": "shopping"
+    },
+    {
+      "id": "han-river-park",
+      "name": "Han River Park",
+      "coordinates": [127.0050, 37.5170],
+      "image": "https://images.unsplash.com/photo-1601749345291-afcc60647944?w=800",
+      "description": "Riverside parks perfect for picnics, cycling, and watching Banpo Bridge fountain show.",
+      "category": "nature"
+    },
+    {
+      "id": "banpo-bridge",
+      "name": "Banpo Bridge Rainbow Fountain",
+      "coordinates": [126.9957, 37.5079],
+      "image": "https://images.unsplash.com/photo-1574786198875-4254d4a58547?w=800",
+      "description": "World's longest bridge fountain. Rainbow light show on seasonal evenings.",
+      "category": "attraction"
+    },
+    {
+      "id": "namsan-tower",
+      "name": "N Seoul Tower (Namsan)",
+      "coordinates": [126.9882, 37.5512],
+      "image": "https://images.unsplash.com/photo-1541694382-3148799c027e?w=800",
+      "description": "Iconic tower on Namsan mountain. Cable car up, walk down. Love lock fence at the top.",
+      "category": "attraction"
+    },
+    {
+      "id": "itaewon",
+      "name": "Itaewon",
+      "coordinates": [126.9946, 37.5345],
+      "image": "https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=800",
+      "description": "International neighbourhood with diverse food, vintage shops, and lively nightlife.",
+      "category": "shopping"
+    },
+    {
+      "id": "hongdae",
+      "name": "Hongdae",
+      "coordinates": [126.9246, 37.5568],
+      "image": "https://images.unsplash.com/photo-1570076663930-81bfcbf22ec8?w=800",
+      "description": "University district with street performances, indie shops, and vibrant nightlife.",
+      "category": "shopping"
+    }
+  ]
+}

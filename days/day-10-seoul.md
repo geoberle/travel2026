@@ -5,6 +5,7 @@ status: open
 title: Last Day in Seoul
 coordinates: [126.9857, 37.5636]
 zoom: 13
+pois: ["myeongdong"]
 ---
 
 ## Final Day
@@ -15,7 +16,7 @@ zoom: 13
 
 ### Afternoon
 - Pack for tomorrow's departure
-- Pick up any souvenirs
+- Pick up any souvenirs at [Myeongdong](poi:myeongdong)
 
 ### Evening
 - Farewell dinner — somewhere special

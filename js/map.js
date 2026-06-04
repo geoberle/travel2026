@@ -1,9 +1,16 @@
+const STYLE_DARK = 'mapbox://styles/mapbox/dark-v11';
+const STYLE_STANDARD = 'mapbox://styles/mapbox/standard';
+
+let _currentStyle = 'dark';
+let _journeys = null;
+let _pendingHighlight = null;
+
 function initMap(containerId, token) {
   mapboxgl.accessToken = token;
 
   const map = new mapboxgl.Map({
     container: containerId,
-    style: 'mapbox://styles/mapbox/dark-v11',
+    style: STYLE_DARK,
     center: [115, 20],
     zoom: 3,
     projection: 'globe',
@@ -12,16 +19,65 @@ function initMap(containerId, token) {
   });
 
   map.on('style.load', () => {
-    map.setFog({
-      color: 'rgb(15, 15, 25)',
-      'high-color': 'rgb(30, 30, 60)',
-      'horizon-blend': 0.06,
-      'space-color': 'rgb(8, 8, 12)',
-      'star-intensity': 0.5
-    });
+    if (_currentStyle === 'dark') {
+      map.setFog({
+        color: 'rgb(15, 15, 25)',
+        'high-color': 'rgb(30, 30, 60)',
+        'horizon-blend': 0.06,
+        'space-color': 'rgb(8, 8, 12)',
+        'star-intensity': 0.5
+      });
+    } else {
+      map.setConfigProperty('basemap', 'lightPreset', 'night');
+    }
+
+    if (_journeys) {
+      _addRouteLayers(map, _journeys);
+      if (_pendingHighlight) {
+        highlightRoute(map, _pendingHighlight);
+        _pendingHighlight = null;
+      }
+    }
   });
 
   return map;
+}
+
+function switchStyle(map, style) {
+  if (style === _currentStyle) return false;
+  _currentStyle = style;
+  map.setStyle(style === 'dark' ? STYLE_DARK : STYLE_STANDARD);
+  return true;
+}
+
+function _addRouteLayers(map, journeys) {
+  journeys.forEach(journey => {
+    const coords = [];
+    journey.legs.forEach(leg => {
+      if (coords.length === 0) coords.push(leg.departure.coordinates);
+      coords.push(leg.arrival.coordinates);
+    });
+
+    map.addSource(`route-${journey.id}`, {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: coords }
+      }
+    });
+
+    map.addLayer({
+      id: `route-${journey.id}`,
+      type: 'line',
+      source: `route-${journey.id}`,
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: {
+        'line-color': '#4ecdc4',
+        'line-width': 2.5,
+        'line-opacity': 0.6
+      }
+    });
+  });
 }
 
 function addDrivingRoute(map, origin, firstAirportCoords) {
@@ -50,37 +106,8 @@ function addDrivingRoute(map, origin, firstAirportCoords) {
 }
 
 function addFlightRoutes(map, journeys) {
-  const allCoords = [];
-
-  journeys.forEach(journey => {
-    const coords = [];
-    journey.legs.forEach(leg => {
-      if (coords.length === 0) coords.push(leg.departure.coordinates);
-      coords.push(leg.arrival.coordinates);
-    });
-
-    map.addSource(`route-${journey.id}`, {
-      type: 'geojson',
-      data: {
-        type: 'Feature',
-        geometry: { type: 'LineString', coordinates: coords }
-      }
-    });
-
-    map.addLayer({
-      id: `route-${journey.id}`,
-      type: 'line',
-      source: `route-${journey.id}`,
-      layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: {
-        'line-color': '#4ecdc4',
-        'line-width': 2.5,
-        'line-opacity': 0.6
-      }
-    });
-
-    allCoords.push(...coords);
-  });
+  _journeys = journeys;
+  _addRouteLayers(map, journeys);
 }
 
 function addAirportMarkers(map, journeys) {
@@ -133,6 +160,7 @@ function addOriginMarker(map, origin) {
 }
 
 function flyToGlobe(map) {
+  switchStyle(map, 'dark');
   map.flyTo({
     center: [115, 20],
     zoom: 3,
@@ -152,7 +180,12 @@ function flyToChapter(map, chapter) {
 }
 
 function flyToFlight(map, journey) {
-  highlightRoute(map, journey.id);
+  const changed = switchStyle(map, 'dark');
+  if (changed) {
+    _pendingHighlight = journey.id;
+  } else {
+    highlightRoute(map, journey.id);
+  }
 
   if (journey.mapView) {
     map.flyTo({
@@ -183,6 +216,7 @@ function flyToFlight(map, journey) {
 }
 
 function flyToDay(map, day) {
+  switchStyle(map, 'standard');
   const coords = day.meta.coordinates;
   const zoom = parseFloat(day.meta.zoom) || 13;
 
@@ -217,5 +251,69 @@ function resetRouteHighlights(map) {
       map.setPaintProperty(layerId, 'line-opacity', 0.6);
       map.setPaintProperty(layerId, 'line-width', 2.5);
     }
+  });
+}
+
+let activePoiMarkers = [];
+
+function showPoiMarkers(map, pois, showLabels) {
+  pois.forEach(poi => {
+    const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'poi-marker-wrapper';
+
+    const pin = document.createElement('div');
+    pin.className = 'poi-pin';
+
+    const body = document.createElement('div');
+    body.className = 'poi-pin-body';
+    body.style.background = color;
+    pin.appendChild(body);
+
+    const tail = document.createElement('div');
+    tail.className = 'poi-pin-tail';
+    tail.style.borderTop = `14px solid ${color}`;
+    pin.appendChild(tail);
+
+    const inner = document.createElement('div');
+    inner.className = 'poi-pin-inner';
+    pin.appendChild(inner);
+
+    wrapper.appendChild(pin);
+
+    if (showLabels) {
+      const label = document.createElement('div');
+      label.className = 'poi-marker-label';
+      label.textContent = poi.name;
+      wrapper.appendChild(label);
+    }
+
+    const marker = new mapboxgl.Marker({ element: wrapper, anchor: 'bottom' })
+      .setLngLat(poi.coordinates)
+      .addTo(map);
+
+    activePoiMarkers.push(marker);
+  });
+}
+
+function clearPoiMarkers(map) {
+  activePoiMarkers.forEach(m => m.remove());
+  activePoiMarkers = [];
+}
+
+function fitToPoiBounds(map, pois, accommodation) {
+  if (pois.length === 0) return;
+
+  const bounds = new mapboxgl.LngLatBounds();
+  pois.forEach(poi => bounds.extend(poi.coordinates));
+  if (accommodation) bounds.extend(accommodation.coordinates);
+
+  map.fitBounds(bounds, {
+    padding: { top: 80, bottom: 80, left: 450, right: 80 },
+    bearing: -15,
+    pitch: 50,
+    duration: 2000,
+    maxZoom: 15
   });
 }

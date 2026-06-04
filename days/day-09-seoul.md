@@ -5,17 +5,18 @@ status: open
 title: Namsan & Culture
 coordinates: [126.9882, 37.5512]
 zoom: 14
+pois: ["namsan-tower", "itaewon", "hongdae"]
 ---
 
 ## Namsan Tower & Culture
 
 ### Morning
-- Namsan Tower (cable car up, walk down)
+- [N Seoul Tower](poi:namsan-tower) (cable car up, walk down)
 - Love lock fence
 - City views
 
 ### Afternoon
-- Itaewon or Hongdae for shopping and cafes
+- [Itaewon](poi:itaewon) or [Hongdae](poi:hongdae) for shopping and cafes
 - Korean cooking class (optional)
 
 ### Evening
