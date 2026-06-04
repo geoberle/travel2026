@@ -1,0 +1,25 @@
+{
+  "title": "Singapore & Seoul",
+  "subtitle": "July 2026 · Family Adventure",
+  "origin": {
+    "city": "Klagenfurt",
+    "country": "Austria",
+    "coordinates": [14.3053, 46.6247]
+  },
+  "dates": {
+    "start": "2026-07-10",
+    "end": "2026-07-20"
+  },
+  "travelers": 4,
+  "dayFiles": [
+    "day-02-singapore-arrival.md",
+    "day-03-singapore.md",
+    "day-04-singapore.md",
+    "day-05-seoul-arrival.md",
+    "day-06-seoul.md",
+    "day-07-seoul.md",
+    "day-08-seoul.md",
+    "day-09-seoul.md",
+    "day-10-seoul.md"
+  ]
+}

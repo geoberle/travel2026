@@ -1,0 +1,166 @@
+{
+  "journeys": [
+    {
+      "id": "outbound",
+      "label": "Klagenfurt → Singapore",
+      "date": "2026-07-10",
+      "mapView": { "center": [21, 44], "zoom": 4, "pitch": 20 },
+      "legs": [
+        {
+          "mode": "drive",
+          "departure": {
+            "city": "Klagenfurt",
+            "coordinates": [14.3053, 46.6247],
+            "time": "2026-07-10T10:00:00"
+          },
+          "arrival": {
+            "airport": "LJU",
+            "city": "Ljubljana",
+            "coordinates": [14.4576, 46.2237],
+            "time": "2026-07-10T11:00:00"
+          },
+          "duration": "1h 0m"
+        },
+        {
+          "flightNumber": "TK1052",
+          "airline": "Turkish Airlines",
+          "aircraft": "Boeing 737-800",
+          "departure": {
+            "airport": "LJU",
+            "city": "Ljubljana",
+            "coordinates": [14.4576, 46.2237],
+            "time": "2026-07-10T13:50:00"
+          },
+          "arrival": {
+            "airport": "IST",
+            "city": "Istanbul",
+            "coordinates": [28.7519, 41.2753],
+            "time": "2026-07-10T17:15:00"
+          },
+          "duration": "2h 25m"
+        },
+        {
+          "flightNumber": "TK518",
+          "airline": "Turkish Airlines",
+          "aircraft": "Boeing 787-9",
+          "departure": {
+            "airport": "IST",
+            "city": "Istanbul",
+            "coordinates": [28.7519, 41.2753],
+            "time": "2026-07-10T19:10:00"
+          },
+          "arrival": {
+            "airport": "SIN",
+            "city": "Singapore",
+            "coordinates": [103.9915, 1.3644],
+            "time": "2026-07-11T11:10:00"
+          },
+          "duration": "11h 0m"
+        }
+      ],
+      "layovers": [
+        {
+          "airport": "IST",
+          "city": "Istanbul",
+          "duration": "1h 55m"
+        }
+      ],
+      "totalDuration": "15h 20m"
+    },
+    {
+      "id": "singapore-seoul",
+      "label": "Singapore → Seoul",
+      "date": "2026-07-14",
+      "mapView": { "center": [115, 20], "zoom": 3.5, "pitch": 15 },
+      "legs": [
+        {
+          "flightNumber": "SQ600",
+          "airline": "Singapore Airlines",
+          "aircraft": "Boeing 787",
+          "departure": {
+            "airport": "SIN",
+            "city": "Singapore",
+            "coordinates": [103.9915, 1.3644],
+            "time": "2026-07-14T08:10:00"
+          },
+          "arrival": {
+            "airport": "ICN",
+            "city": "Seoul",
+            "coordinates": [126.4407, 37.4602],
+            "time": "2026-07-14T15:30:00"
+          },
+          "duration": "6h 20m"
+        }
+      ],
+      "layovers": [],
+      "totalDuration": "6h 20m"
+    },
+    {
+      "id": "return",
+      "label": "Seoul → Klagenfurt",
+      "date": "2026-07-20",
+      "mapView": { "center": [70, 45], "zoom": 2.5, "pitch": 15 },
+      "legs": [
+        {
+          "flightNumber": "LH719",
+          "airline": "Lufthansa",
+          "aircraft": "Airbus A350-900",
+          "departure": {
+            "airport": "ICN",
+            "city": "Seoul",
+            "coordinates": [126.4407, 37.4602],
+            "time": "2026-07-20T11:40:00"
+          },
+          "arrival": {
+            "airport": "MUC",
+            "city": "Munich",
+            "coordinates": [11.7750, 48.3537],
+            "time": "2026-07-20T17:30:00"
+          },
+          "duration": "12h 50m"
+        },
+        {
+          "flightNumber": "LH1698",
+          "airline": "Lufthansa",
+          "aircraft": "Airbus A319",
+          "departure": {
+            "airport": "MUC",
+            "city": "Munich",
+            "coordinates": [11.7750, 48.3537],
+            "time": "2026-07-20T18:35:00"
+          },
+          "arrival": {
+            "airport": "LJU",
+            "city": "Ljubljana",
+            "coordinates": [14.4576, 46.2237],
+            "time": "2026-07-20T19:25:00"
+          },
+          "duration": "0h 50m"
+        },
+        {
+          "mode": "drive",
+          "departure": {
+            "airport": "LJU",
+            "city": "Ljubljana",
+            "coordinates": [14.4576, 46.2237],
+            "time": "2026-07-20T20:00:00"
+          },
+          "arrival": {
+            "city": "Klagenfurt",
+            "coordinates": [14.3053, 46.6247],
+            "time": "2026-07-20T21:00:00"
+          },
+          "duration": "1h 0m"
+        }
+      ],
+      "layovers": [
+        {
+          "airport": "MUC",
+          "city": "Munich",
+          "duration": "1h 5m"
+        }
+      ],
+      "totalDuration": "16h"
+    }
+  ]
+}

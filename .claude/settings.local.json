@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -m http.server 8000)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(f['path']\\) for f in d.get\\('files',[]\\) if f['path'].endswith\\('.js'\\)]\")"
+    ]
+  }
+}
