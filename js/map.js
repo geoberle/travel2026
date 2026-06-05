@@ -4,6 +4,7 @@ const STYLE_STANDARD = 'mapbox://styles/mapbox/standard';
 let _currentStyle = 'dark';
 let _journeys = null;
 let _pendingHighlight = null;
+let _accommodations = null;
 
 function initMap(containerId, token) {
   mapboxgl.accessToken = token;
@@ -38,6 +39,14 @@ function initMap(containerId, token) {
         _pendingHighlight = null;
       }
     }
+
+    if (_accommodations) {
+      addAccommodationMarkers(map, _accommodations);
+    }
+
+    if (_activePois.length > 0) {
+      showPoiMarkers(map, _activePois, true);
+    }
   });
 
   map.scrollZoom.disable();
@@ -60,6 +69,8 @@ function _addRouteLayers(map, journeys) {
       if (coords.length === 0) coords.push(leg.departure.coordinates);
       coords.push(leg.arrival.coordinates);
     });
+
+    if (map.getSource(`route-${journey.id}`)) return;
 
     map.addSource(`route-${journey.id}`, {
       type: 'geojson',
@@ -133,12 +144,48 @@ function addAirportMarkers(map, journeys) {
 }
 
 function addAccommodationMarkers(map, accommodations) {
-  accommodations.forEach(acc => {
-    const el = document.createElement('div');
-    el.className = 'accommodation-marker';
-    new mapboxgl.Marker({ element: el, anchor: 'center' })
-      .setLngLat(acc.coordinates)
-      .addTo(map);
+  _accommodations = accommodations;
+  if (map.getSource('accommodation-markers')) return;
+
+  const stayColor = '#ff6b6b';
+  const id = 'pin-stay';
+  if (!map.hasImage(id)) {
+    const imageData = createPinImageData(stayColor, 32);
+    map.addImage(id, { width: imageData.width, height: imageData.height, data: new Uint8Array(imageData.data.buffer) });
+  }
+
+  const features = accommodations.map(acc => ({
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: acc.coordinates },
+    properties: { name: acc.neighborhood, type: acc.type }
+  }));
+
+  map.addSource('accommodation-markers', {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features }
+  });
+
+  map.addLayer({
+    id: 'accommodation-icons',
+    type: 'symbol',
+    source: 'accommodation-markers',
+    layout: {
+      'icon-image': 'pin-stay',
+      'icon-size': 1,
+      'icon-anchor': 'bottom',
+      'icon-allow-overlap': true,
+      'text-field': ['get', 'name'],
+      'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
+      'text-size': 11,
+      'text-offset': [0, 0.3],
+      'text-anchor': 'top',
+      'text-optional': true
+    },
+    paint: {
+      'text-color': 'rgba(255,255,255,0.9)',
+      'text-halo-color': 'rgba(0,0,0,0.8)',
+      'text-halo-width': 1.5
+    }
   });
 }
 
@@ -406,54 +453,113 @@ function addPulseMarker(map, coords) {
   activePulseMarkers.push(marker);
 }
 
+function createPinImageData(color, size) {
+  const w = size;
+  const h = Math.round(size * 1.4);
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+
+  const cx = w / 2;
+  const r = w / 2 - 2;
+  const tipY = h - 2;
+
+  ctx.beginPath();
+  ctx.arc(cx, r + 2, r, Math.PI * 0.15, Math.PI * 0.85, true);
+  ctx.lineTo(cx, tipY);
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(cx, r + 2, r * 0.38, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.fill();
+
+  return ctx.getImageData(0, 0, w, h);
+}
+
+function ensurePinImages(map) {
+  Object.entries(CATEGORY_COLORS).forEach(([cat, color]) => {
+    const id = `pin-${cat}`;
+    if (!map.hasImage(id)) {
+      const imageData = createPinImageData(color, 32);
+      map.addImage(id, { width: imageData.width, height: imageData.height, data: new Uint8Array(imageData.data.buffer) });
+    }
+  });
+}
+
+let _activePois = [];
+let _poiEventsRegistered = false;
+
 function showPoiMarkers(map, pois, showLabels) {
   _lastMap = map;
-  pois.forEach(poi => {
-    const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+  _activePois = pois;
+  ensurePinImages(map);
 
-    const wrapper = document.createElement('div');
-    wrapper.className = 'poi-marker-wrapper';
-    wrapper.dataset.poi = poi.id;
+  const features = pois.map(poi => ({
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: poi.coordinates },
+    properties: { id: poi.id, name: poi.name, category: poi.category }
+  }));
 
-    const pin = document.createElement('div');
-    pin.className = 'poi-pin';
-
-    const body = document.createElement('div');
-    body.className = 'poi-pin-body';
-    body.style.background = color;
-    pin.appendChild(body);
-
-    const tail = document.createElement('div');
-    tail.className = 'poi-pin-tail';
-    tail.style.borderTop = `14px solid ${color}`;
-    pin.appendChild(tail);
-
-    const inner = document.createElement('div');
-    inner.className = 'poi-pin-inner';
-    pin.appendChild(inner);
-
-    wrapper.appendChild(pin);
-
-    if (showLabels) {
-      const label = document.createElement('div');
-      label.className = 'poi-marker-label';
-      label.textContent = poi.name;
-      wrapper.appendChild(label);
-    }
-
-    wrapper.addEventListener('mouseenter', () => highlightPoi(poi.id, true));
-    wrapper.addEventListener('mouseleave', () => highlightPoi(poi.id, false));
-    wrapper.addEventListener('click', (e) => {
-      e.stopPropagation();
-      showPoiPopup(map, poi);
+  if (map.getSource('poi-markers')) {
+    map.getSource('poi-markers').setData({ type: 'FeatureCollection', features });
+  } else {
+    map.addSource('poi-markers', {
+      type: 'geojson',
+      data: { type: 'FeatureCollection', features }
     });
 
-    const marker = new mapboxgl.Marker({ element: wrapper, anchor: 'bottom' })
-      .setLngLat(poi.coordinates)
-      .addTo(map);
+    map.addLayer({
+      id: 'poi-icons',
+      type: 'symbol',
+      source: 'poi-markers',
+      layout: {
+        'icon-image': ['concat', 'pin-', ['get', 'category']],
+        'icon-size': 1,
+        'icon-anchor': 'bottom',
+        'icon-allow-overlap': true,
+        'text-field': showLabels ? ['get', 'name'] : '',
+        'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
+        'text-size': 11,
+        'text-offset': [0, 0.3],
+        'text-anchor': 'top',
+        'text-allow-overlap': false,
+        'text-optional': true
+      },
+      paint: {
+        'text-color': 'rgba(255,255,255,0.9)',
+        'text-halo-color': 'rgba(0,0,0,0.8)',
+        'text-halo-width': 1.5
+      }
+    });
 
-    activePoiMarkers.push(marker);
-  });
+    if (!_poiEventsRegistered) {
+      _poiEventsRegistered = true;
+
+      map.on('click', 'poi-icons', (e) => {
+        const props = e.features[0].properties;
+        const poi = _activePois.find(p => p.id === props.id);
+        if (poi) showPoiPopup(map, poi);
+      });
+
+      map.on('mouseenter', 'poi-icons', (e) => {
+        map.getCanvas().style.cursor = 'pointer';
+        const id = e.features[0].properties.id;
+        highlightPoi(id, true);
+      });
+
+      map.on('mouseleave', 'poi-icons', () => {
+        map.getCanvas().style.cursor = '';
+        document.querySelectorAll('.poi-link.poi-highlight').forEach(el => el.classList.remove('poi-highlight'));
+      });
+    }
+  }
 
   setupInlinePoiHover();
 }
@@ -498,9 +604,6 @@ function highlightPoi(poiId, active) {
   document.querySelectorAll(`.poi-link[data-poi="${poiId}"]`).forEach(el => {
     el.classList.toggle('poi-highlight', active);
   });
-  document.querySelectorAll(`.poi-marker-wrapper[data-poi="${poiId}"]`).forEach(el => {
-    el.classList.toggle('poi-highlight', active);
-  });
 }
 
 function setupInlinePoiHover() {
@@ -520,7 +623,11 @@ function setupInlinePoiHover() {
 function clearPoiMarkers(map) {
   activePoiMarkers.forEach(m => m.remove());
   activePoiMarkers = [];
+  _activePois = [];
   if (activePopup) { activePopup.remove(); activePopup = null; }
+  if (map.getSource('poi-markers')) {
+    map.getSource('poi-markers').setData({ type: 'FeatureCollection', features: [] });
+  }
 }
 
 function fitToPoiBounds(map, pois, accommodation) {
