@@ -1,0 +1,29 @@
+{
+  "name": "travel",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/geoberle/travel2026.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/geoberle/travel2026/issues"
+  },
+  "homepage": "https://github.com/geoberle/travel2026#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "openai": "^6.42.0",
+    "youtube-transcript": "^1.3.1"
+  }
+}

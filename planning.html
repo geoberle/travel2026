@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trip Planner — Singapore & Seoul</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/mapbox-gl@3/dist/mapbox-gl.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --bg-panel: #16213e;
+      --bg-card: #0f3460;
+      --text: #e8e8f0;
+      --text-muted: rgba(232,232,240,0.5);
+      --accent: #4ecdc4;
+      --border: rgba(255,255,255,0.08);
+      --font: 'Inter', -apple-system, sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; }
+
+    #map { flex: 1; }
+
+    /* Sidebar */
+    #sidebar { width: 420px; display: flex; flex-direction: column; background: var(--bg-panel); border-left: 1px solid var(--border); transition: width 0.3s; overflow: hidden; }
+    #sidebar.collapsed { width: 0; }
+
+    .sidebar-toggle { position: fixed; top: 12px; right: 12px; z-index: 10; background: var(--bg-panel); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+    #sidebar.collapsed ~ .sidebar-toggle { right: 12px; }
+
+    .tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .tab { flex: 1; padding: 12px; text-align: center; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; opacity: 0.5; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .tab.active { opacity: 1; border-bottom-color: var(--accent); }
+
+    .tab-content { flex: 1; overflow-y: auto; display: none; flex-direction: column; }
+    .tab-content.active { display: flex; }
+
+    /* Discover tab */
+    .chat-messages { flex: 1; overflow-y: auto; padding: 12px; }
+    .chat-msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; line-height: 1.5; max-width: 95%; }
+    .chat-msg.user { background: var(--bg-card); margin-left: auto; }
+    .chat-msg.ai { background: rgba(78,205,196,0.1); border: 1px solid rgba(78,205,196,0.15); }
+    .chat-input-wrap { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--border); }
+    .chat-input-wrap input { flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; font-family: var(--font); }
+    .chat-input-wrap button { background: var(--accent); color: #0a0a0f; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.8rem; }
+
+    .extract-bar { padding: 12px; border-top: 1px solid var(--border); }
+    .extract-bar input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 0.8rem; font-family: var(--font); }
+    .extract-bar input::placeholder { color: var(--text-muted); }
+
+    /* POI suggestions from AI */
+    .poi-suggestion { background: var(--bg-card); border-radius: 8px; padding: 10px 12px; margin: 6px 0; font-size: 0.8rem; }
+    .poi-suggestion .name { font-weight: 600; margin-bottom: 4px; }
+    .poi-suggestion .desc { opacity: 0.7; font-size: 0.75rem; margin-bottom: 6px; }
+    .poi-suggestion .cat { font-size: 0.65rem; text-transform: uppercase; opacity: 0.5; }
+    .poi-suggestion .add-btn { float: right; background: var(--accent); color: #0a0a0f; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; cursor: pointer; }
+    .poi-suggestion .add-btn:hover { opacity: 0.8; }
+    .city-select { display: inline-block; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-right: 4px; }
+
+    /* POIs tab */
+    .poi-list { padding: 12px; }
+    .poi-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px; cursor: pointer; transition: background 0.2s; margin-bottom: 4px; }
+    .poi-item:hover { background: rgba(255,255,255,0.05); }
+    .poi-item .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .poi-item .info { flex: 1; min-width: 0; }
+    .poi-item .info .name { font-size: 0.85rem; font-weight: 500; }
+    .poi-item .info .cat { font-size: 0.65rem; text-transform: uppercase; opacity: 0.4; letter-spacing: 0.06em; }
+    .poi-item .actions { display: flex; gap: 4px; }
+    .poi-item .actions button { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.8rem; padding: 4px; }
+    .poi-item .actions button:hover { color: var(--text); }
+    .city-header { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding: 12px 10px 6px; opacity: 0.4; }
+
+    /* Days tab */
+    .day-slot { margin: 8px 12px; padding: 12px; background: var(--bg-card); border-radius: 8px; min-height: 60px; }
+    .day-slot.drag-over { outline: 2px dashed var(--accent); }
+    .day-slot-header { font-size: 0.75rem; font-weight: 600; margin-bottom: 8px; display: flex; justify-content: space-between; }
+    .day-slot-header .city-tag { font-size: 0.6rem; text-transform: uppercase; opacity: 0.5; }
+    .unassigned-section { margin: 12px; padding: 12px; border: 1px dashed var(--border); border-radius: 8px; min-height: 40px; }
+    .unassigned-header { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.4; margin-bottom: 8px; }
+    .draggable-poi { padding: 6px 10px; margin: 3px 0; background: rgba(255,255,255,0.05); border-radius: 6px; font-size: 0.8rem; cursor: grab; display: flex; align-items: center; gap: 8px; }
+    .draggable-poi:active { cursor: grabbing; }
+    .draggable-poi .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Mapbox popup */
+    .mapboxgl-popup-content {
+      background: rgba(15, 15, 25, 0.95);
+      color: #e8e8f0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-family: var(--font);
+      font-size: 0.8rem;
+      line-height: 1.5;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+    .mapboxgl-popup-tip { border-top-color: rgba(15, 15, 25, 0.95); }
+    .mapboxgl-popup-close-button { color: rgba(255,255,255,0.5); font-size: 16px; }
+
+    /* Pin markers */
+    .poi-pin-wrap { display: flex; flex-direction: column; align-items: center; cursor: pointer; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5)); transition: transform 0.2s; }
+    .poi-pin-wrap:hover, .poi-pin-wrap.highlight { transform: scale(1.3) translateY(-4px); z-index: 10; }
+    .poi-pin-w { position: relative; width: 26px; height: 38px; }
+    .poi-pin-body { width: 26px; height: 26px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); position: absolute; top: 0; left: 0; }
+    .poi-pin-tail { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; }
+    .poi-pin-inner { width: 10px; height: 10px; background: rgba(255,255,255,0.9); border-radius: 50%; position: absolute; top: 8px; left: 8px; transform: rotate(45deg); }
+    .poi-pin-label { color: rgba(255,255,255,0.9); font-size: 0.55rem; font-weight: 600; font-family: var(--font); letter-spacing: 0.03em; white-space: nowrap; text-shadow: 0 1px 4px rgba(0,0,0,0.9); margin-top: 2px; text-align: center; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Rich popup */
+    .poi-popup-img { width: 100%; height: 110px; object-fit: cover; display: block; }
+    .poi-popup-body { padding: 10px 12px 12px; }
+    .poi-popup-header { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+    .poi-popup-header strong { font-size: 0.85rem; }
+    .poi-popup-category { font-size: 0.55rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 6px; border-radius: 4px; }
+    .poi-popup-desc { font-size: 0.75rem; line-height: 1.45; opacity: 0.8; margin: 0 0 6px; }
+    .poi-popup-meta { font-size: 0.7rem; opacity: 0.6; margin-bottom: 3px; }
+    .poi-popup-link { display: inline-block; margin-top: 6px; font-size: 0.7rem; font-weight: 600; color: var(--accent); text-decoration: none; }
+    .poi-popup-link:hover { text-decoration: underline; }
+
+    /* Sidebar highlight */
+    .poi-item.highlight { background: rgba(78,205,196,0.15); }
+
+    /* Loading */
+    .loading { text-align: center; padding: 20px; opacity: 0.4; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="sidebar">
+    <div class="tabs">
+      <div class="tab active" data-tab="discover">Discover</div>
+      <div class="tab" data-tab="pois">POIs</div>
+      <div class="tab" data-tab="days">Days</div>
+    </div>
+
+    <div class="tab-content active" id="tab-discover">
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input-wrap">
+        <input type="text" id="chat-input" placeholder="Find family-friendly spots near..." autocomplete="off">
+        <button id="chat-send">Send</button>
+      </div>
+      <div class="extract-bar">
+        <input type="text" id="extract-input" placeholder="Paste YouTube or blog URL to extract POIs..." autocomplete="off">
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-pois">
+      <div class="poi-list" id="poi-list"></div>
+    </div>
+
+    <div class="tab-content" id="tab-days">
+      <div id="days-list"></div>
+    </div>
+  </div>
+  <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
+
+  <script src="https://unpkg.com/mapbox-gl@3/dist/mapbox-gl.js"></script>
+  <script>
+    const MAPBOX_TOKEN = 'pk.eyJ1IjoiZ2VyZG9iZXJsZWNobmVyIiwiYSI6ImNtcHpwNjdzYjA2d3EycnBnZWJkZ2p5ODUifQ.vl5h0bVgSuSaW_ZPIH0CKA';
+    const CATEGORY_COLORS = {
+      attraction: '#4ecdc4', food: '#ff9f43', culture: '#a55eea',
+      shopping: '#fd79a8', nature: '#00b894', transport: '#636e72'
+    };
+
+    let allPois = {};
+    let poiData = {};
+    let dayData = [];
+    let map;
+    let markers = [];
+    let chatMessages = [];
+
+    async function init() {
+      mapboxgl.accessToken = MAPBOX_TOKEN;
+      map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/dark-v11',
+        center: [82, 28],
+        zoom: 3,
+        projection: 'globe'
+      });
+
+      map.on('style.load', () => {
+        map.setFog({
+          color: 'rgb(15, 15, 25)', 'high-color': 'rgb(30, 30, 60)',
+          'horizon-blend': 0.06, 'space-color': 'rgb(8, 8, 12)', 'star-intensity': 0.5
+        });
+      });
+
+      map.on('click', (e) => {
+        const lngLat = e.lngLat;
+        document.getElementById('chat-input').value += ` [${lngLat.lng.toFixed(4)}, ${lngLat.lat.toFixed(4)}]`;
+      });
+
+      await loadData();
+      renderPois();
+      renderDays();
+      setupTabs();
+      setupChat();
+      setupExtract();
+      setupSidebar();
+
+      map.on('load', () => refreshMarkers());
+    }
+
+    async function loadData() {
+      const [sg, kr, days] = await Promise.all([
+        fetch('/api/pois/singapore').then(r => r.json()),
+        fetch('/api/pois/seoul').then(r => r.json()),
+        fetch('/api/days').then(r => r.json())
+      ]);
+      poiData = { singapore: sg, seoul: kr };
+      dayData = days;
+
+      allPois = {};
+      [sg, kr].forEach(cityData => {
+        cityData.pois.forEach(p => { allPois[p.id] = p; });
+      });
+    }
+
+    let activePopup = null;
+    let poiEventsRegistered = false;
+
+    function createPinImageData(color, size) {
+      const w = size, h = Math.round(size * 1.4);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      const cx = w / 2, r = w / 2 - 2, tipY = h - 2;
+      ctx.beginPath();
+      ctx.arc(cx, r + 2, r, Math.PI * 0.15, Math.PI * 0.85, true);
+      ctx.lineTo(cx, tipY);
+      ctx.closePath();
+      ctx.fillStyle = color; ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, r + 2, r * 0.38, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fill();
+      return ctx.getImageData(0, 0, w, h);
+    }
+
+    function ensurePinImages() {
+      Object.entries(CATEGORY_COLORS).forEach(([cat, color]) => {
+        const id = `pin-${cat}`;
+        if (!map.hasImage(id)) {
+          const d = createPinImageData(color, 32);
+          map.addImage(id, { width: d.width, height: d.height, data: new Uint8Array(d.data.buffer) });
+        }
+      });
+      if (!map.hasImage('pin-stay')) {
+        const d = createPinImageData('#ff6b6b', 32);
+        map.addImage('pin-stay', { width: d.width, height: d.height, data: new Uint8Array(d.data.buffer) });
+      }
+    }
+
+    function refreshMarkers() {
+      ensurePinImages();
+
+      const features = [];
+      Object.values(poiData).forEach(cityData => {
+        cityData.pois.forEach(poi => {
+          features.push({
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: poi.coordinates },
+            properties: { id: poi.id, name: poi.name, category: poi.category }
+          });
+        });
+      });
+
+      const data = { type: 'FeatureCollection', features };
+
+      if (map.getSource('planning-pois')) {
+        map.getSource('planning-pois').setData(data);
+      } else {
+        map.addSource('planning-pois', { type: 'geojson', data });
+        map.addLayer({
+          id: 'planning-poi-icons',
+          type: 'symbol',
+          source: 'planning-pois',
+          layout: {
+            'icon-image': ['concat', 'pin-', ['get', 'category']],
+            'icon-size': 1,
+            'icon-anchor': 'bottom',
+            'icon-allow-overlap': true,
+            'text-field': ['get', 'name'],
+            'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
+            'text-size': 11,
+            'text-offset': [0, 0.3],
+            'text-anchor': 'top',
+            'text-optional': true
+          },
+          paint: {
+            'text-color': 'rgba(255,255,255,0.9)',
+            'text-halo-color': 'rgba(0,0,0,0.8)',
+            'text-halo-width': 1.5
+          }
+        });
+
+        if (!poiEventsRegistered) {
+          poiEventsRegistered = true;
+          map.on('click', 'planning-poi-icons', (e) => {
+            const id = e.features[0].properties.id;
+            const poi = allPois[id];
+            if (poi) showRichPopup(poi);
+          });
+          map.on('mouseenter', 'planning-poi-icons', (e) => {
+            map.getCanvas().style.cursor = 'pointer';
+            highlightPoiInList(e.features[0].properties.id, true);
+          });
+          map.on('mouseleave', 'planning-poi-icons', () => {
+            map.getCanvas().style.cursor = '';
+            document.querySelectorAll('.poi-item.highlight').forEach(el => el.classList.remove('highlight'));
+          });
+        }
+      }
+    }
+
+    function showRichPopup(poi) {
+      if (activePopup) activePopup.remove();
+      const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+      const imgHtml = poi.image ? `<img src="${poi.image}" alt="${poi.name}" onerror="this.remove()" class="poi-popup-img">` : '';
+      const catHtml = `<span class="poi-popup-category" style="background:${color}20;color:${color}">${poi.category}</span>`;
+      const linkHtml = poi.url ? `<a href="${poi.url}" target="_blank" class="poi-popup-link">Visit website →</a>` : '';
+      const hoursHtml = poi.hours ? `<div class="poi-popup-meta">🕐 ${poi.hours}</div>` : '';
+      const costHtml = poi.cost ? `<div class="poi-popup-meta">💰 ${poi.cost}</div>` : '';
+
+      activePopup = new mapboxgl.Popup({ offset: [0, -45], anchor: 'bottom', maxWidth: '240px', closeButton: true })
+        .setLngLat(poi.coordinates)
+        .setHTML(`${imgHtml}<div class="poi-popup-body"><div class="poi-popup-header">${catHtml}<strong>${poi.name}</strong></div><p class="poi-popup-desc">${poi.description}</p>${hoursHtml}${costHtml}${linkHtml}</div>`)
+        .addTo(map);
+    }
+
+    function highlightPoiInList(id, active) {
+      document.querySelectorAll(`.poi-item[data-id="${id}"]`).forEach(el => el.classList.toggle('highlight', active));
+      document.querySelectorAll(`.poi-pin-wrap[data-poi="${id}"]`).forEach(el => el.classList.toggle('highlight', active));
+    }
+
+    // --- Tabs ---
+    function setupTabs() {
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+        });
+      });
+    }
+
+    function setupSidebar() {
+      document.getElementById('sidebar-toggle').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('collapsed');
+      });
+    }
+
+    // --- POI List ---
+    function renderPois() {
+      const list = document.getElementById('poi-list');
+      let html = '';
+      for (const [city, data] of Object.entries(poiData)) {
+        html += `<div class="city-header">${data.city} (${data.pois.length})</div>`;
+        data.pois.forEach(poi => {
+          const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+          html += `
+            <div class="poi-item" data-id="${poi.id}" data-city="${city}"
+                 onmouseenter="highlightPoiInList('${poi.id}',true)"
+                 onmouseleave="highlightPoiInList('${poi.id}',false)"
+                 onclick="flyAndShowPoi('${poi.id}')">
+              <div class="dot" style="background:${color}"></div>
+              <div class="info">
+                <div class="name">${poi.name}</div>
+                <div class="cat">${poi.category}</div>
+              </div>
+              <div class="actions">
+                <button onclick="event.stopPropagation();deletePoi('${city}','${poi.id}')" title="Delete">✕</button>
+              </div>
+            </div>`;
+        });
+      }
+      list.innerHTML = html;
+    }
+
+    function flyAndShowPoi(id) {
+      const poi = allPois[id];
+      if (!poi) return;
+      map.flyTo({ center: poi.coordinates, zoom: 15, duration: 1000 });
+      map.once('moveend', () => showRichPopup(poi));
+    }
+
+    async function deletePoi(city, id) {
+      poiData[city].pois = poiData[city].pois.filter(p => p.id !== id);
+      delete allPois[id];
+      await fetch(`/api/pois/${city}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(poiData[city]) });
+      renderPois();
+      renderDays();
+      refreshMarkers();
+    }
+
+    async function addPoi(city, poi) {
+      poi.id = poi.id || poi.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
+      if (allPois[poi.id]) return;
+      poiData[city].pois.push(poi);
+      allPois[poi.id] = poi;
+      await fetch(`/api/pois/${city}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(poiData[city]) });
+      renderPois();
+      refreshMarkers();
+      map.flyTo({ center: poi.coordinates, zoom: 14, duration: 1000 });
+    }
+
+    // --- Chat ---
+    function setupChat() {
+      const input = document.getElementById('chat-input');
+      const send = document.getElementById('chat-send');
+
+      const doSend = async () => {
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = '';
+
+        chatMessages.push({ role: 'user', content: text });
+        renderChat();
+        addChatLoading();
+
+        try {
+          const res = await fetch('/api/ai/chat', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: chatMessages })
+          });
+          const msg = await res.json();
+
+          if (msg.error) {
+            removeChatLoading();
+            addChatMessage('ai', `Error: ${msg.error}`);
+            return;
+          }
+
+          chatMessages.push(msg);
+          removeChatLoading();
+
+          try {
+            const jsonMatch = msg.content.match(/\[[\s\S]*\]/);
+            if (jsonMatch) {
+              const pois = JSON.parse(jsonMatch[0]);
+              addChatSuggestions(pois);
+            } else {
+              addChatMessage('ai', msg.content);
+            }
+          } catch (e) {
+            addChatMessage('ai', msg.content);
+          }
+        } catch (err) {
+          removeChatLoading();
+          addChatMessage('ai', `Error: ${err.message}`);
+        }
+      };
+
+      send.addEventListener('click', doSend);
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSend(); });
+    }
+
+    function renderChat() {
+      const el = document.getElementById('chat-messages');
+      let html = '';
+      chatMessages.forEach(m => {
+        if (m.role === 'user') html += `<div class="chat-msg user">${m.content}</div>`;
+      });
+      el.innerHTML = html;
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function addChatMessage(role, content) {
+      const el = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.className = `chat-msg ${role}`;
+      div.textContent = content;
+      el.appendChild(div);
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function addChatLoading() {
+      const el = document.getElementById('chat-messages');
+      el.insertAdjacentHTML('beforeend', '<div class="chat-msg ai loading" id="chat-loading">Thinking...</div>');
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function removeChatLoading() {
+      document.getElementById('chat-loading')?.remove();
+    }
+
+    function addChatSuggestions(pois) {
+      const el = document.getElementById('chat-messages');
+      pois.forEach(poi => {
+        const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+        const div = document.createElement('div');
+        div.className = 'poi-suggestion';
+        div.innerHTML = `
+          <div class="name" style="color:${color}">${poi.name}</div>
+          <div class="desc">${poi.description}</div>
+          <div class="cat">${poi.category} · [${poi.coordinates?.[0]?.toFixed(3)}, ${poi.coordinates?.[1]?.toFixed(3)}]</div>
+          <select class="city-select" id="city-${poi.name.replace(/\s/g, '')}">
+            <option value="singapore">Singapore</option>
+            <option value="seoul">Seoul</option>
+          </select>
+          <button class="add-btn" onclick="addSuggestedPoi(this, ${JSON.stringify(poi).replace(/"/g, '&quot;')})">+ Add</button>
+        `;
+        el.appendChild(div);
+      });
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function addSuggestedPoi(btn, poi) {
+      const select = btn.previousElementSibling;
+      const city = select.value;
+      addPoi(city, poi);
+      btn.textContent = '✓ Added';
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+    }
+
+    // --- Extract ---
+    function setupExtract() {
+      const input = document.getElementById('extract-input');
+      input.addEventListener('keydown', async (e) => {
+        if (e.key !== 'Enter') return;
+        const url = input.value.trim();
+        if (!url) return;
+        input.value = '';
+
+        addChatMessage('user', `Extract POIs from: ${url}`);
+        addChatLoading();
+
+        try {
+          const res = await fetch('/api/ai/extract', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url })
+          });
+          const data = await res.json();
+          removeChatLoading();
+
+          if (data.error) {
+            addChatMessage('ai', `Error: ${data.error}`);
+            return;
+          }
+
+          if (data.pois?.length) {
+            addChatMessage('ai', `Found ${data.pois.length} places:`);
+            addChatSuggestions(data.pois);
+          } else {
+            addChatMessage('ai', 'No places found in that content.');
+          }
+        } catch (err) {
+          removeChatLoading();
+          addChatMessage('ai', `Error: ${err.message}`);
+        }
+      });
+    }
+
+    // --- Days ---
+    function renderDays() {
+      const container = document.getElementById('days-list');
+      const assignedIds = new Set();
+      dayData.forEach(d => {
+        const pois = Array.isArray(d.meta.pois) ? d.meta.pois : [];
+        pois.forEach(id => assignedIds.add(id));
+      });
+
+      const unassigned = Object.values(allPois).filter(p => !assignedIds.has(p.id));
+
+      let html = `<div class="unassigned-section" id="drop-unassigned" ondrop="dropPoi(event,'unassigned')" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">
+        <div class="unassigned-header">Unassigned (${unassigned.length})</div>`;
+      unassigned.forEach(p => {
+        html += draggablePoiHtml(p);
+      });
+      html += `</div>`;
+
+      dayData.forEach(d => {
+        const pois = Array.isArray(d.meta.pois) ? d.meta.pois : [];
+        const cityColor = d.meta.city === 'singapore' ? '#00b894' : d.meta.city === 'seoul' ? '#e84393' : '#4ecdc4';
+        html += `<div class="day-slot" id="drop-${d.file}" ondrop="dropPoi(event,'${d.file}')" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">
+          <div class="day-slot-header">
+            <span style="color:${cityColor}">${d.meta.title || d.file}</span>
+            <span class="city-tag">${d.meta.date} · ${d.meta.city}</span>
+          </div>`;
+        pois.forEach(id => {
+          const p = allPois[id];
+          if (p) html += draggablePoiHtml(p);
+        });
+        html += `</div>`;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function draggablePoiHtml(p) {
+      const color = CATEGORY_COLORS[p.category] || '#4ecdc4';
+      return `<div class="draggable-poi" draggable="true" ondragstart="dragPoi(event,'${p.id}')" data-poi="${p.id}">
+        <div class="dot" style="background:${color}"></div>${p.name}</div>`;
+    }
+
+    function dragPoi(e, id) {
+      e.dataTransfer.setData('text/plain', id);
+    }
+
+    async function dropPoi(e, target) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('drag-over');
+      const poiId = e.dataTransfer.getData('text/plain');
+
+      // Remove from all days
+      for (const d of dayData) {
+        if (Array.isArray(d.meta.pois)) {
+          const idx = d.meta.pois.indexOf(poiId);
+          if (idx !== -1) {
+            d.meta.pois.splice(idx, 1);
+            await fetch(`/api/days/${d.file}`, {
+              method: 'PUT', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ pois: d.meta.pois })
+            });
+          }
+        }
+      }
+
+      // Add to target day
+      if (target !== 'unassigned') {
+        const day = dayData.find(d => d.file === target);
+        if (day) {
+          if (!Array.isArray(day.meta.pois)) day.meta.pois = [];
+          if (!day.meta.pois.includes(poiId)) {
+            day.meta.pois.push(poiId);
+            await fetch(`/api/days/${day.file}`, {
+              method: 'PUT', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ pois: day.meta.pois })
+            });
+          }
+        }
+      }
+
+      renderDays();
+    }
+
+    init();
+  </script>
+</body>
+</html>

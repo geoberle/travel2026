@@ -1,2 +1,5 @@
 .vscode/
 .playwright-mcp/
+node_modules/
+.mcp.json
+*.png
