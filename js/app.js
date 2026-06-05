@@ -319,7 +319,7 @@ function processPoiLinks(markdown) {
     const poi = allPois[poiId];
     if (!poi) return text;
     const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
-    return `<span class="poi-link"><span class="poi-inline-pin"><span class="poi-inline-pin-body" style="background:${color}"></span><span class="poi-inline-pin-tail" style="border-top-color:${color}"></span><span class="poi-inline-pin-inner"></span></span>${text}</span>`;
+    return `<span class="poi-link" data-poi="${poiId}"><span class="poi-inline-pin"><span class="poi-inline-pin-body" style="background:${color}"></span><span class="poi-inline-pin-tail" style="border-top-color:${color}"></span><span class="poi-inline-pin-inner"></span></span>${text}</span>`;
   });
 }
 

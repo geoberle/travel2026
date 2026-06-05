@@ -15,7 +15,7 @@ function initMap(containerId, token) {
     zoom: 3,
     projection: 'globe',
     pitch: 20,
-    interactive: false
+    interactive: true
   });
 
   map.on('style.load', () => {
@@ -39,6 +39,9 @@ function initMap(containerId, token) {
       }
     }
   });
+
+  map.scrollZoom.disable();
+  map.doubleClickZoom.disable();
 
   return map;
 }
@@ -256,6 +259,7 @@ function resetRouteHighlights(map) {
 
 let activePoiMarkers = [];
 let activeFlightAnimation = null;
+let _lastMap = null;
 let activePulseMarkers = [];
 let activePlaneMarker = null;
 
@@ -403,11 +407,13 @@ function addPulseMarker(map, coords) {
 }
 
 function showPoiMarkers(map, pois, showLabels) {
+  _lastMap = map;
   pois.forEach(poi => {
     const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
 
     const wrapper = document.createElement('div');
     wrapper.className = 'poi-marker-wrapper';
+    wrapper.dataset.poi = poi.id;
 
     const pin = document.createElement('div');
     pin.className = 'poi-pin';
@@ -435,17 +441,86 @@ function showPoiMarkers(map, pois, showLabels) {
       wrapper.appendChild(label);
     }
 
+    wrapper.addEventListener('mouseenter', () => highlightPoi(poi.id, true));
+    wrapper.addEventListener('mouseleave', () => highlightPoi(poi.id, false));
+    wrapper.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showPoiPopup(map, poi);
+    });
+
     const marker = new mapboxgl.Marker({ element: wrapper, anchor: 'bottom' })
       .setLngLat(poi.coordinates)
       .addTo(map);
 
     activePoiMarkers.push(marker);
   });
+
+  setupInlinePoiHover();
+}
+
+let activePopup = null;
+
+function showPoiPopup(map, poi) {
+  if (activePopup) activePopup.remove();
+
+  const imgHtml = poi.image
+    ? `<img src="${poi.image}" alt="${poi.name}" onerror="this.remove()" class="poi-popup-img">`
+    : '';
+
+  const categoryLabel = poi.category ? `<span class="poi-popup-category" style="background:${CATEGORY_COLORS[poi.category] || '#4ecdc4'}20;color:${CATEGORY_COLORS[poi.category] || '#4ecdc4'}">${poi.category}</span>` : '';
+
+  const linkHtml = poi.url
+    ? `<a href="${poi.url}" target="_blank" rel="noopener" class="poi-popup-link">Visit website →</a>`
+    : '';
+
+  const hoursHtml = poi.hours
+    ? `<div class="poi-popup-meta">🕐 ${poi.hours}</div>`
+    : '';
+
+  const costHtml = poi.cost
+    ? `<div class="poi-popup-meta">💰 ${poi.cost}</div>`
+    : '';
+
+  activePopup = new mapboxgl.Popup({ offset: [0, -60], anchor: 'bottom', maxWidth: '240px', closeButton: true })
+    .setLngLat(poi.coordinates)
+    .setHTML(`
+      ${imgHtml}
+      <div class="poi-popup-body">
+        <div class="poi-popup-header">${categoryLabel}<strong>${poi.name}</strong></div>
+        <p class="poi-popup-desc">${poi.description}</p>
+        ${hoursHtml}${costHtml}${linkHtml}
+      </div>
+    `)
+    .addTo(map);
+}
+
+function highlightPoi(poiId, active) {
+  document.querySelectorAll(`.poi-link[data-poi="${poiId}"]`).forEach(el => {
+    el.classList.toggle('poi-highlight', active);
+  });
+  document.querySelectorAll(`.poi-marker-wrapper[data-poi="${poiId}"]`).forEach(el => {
+    el.classList.toggle('poi-highlight', active);
+  });
+}
+
+function setupInlinePoiHover() {
+  document.querySelectorAll('.poi-link[data-poi]').forEach(el => {
+    el.addEventListener('mouseenter', () => highlightPoi(el.dataset.poi, true));
+    el.addEventListener('mouseleave', () => highlightPoi(el.dataset.poi, false));
+    el.addEventListener('click', () => {
+      const poi = allPois[el.dataset.poi];
+      if (poi && _lastMap) {
+        _lastMap.flyTo({ center: poi.coordinates, zoom: 15, duration: 1000 });
+        _lastMap.once('moveend', () => showPoiPopup(_lastMap, poi));
+      }
+    });
+  });
 }
 
 function clearPoiMarkers(map) {
   activePoiMarkers.forEach(m => m.remove());
   activePoiMarkers = [];
+  if (activePopup) { activePopup.remove(); activePopup = null; }
 }
 
 function fitToPoiBounds(map, pois, accommodation) {

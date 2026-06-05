@@ -15,7 +15,10 @@
       "coordinates": [103.8636, 1.2816],
       "image": "https://images.unsplash.com/photo-1506351421178-63b52a2d2562?w=800",
       "description": "Futuristic nature park featuring Cloud Forest, Flower Dome, and the iconic Supertree Grove.",
-      "category": "attraction"
+      "category": "attraction",
+      "url": "https://www.gardensbythebay.com.sg",
+      "hours": "05:00–02:00 (outdoor), 09:00–21:00 (conservatories)",
+      "cost": "SGD 32/adult, SGD 18/child (conservatories)"
     },
     {
       "id": "supertree-grove",
@@ -39,7 +42,10 @@
       "coordinates": [103.8593, 1.2863],
       "image": "https://images.unsplash.com/photo-1533309907656-7b1c2ee56ddf?w=800",
       "description": "Lotus-shaped museum with interactive digital art exhibitions. Great for kids.",
-      "category": "culture"
+      "category": "culture",
+      "url": "https://www.marinabaysands.com/museum.html",
+      "hours": "10:00–19:00",
+      "cost": "SGD 21/adult, SGD 15/child"
     },
     {
       "id": "maxwell-food-centre",
@@ -47,7 +53,8 @@
       "coordinates": [103.8448, 1.2804],
       "image": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800",
       "description": "Historic hawker centre with dozens of local food stalls. Home of the famous Tian Tian chicken rice.",
-      "category": "food"
+      "category": "food",
+      "hours": "08:00–02:00 (varies by stall)"
     },
     {
       "id": "lau-pa-sat",
