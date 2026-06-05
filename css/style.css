@@ -539,11 +539,15 @@ body {
 /* ───────── Flight animation markers ───────── */
 
 .plane-marker {
-  font-size: 20px;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+  width: 32px;
+  height: 32px;
   pointer-events: none;
-  color: white;
-  line-height: 1;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.7));
+}
+
+.plane-marker svg {
+  width: 100%;
+  height: 100%;
 }
 
 .pulse-marker {

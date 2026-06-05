@@ -12,7 +12,7 @@ function initMap(containerId, token) {
   const map = new mapboxgl.Map({
     container: containerId,
     style: STYLE_DARK,
-    center: [115, 20],
+    center: [82, 28],
     zoom: 3,
     projection: 'globe',
     pitch: 20,
@@ -66,8 +66,16 @@ function _addRouteLayers(map, journeys) {
   journeys.forEach(journey => {
     const coords = [];
     journey.legs.forEach(leg => {
-      if (coords.length === 0) coords.push(leg.departure.coordinates);
-      coords.push(leg.arrival.coordinates);
+      if (leg.route) {
+        if (coords.length === 0 || coords[coords.length - 1].toString() !== leg.route[0].toString()) {
+          coords.push(...leg.route);
+        } else {
+          coords.push(...leg.route.slice(1));
+        }
+      } else {
+        if (coords.length === 0) coords.push(leg.departure.coordinates);
+        coords.push(leg.arrival.coordinates);
+      }
     });
 
     if (map.getSource(`route-${journey.id}`)) return;
@@ -212,7 +220,7 @@ function addOriginMarker(map, origin) {
 function flyToGlobe(map) {
   switchStyle(map, 'dark');
   map.flyTo({
-    center: [115, 20],
+    center: [82, 28],
     zoom: 3,
     bearing: 0,
     pitch: 20,
@@ -325,36 +333,72 @@ function interpolateCoords(coords, numPoints) {
   return result;
 }
 
-function animateFlightArc(map, journey) {
-  cancelFlightAnimation();
+let _scrollFlightState = null;
 
+function setupScrollDrivenFlight(map, chapter) {
+  stopScrollDrivenFlight();
+  stopGlobeRotation();
+
+  const journey = chapter.journey;
+  const changed = switchStyle(map, 'dark');
+
+  if (changed) {
+    map.once('style.load', () => _initFlightLayers(map, chapter));
+  } else {
+    _initFlightLayers(map, chapter);
+  }
+}
+
+function _initFlightLayers(map, chapter) {
+  const journey = chapter.journey;
   const coords = [];
   journey.legs.forEach(leg => {
-    if (coords.length === 0) coords.push(leg.departure.coordinates);
-    coords.push(leg.arrival.coordinates);
+    if (leg.route) {
+      if (coords.length === 0 || coords[coords.length - 1].toString() !== leg.route[0].toString()) {
+        coords.push(...leg.route);
+      } else {
+        coords.push(...leg.route.slice(1));
+      }
+    } else {
+      if (coords.length === 0) coords.push(leg.departure.coordinates);
+      coords.push(leg.arrival.coordinates);
+    }
   });
 
-  const interpolated = interpolateCoords(coords, 120);
+  const interpolated = interpolateCoords(coords, 200);
   const departure = coords[0];
   const arrival = coords[coords.length - 1];
 
-  const dist = haversine(departure[1], departure[0], arrival[1], arrival[0]);
-  const duration = Math.min(4000, Math.max(2000, dist / 5));
+  ['outbound', 'singapore-seoul', 'return'].forEach(id => {
+    const layerId = `route-${id}`;
+    if (map.getLayer(layerId)) {
+      map.setPaintProperty(layerId, 'line-opacity', 0);
+    }
+  });
 
-  const staticLayerId = `route-${journey.id}`;
-  if (map.getLayer(staticLayerId)) {
-    map.setPaintProperty(staticLayerId, 'line-opacity', 0);
-  }
-
+  const fullRouteId = `full-${journey.id}`;
   const animSourceId = `anim-${journey.id}`;
   const animLayerId = `anim-line-${journey.id}`;
   const glowLayerId = `anim-glow-${journey.id}`;
 
-  if (map.getSource(animSourceId)) {
-    map.removeLayer(glowLayerId);
-    map.removeLayer(animLayerId);
-    map.removeSource(animSourceId);
-  }
+  [glowLayerId, animLayerId, fullRouteId + '-line'].forEach(lid => {
+    if (map.getLayer(lid)) map.removeLayer(lid);
+  });
+  [animSourceId, fullRouteId].forEach(sid => {
+    if (map.getSource(sid)) map.removeSource(sid);
+  });
+
+  map.addSource(fullRouteId, {
+    type: 'geojson',
+    data: { type: 'Feature', geometry: { type: 'LineString', coordinates: interpolated } }
+  });
+
+  map.addLayer({
+    id: fullRouteId + '-line',
+    type: 'line',
+    source: fullRouteId,
+    paint: { 'line-color': '#4ecdc4', 'line-width': 2, 'line-opacity': 0.2, 'line-dasharray': [3, 3] }
+  });
 
   map.addSource(animSourceId, {
     type: 'geojson',
@@ -365,12 +409,7 @@ function animateFlightArc(map, journey) {
     id: glowLayerId,
     type: 'line',
     source: animSourceId,
-    paint: {
-      'line-color': '#4ecdc4',
-      'line-width': 10,
-      'line-opacity': 0.15,
-      'line-blur': 8
-    }
+    paint: { 'line-color': '#4ecdc4', 'line-width': 10, 'line-opacity': 0.15, 'line-blur': 8 }
   });
 
   map.addLayer({
@@ -378,69 +417,105 @@ function animateFlightArc(map, journey) {
     type: 'line',
     source: animSourceId,
     layout: { 'line-cap': 'round', 'line-join': 'round' },
-    paint: {
-      'line-color': '#4ecdc4',
-      'line-width': 3.5,
-      'line-opacity': 1
-    }
+    paint: { 'line-color': '#4ecdc4', 'line-width': 3.5, 'line-opacity': 1 }
   });
 
   addPulseMarker(map, departure);
 
   const planeEl = document.createElement('div');
   planeEl.className = 'plane-marker';
-  planeEl.textContent = '✈';
+  planeEl.innerHTML = '<svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L10 9H4l2 3.5L4 16h6l2 6 2-6h6l-2-3.5L20 9h-6L12 2z"/></svg>';
   activePlaneMarker = new mapboxgl.Marker({ element: planeEl, anchor: 'center', rotationAlignment: 'map' })
     .setLngLat(interpolated[0])
     .addTo(map);
 
-  let frame = 0;
-  const startTime = performance.now();
+  const sectionEl = document.getElementById(chapter.id);
 
-  function step(now) {
-    const elapsed = now - startTime;
-    const progress = Math.min(1, elapsed / duration);
-    const eased = 1 - Math.pow(1 - progress, 3);
+  const depView = journey.mapView || { center: [(departure[0] + arrival[0]) / 2, (departure[1] + arrival[1]) / 2], zoom: 3, pitch: 25 };
 
-    const idx = Math.min(Math.floor(eased * (interpolated.length - 1)), interpolated.length - 1);
+  map.setBearing(0);
+  let scrollReady = false;
+  map.flyTo({ center: depView.center, zoom: depView.zoom, pitch: depView.pitch || 25, bearing: 0, duration: 2000 });
+  map.once('moveend', () => { scrollReady = true; });
+
+  let lastProgress = -1;
+
+  function onScroll() {
+    if (!sectionEl || !scrollReady) return;
+    const rect = sectionEl.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const rawProgress = (vh * 0.5 - rect.top) / rect.height;
+    const progress = Math.max(0, Math.min(1, rawProgress));
+
+    if (Math.abs(progress - lastProgress) < 0.002) return;
+    lastProgress = progress;
+
+    const idx = Math.min(Math.floor(progress * (interpolated.length - 1)), interpolated.length - 1);
     const currentCoords = interpolated.slice(0, idx + 1);
 
-    map.getSource(animSourceId).setData({
-      type: 'Feature',
-      geometry: { type: 'LineString', coordinates: currentCoords }
-    });
+    if (map.getSource(animSourceId)) {
+      map.getSource(animSourceId).setData({
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: currentCoords }
+      });
+    }
 
     const pos = interpolated[idx];
-    activePlaneMarker.setLngLat(pos);
-
-    if (idx > 0) {
-      const prev = interpolated[Math.max(0, idx - 3)];
-      const bearing = Math.atan2(pos[0] - prev[0], pos[1] - prev[1]) * 180 / Math.PI;
-      activePlaneMarker.setRotation(bearing);
+    if (activePlaneMarker) {
+      activePlaneMarker.setLngLat(pos);
+      if (idx > 0) {
+        const prev = interpolated[Math.max(0, idx - 5)];
+        const dLon = (pos[0] - prev[0]) * Math.PI / 180;
+        const lat1 = prev[1] * Math.PI / 180;
+        const lat2 = pos[1] * Math.PI / 180;
+        const y = Math.sin(dLon) * Math.cos(lat2);
+        const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+        const bearing = Math.atan2(y, x) * 180 / Math.PI;
+        activePlaneMarker.setRotation(bearing);
+      }
     }
 
-    if (progress < 1) {
-      activeFlightAnimation = requestAnimationFrame(step);
-    } else {
+    map.jumpTo({ center: pos, zoom: depView.zoom, bearing: 0, pitch: depView.pitch || 25 });
+
+    if (progress >= 0.99 && !_scrollFlightState.arrivalPulsed) {
       addPulseMarker(map, arrival);
-      activeFlightAnimation = null;
+      _scrollFlightState.arrivalPulsed = true;
     }
   }
 
-  activeFlightAnimation = requestAnimationFrame(step);
+  _scrollFlightState = {
+    animSourceId,
+    animLayerId,
+    glowLayerId,
+    fullRouteId,
+    journeyId: journey.id,
+    onScroll,
+    arrivalPulsed: false
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
 }
 
-function cancelFlightAnimation() {
-  if (activeFlightAnimation) {
-    cancelAnimationFrame(activeFlightAnimation);
-    activeFlightAnimation = null;
-  }
+function stopScrollDrivenFlight() {
+  if (!_scrollFlightState) return;
+  window.removeEventListener('scroll', _scrollFlightState.onScroll);
+  _scrollFlightState = null;
+
   if (activePlaneMarker) {
     activePlaneMarker.remove();
     activePlaneMarker = null;
   }
   activePulseMarkers.forEach(m => m.remove());
   activePulseMarkers = [];
+}
+
+function cancelFlightAnimation() {
+  stopScrollDrivenFlight();
+  if (activeFlightAnimation) {
+    cancelAnimationFrame(activeFlightAnimation);
+    activeFlightAnimation = null;
+  }
 }
 
 function addPulseMarker(map, coords) {

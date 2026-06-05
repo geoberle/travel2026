@@ -59,19 +59,32 @@ async function init() {
     addOriginMarker(map, trip.origin);
     startGlobeRotation(map);
 
+    let pendingRotationStart = null;
+
     initScroll(chapters, (chapter) => {
       stopGlobeRotation();
       clearPoiMarkers(map);
       cancelFlightAnimation();
+      if (pendingRotationStart) {
+        map.off('moveend', pendingRotationStart);
+        pendingRotationStart = null;
+      }
       updateTimelineActive(chapter.type === 'hero' ? 'hero' : chapter.type === 'overview' ? 'overview' : chapter.id);
 
       if (chapter.type === 'hero' || chapter.type === 'overview') {
+        map.dragPan.disable();
         flyToGlobe(map);
-        map.once('moveend', () => startGlobeRotation(map));
+        pendingRotationStart = () => { startGlobeRotation(map); pendingRotationStart = null; };
+        map.once('moveend', pendingRotationStart);
+        stopScrollDrivenFlight();
       } else {
-        flyToChapter(map, chapter);
         if (chapter.type === 'flight') {
-          map.once('moveend', () => animateFlightArc(map, chapter.journey));
+          map.dragPan.disable();
+          setupScrollDrivenFlight(map, chapter);
+        } else {
+          map.dragPan.enable();
+          stopScrollDrivenFlight();
+          flyToChapter(map, chapter);
         }
         if (chapter.type === 'day' && chapter.day.meta.pois) {
           const dayPois = resolvePois(chapter.day.meta.pois);
