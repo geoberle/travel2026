@@ -180,6 +180,27 @@ body {
 .day-card[data-city="singapore"] .day-content h3 { color: var(--city-singapore); }
 .day-card[data-city="seoul"] .day-content h3 { color: var(--city-seoul); }
 
+/* ───────── Day header ───────── */
+
+.day-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.day-number {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-light);
+  opacity: 0.5;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.day-card[data-city="singapore"] .day-number { color: var(--city-singapore); opacity: 0.7; }
+.day-card[data-city="seoul"] .day-number { color: var(--city-seoul); opacity: 0.7; }
+
 /* ───────── Card header ───────── */
 
 .card-label {

@@ -207,7 +207,7 @@ function renderStory(chapters, trip, flightsData) {
   chapters.forEach(ch => {
     const inner = ch.type === 'flight'
       ? renderFlightCard(ch.journey)
-      : renderDayCard(ch.day);
+      : renderDayCard(ch.day, trip.dates.start);
     html += `<section class="chapter ${ch.type}" id="${ch.id}">${inner}</section>`;
   });
 
@@ -301,10 +301,14 @@ function renderFlightCard(journey) {
   `;
 }
 
-function renderDayCard(day) {
+function renderDayCard(day, tripStart) {
   const status = day.meta.status || 'open';
   const preprocessed = processPoiLinks(day.content);
   const content = marked.parse(preprocessed);
+
+  const start = new Date(tripStart + 'T00:00:00');
+  const current = new Date(day.meta.date + 'T00:00:00');
+  const dayNum = Math.round((current - start) / 86400000) + 1;
 
   const dayPois = resolvePois(day.meta.pois || []);
   const images = dayPois.filter(p => p.image).slice(0, 4);
@@ -317,9 +321,12 @@ function renderDayCard(day) {
   return `
     <div class="card day-card" data-city="${day.meta.city || ''}">
       ${imageStrip}
-      <div class="card-label">
-        <span class="status ${status}">${status}</span>
-        ${formatDate(day.meta.date)}
+      <div class="day-header">
+        <div class="day-number">Day ${dayNum}</div>
+        <div class="card-label">
+          <span class="status ${status}">${status}</span>
+          ${formatDate(day.meta.date)}
+        </div>
       </div>
       <h2>${day.meta.title || day.meta.date}</h2>
       <div class="day-content">${content}</div>
