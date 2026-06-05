@@ -413,6 +413,16 @@ body {
   font-weight: 600;
 }
 
+.day-notes {
+  font-size: 0.82rem;
+  font-style: italic;
+  opacity: 0.6;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  line-height: 1.5;
+}
+
 /* ───────── POI inline links ───────── */
 
 .poi-link {

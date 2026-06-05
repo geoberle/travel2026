@@ -620,7 +620,10 @@ function showPoiMarkers(map, pois, showLabels) {
       map.on('click', 'poi-icons', (e) => {
         const props = e.features[0].properties;
         const poi = _activePois.find(p => p.id === props.id);
-        if (poi) showPoiPopup(map, poi);
+        if (poi) {
+          map.flyTo({ center: poi.coordinates, zoom: 16, duration: 800 });
+          map.once('moveend', () => showPoiPopup(map, poi));
+        }
       });
 
       map.on('mouseenter', 'poi-icons', (e) => {
@@ -686,7 +689,7 @@ function setupInlinePoiHover() {
     el.addEventListener('mouseenter', () => highlightPoi(el.dataset.poi, true));
     el.addEventListener('mouseleave', () => highlightPoi(el.dataset.poi, false));
     el.addEventListener('click', () => {
-      const poi = allPois[el.dataset.poi];
+      const poi = TripStore.allPois[el.dataset.poi];
       if (poi && _lastMap) {
         _lastMap.flyTo({ center: poi.coordinates, zoom: 15, duration: 1000 });
         _lastMap.once('moveend', () => showPoiPopup(_lastMap, poi));

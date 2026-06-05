@@ -27,7 +27,6 @@
     #sidebar.collapsed { width: 0; }
 
     .sidebar-toggle { position: fixed; top: 12px; right: 12px; z-index: 10; background: var(--bg-panel); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; }
-    #sidebar.collapsed ~ .sidebar-toggle { right: 12px; }
 
     .tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
     .tab { flex: 1; padding: 12px; text-align: center; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; opacity: 0.5; border-bottom: 2px solid transparent; transition: all 0.2s; }
@@ -97,15 +96,6 @@
     .mapboxgl-popup-close-button { color: rgba(255,255,255,0.5); font-size: 16px; }
 
     /* Pin markers */
-    .poi-pin-wrap { display: flex; flex-direction: column; align-items: center; cursor: pointer; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.5)); transition: transform 0.2s; }
-    .poi-pin-wrap:hover, .poi-pin-wrap.highlight { transform: scale(1.3) translateY(-4px); z-index: 10; }
-    .poi-pin-w { position: relative; width: 26px; height: 38px; }
-    .poi-pin-body { width: 26px; height: 26px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); position: absolute; top: 0; left: 0; }
-    .poi-pin-tail { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; }
-    .poi-pin-inner { width: 10px; height: 10px; background: rgba(255,255,255,0.9); border-radius: 50%; position: absolute; top: 8px; left: 8px; transform: rotate(45deg); }
-    .poi-pin-label { color: rgba(255,255,255,0.9); font-size: 0.55rem; font-weight: 600; font-family: var(--font); letter-spacing: 0.03em; white-space: nowrap; text-shadow: 0 1px 4px rgba(0,0,0,0.9); margin-top: 2px; text-align: center; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
-
-    /* Rich popup */
     .poi-popup-img { width: 100%; height: 110px; object-fit: cover; display: block; }
     .poi-popup-body { padding: 10px 12px 12px; }
     .poi-popup-header { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
@@ -154,6 +144,7 @@
   <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
 
   <script src="https://unpkg.com/mapbox-gl@3/dist/mapbox-gl.js"></script>
+  <script src="js/data.js"></script>
   <script>
     const MAPBOX_TOKEN = 'pk.eyJ1IjoiZ2VyZG9iZXJsZWNobmVyIiwiYSI6ImNtcHpwNjdzYjA2d3EycnBnZWJkZ2p5ODUifQ.vl5h0bVgSuSaW_ZPIH0CKA';
     const CATEGORY_COLORS = {
@@ -161,11 +152,7 @@
       shopping: '#fd79a8', nature: '#00b894', transport: '#636e72'
     };
 
-    let allPois = {};
-    let poiData = {};
-    let dayData = [];
     let map;
-    let markers = [];
     let chatMessages = [];
 
     async function init() {
@@ -190,7 +177,7 @@
         document.getElementById('chat-input').value += ` [${lngLat.lng.toFixed(4)}, ${lngLat.lat.toFixed(4)}]`;
       });
 
-      await loadData();
+      await TripStore.loadApi();
       renderPois();
       renderDays();
       setupTabs();
@@ -199,21 +186,6 @@
       setupSidebar();
 
       map.on('load', () => refreshMarkers());
-    }
-
-    async function loadData() {
-      const [sg, kr, days] = await Promise.all([
-        fetch('/api/pois/singapore').then(r => r.json()),
-        fetch('/api/pois/seoul').then(r => r.json()),
-        fetch('/api/days').then(r => r.json())
-      ]);
-      poiData = { singapore: sg, seoul: kr };
-      dayData = days;
-
-      allPois = {};
-      [sg, kr].forEach(cityData => {
-        cityData.pois.forEach(p => { allPois[p.id] = p; });
-      });
     }
 
     let activePopup = null;
@@ -255,13 +227,11 @@
       ensurePinImages();
 
       const features = [];
-      Object.values(poiData).forEach(cityData => {
-        cityData.pois.forEach(poi => {
-          features.push({
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: poi.coordinates },
-            properties: { id: poi.id, name: poi.name, category: poi.category }
-          });
+      Object.values(TripStore.allPois).forEach(poi => {
+        features.push({
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: poi.coordinates },
+          properties: { id: poi.id, name: poi.name, category: poi.category }
         });
       });
 
@@ -298,7 +268,7 @@
           poiEventsRegistered = true;
           map.on('click', 'planning-poi-icons', (e) => {
             const id = e.features[0].properties.id;
-            const poi = allPois[id];
+            const poi = TripStore.allPois[id];
             if (poi) showRichPopup(poi);
           });
           map.on('mouseenter', 'planning-poi-icons', (e) => {
@@ -330,7 +300,6 @@
 
     function highlightPoiInList(id, active) {
       document.querySelectorAll(`.poi-item[data-id="${id}"]`).forEach(el => el.classList.toggle('highlight', active));
-      document.querySelectorAll(`.poi-pin-wrap[data-poi="${id}"]`).forEach(el => el.classList.toggle('highlight', active));
     }
 
     // --- Tabs ---
@@ -355,12 +324,13 @@
     function renderPois() {
       const list = document.getElementById('poi-list');
       let html = '';
-      for (const [city, data] of Object.entries(poiData)) {
-        html += `<div class="city-header">${data.city} (${data.pois.length})</div>`;
-        data.pois.forEach(poi => {
+      Object.entries(TripStore.locations).forEach(([locName, loc]) => {
+        const pois = loc.pois || [];
+        html += `<div class="city-header">${loc.name} (${pois.length})</div>`;
+        pois.forEach(poi => {
           const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
           html += `
-            <div class="poi-item" data-id="${poi.id}" data-city="${city}"
+            <div class="poi-item" data-id="${poi.id}" data-location="${locName}"
                  onmouseenter="highlightPoiInList('${poi.id}',true)"
                  onmouseleave="highlightPoiInList('${poi.id}',false)"
                  onclick="flyAndShowPoi('${poi.id}')">
@@ -370,36 +340,30 @@
                 <div class="cat">${poi.category}</div>
               </div>
               <div class="actions">
-                <button onclick="event.stopPropagation();deletePoi('${city}','${poi.id}')" title="Delete">✕</button>
+                <button onclick="event.stopPropagation();deletePoi('${locName}','${poi.id}')" title="Delete">✕</button>
               </div>
             </div>`;
         });
-      }
+      });
       list.innerHTML = html;
     }
 
     function flyAndShowPoi(id) {
-      const poi = allPois[id];
+      const poi = TripStore.allPois[id];
       if (!poi) return;
       map.flyTo({ center: poi.coordinates, zoom: 15, duration: 1000 });
       map.once('moveend', () => showRichPopup(poi));
     }
 
-    async function deletePoi(city, id) {
-      poiData[city].pois = poiData[city].pois.filter(p => p.id !== id);
-      delete allPois[id];
-      await fetch(`/api/pois/${city}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(poiData[city]) });
+    async function deletePoi(locationName, id) {
+      await TripStore.deletePoi(locationName, id);
       renderPois();
       renderDays();
       refreshMarkers();
     }
 
-    async function addPoi(city, poi) {
-      poi.id = poi.id || poi.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
-      if (allPois[poi.id]) return;
-      poiData[city].pois.push(poi);
-      allPois[poi.id] = poi;
-      await fetch(`/api/pois/${city}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(poiData[city]) });
+    async function addPoi(locationName, poi) {
+      await TripStore.addPoi(locationName, poi);
       renderPois();
       refreshMarkers();
       map.flyTo({ center: poi.coordinates, zoom: 14, duration: 1000 });
@@ -487,18 +451,19 @@
 
     function addChatSuggestions(pois) {
       const el = document.getElementById('chat-messages');
+      const locationNames = Object.keys(TripStore.locations);
       pois.forEach(poi => {
         const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+        const options = locationNames.map(n =>
+          `<option value="${n}">${TripStore.locations[n].name}</option>`
+        ).join('');
         const div = document.createElement('div');
         div.className = 'poi-suggestion';
         div.innerHTML = `
           <div class="name" style="color:${color}">${poi.name}</div>
           <div class="desc">${poi.description}</div>
           <div class="cat">${poi.category} · [${poi.coordinates?.[0]?.toFixed(3)}, ${poi.coordinates?.[1]?.toFixed(3)}]</div>
-          <select class="city-select" id="city-${poi.name.replace(/\s/g, '')}">
-            <option value="singapore">Singapore</option>
-            <option value="seoul">Seoul</option>
-          </select>
+          <select class="city-select">${options}</select>
           <button class="add-btn" onclick="addSuggestedPoi(this, ${JSON.stringify(poi).replace(/"/g, '&quot;')})">+ Add</button>
         `;
         el.appendChild(div);
@@ -508,8 +473,8 @@
 
     function addSuggestedPoi(btn, poi) {
       const select = btn.previousElementSibling;
-      const city = select.value;
-      addPoi(city, poi);
+      const locationName = select.value;
+      addPoi(locationName, poi);
       btn.textContent = '✓ Added';
       btn.disabled = true;
       btn.style.opacity = '0.5';
@@ -557,33 +522,37 @@
     function renderDays() {
       const container = document.getElementById('days-list');
       const assignedIds = new Set();
-      dayData.forEach(d => {
-        const pois = Array.isArray(d.meta.pois) ? d.meta.pois : [];
-        pois.forEach(id => assignedIds.add(id));
+
+      Object.entries(TripStore.locations).forEach(([locName, loc]) => {
+        (loc.days || []).forEach(day => {
+          (day.activities || []).forEach(a => assignedIds.add(a.poi));
+        });
       });
 
-      const unassigned = Object.values(allPois).filter(p => !assignedIds.has(p.id));
+      const unassigned = Object.values(TripStore.allPois).filter(p => !assignedIds.has(p.id));
 
-      let html = `<div class="unassigned-section" id="drop-unassigned" ondrop="dropPoi(event,'unassigned')" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">
+      let html = `<div class="unassigned-section" id="drop-unassigned" ondrop="dropPoi(event,'unassigned','')" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">
         <div class="unassigned-header">Unassigned (${unassigned.length})</div>`;
       unassigned.forEach(p => {
         html += draggablePoiHtml(p);
       });
       html += `</div>`;
 
-      dayData.forEach(d => {
-        const pois = Array.isArray(d.meta.pois) ? d.meta.pois : [];
-        const cityColor = d.meta.city === 'singapore' ? '#00b894' : d.meta.city === 'seoul' ? '#e84393' : '#4ecdc4';
-        html += `<div class="day-slot" id="drop-${d.file}" ondrop="dropPoi(event,'${d.file}')" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">
-          <div class="day-slot-header">
-            <span style="color:${cityColor}">${d.meta.title || d.file}</span>
-            <span class="city-tag">${d.meta.date} · ${d.meta.city}</span>
-          </div>`;
-        pois.forEach(id => {
-          const p = allPois[id];
-          if (p) html += draggablePoiHtml(p);
+      Object.entries(TripStore.locations).forEach(([locName, loc]) => {
+        const cityColor = locName === 'singapore' ? '#00b894' : locName === 'seoul' ? '#e84393' : '#4ecdc4';
+        (loc.days || []).forEach(day => {
+          const dateStr = String(day.date);
+          html += `<div class="day-slot" ondrop="dropPoi(event,'${locName}','${dateStr}')" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">
+            <div class="day-slot-header">
+              <span style="color:${cityColor}">${day.title || dateStr}</span>
+              <span class="city-tag">${dateStr} · ${locName}</span>
+            </div>`;
+          (day.activities || []).forEach(a => {
+            const p = TripStore.allPois[a.poi];
+            if (p) html += draggablePoiHtml(p);
+          });
+          html += `</div>`;
         });
-        html += `</div>`;
       });
 
       container.innerHTML = html;
@@ -599,38 +568,29 @@
       e.dataTransfer.setData('text/plain', id);
     }
 
-    async function dropPoi(e, target) {
+    async function dropPoi(e, targetLocation, targetDate) {
       e.preventDefault();
       e.currentTarget.classList.remove('drag-over');
       const poiId = e.dataTransfer.getData('text/plain');
 
-      // Remove from all days
-      for (const d of dayData) {
-        if (Array.isArray(d.meta.pois)) {
-          const idx = d.meta.pois.indexOf(poiId);
+      // Remove from all days across all locations
+      for (const [locName, loc] of Object.entries(TripStore.locations)) {
+        for (const day of (loc.days || [])) {
+          const idx = (day.activities || []).findIndex(a => a.poi === poiId);
           if (idx !== -1) {
-            d.meta.pois.splice(idx, 1);
-            await fetch(`/api/days/${d.file}`, {
-              method: 'PUT', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ pois: d.meta.pois })
+            day.activities.splice(idx, 1);
+            await fetch(`/api/locations/${locName}/days/${String(day.date)}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ activities: day.activities })
             });
           }
         }
       }
 
       // Add to target day
-      if (target !== 'unassigned') {
-        const day = dayData.find(d => d.file === target);
-        if (day) {
-          if (!Array.isArray(day.meta.pois)) day.meta.pois = [];
-          if (!day.meta.pois.includes(poiId)) {
-            day.meta.pois.push(poiId);
-            await fetch(`/api/days/${day.file}`, {
-              method: 'PUT', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ pois: day.meta.pois })
-            });
-          }
-        }
+      if (targetLocation && targetDate) {
+        await TripStore.assignPoiToDay(targetLocation, targetDate, poiId, '');
       }
 
       renderDays();

@@ -1,0 +1,217 @@
+title: Singapore & Seoul
+subtitle: "July 2026 \xB7 Family Adventure"
+origin:
+  city: Klagenfurt
+  country: Austria
+  coordinates: [14.3053, 46.6247]
+travelers: 4
+locations: [singapore, seoul]
+
+transport:
+  - id: outbound
+    label: "Klagenfurt → Singapore"
+    date: "2026-07-10"
+    image: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800"
+    mapView:
+      center: [21, 44]
+      zoom: 4
+      pitch: 20
+    legs:
+      - mode: drive
+        departure:
+          city: Klagenfurt
+          coordinates: [14.3053, 46.6247]
+          time: "2026-07-10T10:00:00"
+        arrival:
+          airport: LJU
+          city: Ljubljana
+          coordinates: [14.4576, 46.2237]
+          time: "2026-07-10T11:00:00"
+        duration: "1h 0m"
+      - flightNumber: TK1052
+        airline: Turkish Airlines
+        aircraft: Boeing 737-800
+        departure:
+          airport: LJU
+          city: Ljubljana
+          coordinates: [14.4576, 46.2237]
+          time: "2026-07-10T13:50:00"
+        arrival:
+          airport: IST
+          city: Istanbul
+          coordinates: [28.7519, 41.2753]
+          time: "2026-07-10T17:15:00"
+        duration: "2h 25m"
+        route:
+          - [14.46, 46.22]
+          - [14.80, 45.80]
+          - [16.00, 45.30]
+          - [17.50, 44.60]
+          - [19.80, 43.80]
+          - [21.50, 43.10]
+          - [23.50, 42.50]
+          - [25.50, 41.80]
+          - [27.50, 41.30]
+          - [28.75, 41.28]
+      - flightNumber: TK518
+        airline: Turkish Airlines
+        aircraft: Boeing 787-9
+        departure:
+          airport: IST
+          city: Istanbul
+          coordinates: [28.7519, 41.2753]
+          time: "2026-07-10T19:10:00"
+        arrival:
+          airport: SIN
+          city: Singapore
+          coordinates: [103.9915, 1.3644]
+          time: "2026-07-11T11:10:00"
+        duration: "11h 0m"
+        route:
+          - [28.75, 41.28]
+          - [40.18, 40.20]
+          - [44.50, 40.10]
+          - [46.50, 39.80]
+          - [50.00, 38.50]
+          - [62.00, 33.50]
+          - [67.00, 30.00]
+          - [72.00, 26.50]
+          - [77.00, 22.00]
+          - [80.50, 17.50]
+          - [84.00, 13.00]
+          - [88.00, 8.50]
+          - [92.00, 5.50]
+          - [96.50, 3.50]
+          - [100.00, 2.50]
+          - [103.00, 1.80]
+          - [103.99, 1.36]
+    layovers:
+      - airport: IST
+        city: Istanbul
+        duration: "1h 55m"
+    totalDuration: "15h 20m"
+
+  - id: singapore-seoul
+    label: "Singapore → Seoul"
+    date: "2026-07-14"
+    image: "https://images.unsplash.com/photo-1546874177-9e664107314e?w=800"
+    mapView:
+      center: [115, 20]
+      zoom: 3.5
+      pitch: 15
+    legs:
+      - flightNumber: SQ600
+        airline: Singapore Airlines
+        aircraft: Boeing 787
+        departure:
+          airport: SIN
+          city: Singapore
+          coordinates: [103.9915, 1.3644]
+          time: "2026-07-14T08:10:00"
+        arrival:
+          airport: ICN
+          city: Seoul
+          coordinates: [126.4407, 37.4602]
+          time: "2026-07-14T15:30:00"
+        duration: "6h 20m"
+        route:
+          - [103.99, 1.36]
+          - [104.20, 2.50]
+          - [105.50, 5.00]
+          - [107.00, 8.00]
+          - [109.00, 11.50]
+          - [111.00, 14.50]
+          - [113.50, 17.50]
+          - [116.00, 20.50]
+          - [118.00, 23.00]
+          - [120.00, 25.50]
+          - [121.00, 28.00]
+          - [122.50, 31.00]
+          - [124.50, 34.00]
+          - [126.44, 37.46]
+    layovers: []
+    totalDuration: "6h 20m"
+
+  - id: return
+    label: "Seoul → Klagenfurt"
+    date: "2026-07-20"
+    image: "https://images.unsplash.com/photo-1617469955236-f60e2a4c2f0d?w=800"
+    mapView:
+      center: [70, 45]
+      zoom: 2.5
+      pitch: 15
+    legs:
+      - flightNumber: LH719
+        airline: Lufthansa
+        aircraft: Airbus A350-900
+        departure:
+          airport: ICN
+          city: Seoul
+          coordinates: [126.4407, 37.4602]
+          time: "2026-07-20T11:40:00"
+        arrival:
+          airport: MUC
+          city: Munich
+          coordinates: [11.7750, 48.3537]
+          time: "2026-07-20T17:30:00"
+        duration: "12h 50m"
+        route:
+          - [126.44, 37.46]
+          - [124.50, 37.00]
+          - [122.00, 37.50]
+          - [118.00, 38.50]
+          - [112.00, 39.50]
+          - [105.00, 40.50]
+          - [97.00, 41.00]
+          - [88.00, 42.50]
+          - [80.00, 43.00]
+          - [72.00, 42.50]
+          - [66.00, 42.00]
+          - [58.00, 41.00]
+          - [50.00, 40.50]
+          - [45.00, 40.80]
+          - [41.50, 41.20]
+          - [37.00, 41.50]
+          - [33.00, 42.00]
+          - [29.00, 43.00]
+          - [26.00, 44.50]
+          - [22.00, 46.00]
+          - [18.00, 47.00]
+          - [14.50, 47.80]
+          - [11.78, 48.35]
+      - flightNumber: LH1698
+        airline: Lufthansa
+        aircraft: Airbus A319
+        departure:
+          airport: MUC
+          city: Munich
+          coordinates: [11.7750, 48.3537]
+          time: "2026-07-20T18:35:00"
+        arrival:
+          airport: LJU
+          city: Ljubljana
+          coordinates: [14.4576, 46.2237]
+          time: "2026-07-20T19:25:00"
+        duration: "0h 50m"
+        route:
+          - [11.78, 48.35]
+          - [12.50, 47.80]
+          - [13.20, 47.20]
+          - [13.80, 46.70]
+          - [14.46, 46.22]
+      - mode: drive
+        departure:
+          airport: LJU
+          city: Ljubljana
+          coordinates: [14.4576, 46.2237]
+          time: "2026-07-20T20:00:00"
+        arrival:
+          city: Klagenfurt
+          coordinates: [14.3053, 46.6247]
+          time: "2026-07-20T21:00:00"
+        duration: "1h 0m"
+    layovers:
+      - airport: MUC
+        city: Munich
+        duration: "1h 5m"
+    totalDuration: "16h"

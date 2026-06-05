@@ -1,7 +1,6 @@
 const MAPBOX_TOKEN = 'pk.eyJ1IjoiZ2VyZG9iZXJsZWNobmVyIiwiYSI6ImNtcHpwNjdzYjA2d3EycnBnZWJkZ2p5ODUifQ.vl5h0bVgSuSaW_ZPIH0CKA';
 
 let rotationFrame = null;
-let allPois = {};
 
 const CATEGORY_COLORS = {
   attraction: '#4ecdc4',
@@ -13,49 +12,22 @@ const CATEGORY_COLORS = {
 };
 
 async function init() {
-  const bust = Date.now();
-  const [trip, flightsData, accommodationsData] = await Promise.all([
-    fetch(`data/trip.json?v=${bust}`).then(r => r.json()),
-    fetch(`data/flights.json?v=${bust}`).then(r => r.json()),
-    fetch(`data/accommodations.json?v=${bust}`).then(r => r.json())
-  ]);
+  await TripStore.loadStatic();
 
-  const poiEntries = Object.entries(trip.poiFiles || {});
-  const poiResults = await Promise.all(
-    poiEntries.map(([city, path]) =>
-      fetch(`data/${path}?v=${bust}`)
-        .then(r => r.ok ? r.json() : null)
-        .catch(() => null)
-    )
-  );
-  poiEntries.forEach(([city], i) => {
-    if (poiResults[i]) {
-      poiResults[i].pois.forEach(poi => { allPois[poi.id] = poi; });
-    }
-  });
+  const trip = TripStore.trip;
+  const chapters = TripStore.getChapters();
+  const accommodations = TripStore.getAccommodations();
+  const transport = TripStore.getTransport();
 
-  const days = (await Promise.all(
-    trip.dayFiles.map(file =>
-      fetch(`days/${file}?v=${bust}`)
-        .then(r => {
-          if (!r.ok) throw new Error(`${file}: ${r.status}`);
-          return r.text();
-        })
-        .then(text => ({ ...parseFrontmatter(text), file }))
-        .catch(err => { console.warn('Skipping day file:', err.message); return null; })
-    )
-  )).filter(Boolean);
-
-  const chapters = buildChapters(flightsData.journeys, days);
-  renderStory(chapters, trip, flightsData);
+  renderStory(chapters, trip);
   initTimeline(chapters);
 
   const map = initMap('map', MAPBOX_TOKEN);
 
   map.on('load', () => {
-    addFlightRoutes(map, flightsData.journeys);
-    addAirportMarkers(map, flightsData.journeys);
-    addAccommodationMarkers(map, accommodationsData.accommodations);
+    addFlightRoutes(map, transport);
+    addAirportMarkers(map, transport);
+    addAccommodationMarkers(map, accommodations);
     addOriginMarker(map, trip.origin);
     startGlobeRotation(map);
 
@@ -87,8 +59,8 @@ async function init() {
           flyToChapter(map, chapter);
         }
         if (chapter.type === 'day' && chapter.day.meta.pois) {
-          const dayPois = resolvePois(chapter.day.meta.pois);
-          const acc = accommodationsData.accommodations.find(
+          const dayPois = TripStore.resolvePois(chapter.day.meta.pois);
+          const acc = accommodations.find(
             a => a.city.toLowerCase() === chapter.day.meta.city
           );
           showPoiMarkers(map, dayPois, true);
@@ -113,68 +85,17 @@ async function init() {
   });
 }
 
-function resolvePois(poiIds) {
-  if (!Array.isArray(poiIds)) return [];
-  return poiIds.map(id => allPois[id]).filter(Boolean);
-}
-
-function parseFrontmatter(text) {
-  const match = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
-  if (!match) return { meta: {}, content: text };
-
-  const meta = {};
-  match[1].split('\n').forEach(line => {
-    const colonIdx = line.indexOf(':');
-    if (colonIdx === -1) return;
-    const key = line.slice(0, colonIdx).trim();
-    let value = line.slice(colonIdx + 1).trim();
-    if (value.startsWith('[')) {
-      try { value = JSON.parse(value); } catch (e) { /* keep as string */ }
-    }
-    meta[key] = value;
-  });
-
-  return { meta, content: match[2].trim() };
-}
-
-function buildChapters(journeys, days) {
-  const chapters = [];
-
-  journeys.forEach(j => {
-    chapters.push({
-      type: 'flight',
-      date: j.date,
-      journey: j,
-      id: `flight-${j.id}`
-    });
-  });
-
-  days.forEach(d => {
-    chapters.push({
-      type: 'day',
-      date: d.meta.date,
-      day: d,
-      id: `day-${d.meta.date}`
-    });
-  });
-
-  chapters.sort((a, b) => {
-    if (a.date === b.date) return a.type === 'flight' ? -1 : 1;
-    return a.date.localeCompare(b.date);
-  });
-
-  return chapters;
-}
-
-function renderStory(chapters, trip, flightsData) {
+function renderStory(chapters, trip) {
   const story = document.getElementById('story');
+  const dates = TripStore.getDates();
+  const transport = TripStore.getTransport();
 
   const dayChapters = chapters.filter(c => c.type === 'day');
   const flightCount = chapters.filter(c => c.type === 'flight').length;
   const confirmedCount = dayChapters.filter(c => c.day.meta.status === 'confirmed').length;
   const plannedCount = dayChapters.filter(c => c.day.meta.status === 'planned').length;
   const openCount = dayChapters.filter(c => c.day.meta.status === 'open').length;
-  const totalKm = calculateTotalDistance(flightsData.journeys);
+  const totalKm = calculateTotalDistance(transport);
 
   let html = `
     <section class="hero" id="hero">
@@ -188,9 +109,9 @@ function renderStory(chapters, trip, flightsData) {
     <section class="chapter overview" id="overview">
       <div class="card overview-card">
         <div class="card-label">Trip Overview</div>
-        <h2>${formatDate(trip.dates.start)} — ${formatDate(trip.dates.end)}</h2>
+        <h2>${formatDate(dates.start)} — ${formatDate(dates.end)}</h2>
         <div class="overview-stats">
-          <div class="stat"><span class="stat-value">3</span><span class="stat-label">Countries</span></div>
+          <div class="stat"><span class="stat-value">${Object.keys(TripStore.locations).length + 1}</span><span class="stat-label">Countries</span></div>
           <div class="stat"><span class="stat-value">${flightCount}</span><span class="stat-label">Flights</span></div>
           <div class="stat"><span class="stat-value">${dayChapters.length}</span><span class="stat-label">Days</span></div>
           <div class="stat"><span class="stat-value">${trip.travelers}</span><span class="stat-label">Travelers</span></div>
@@ -207,14 +128,14 @@ function renderStory(chapters, trip, flightsData) {
   chapters.forEach(ch => {
     const inner = ch.type === 'flight'
       ? renderFlightCard(ch.journey)
-      : renderDayCard(ch.day, trip.dates.start);
+      : renderDayCard(ch, dates.start);
     html += `<section class="chapter ${ch.type}" id="${ch.id}">${inner}</section>`;
   });
 
   html += `
     <div class="footer">
-      <div class="footer-stats">3 countries · ${flightCount} flights · ${dayChapters.length} days · ${totalKm.toLocaleString()} km</div>
-      <div class="footer-route">Klagenfurt → Singapore → Seoul → Home</div>
+      <div class="footer-stats">${Object.keys(TripStore.locations).length + 1} countries · ${flightCount} flights · ${dayChapters.length} days · ${totalKm.toLocaleString()} km</div>
+      <div class="footer-route">${trip.origin.city} → ${Object.values(TripStore.locations).map(l => l.name).join(' → ')} → Home</div>
     </div>
   `;
 
@@ -292,7 +213,7 @@ function renderFlightCard(journey) {
   return `
     <div class="card flight-card" data-airline="${airlineCode}">
       ${flightImage}
-      <div class="card-label">✈ Flight · ${formatDate(journey.date)}</div>
+      <div class="card-label">✈ Flight · ${formatDate(String(journey.date))}</div>
       <h2>${journey.label}</h2>
       <div class="flight-legs">${legs}</div>
       ${layovers}
@@ -301,22 +222,37 @@ function renderFlightCard(journey) {
   `;
 }
 
-function renderDayCard(day, tripStart) {
+function renderDayCard(chapter, tripStart) {
+  const day = chapter.day;
   const status = day.meta.status || 'open';
-  const preprocessed = processPoiLinks(day.content);
-  const content = marked.parse(preprocessed);
 
   const start = new Date(tripStart + 'T00:00:00');
   const current = new Date(day.meta.date + 'T00:00:00');
   const dayNum = Math.round((current - start) / 86400000) + 1;
 
-  const dayPois = resolvePois(day.meta.pois || []);
+  const dayPois = TripStore.resolvePois(day.meta.pois || []);
   const images = dayPois.filter(p => p.image).slice(0, 4);
   const imageStrip = images.length > 0
     ? `<div class="day-images">${images.map(p =>
         `<img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.remove()">`
       ).join('')}</div>`
     : '';
+
+  let contentHtml = '<ul>';
+  (day.activities || []).forEach(activity => {
+    const poi = TripStore.allPois[activity.poi];
+    if (poi) {
+      const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+      const poiLink = `<span class="poi-link" data-poi="${poi.id}"><span class="poi-inline-pin"><span class="poi-inline-pin-body" style="background:${color}"></span><span class="poi-inline-pin-tail" style="border-top-color:${color}"></span><span class="poi-inline-pin-inner"></span></span>${poi.name}</span>`;
+      const notes = activity.notes ? ` — ${activity.notes}` : '';
+      contentHtml += `<li>${poiLink}${notes}</li>`;
+    }
+  });
+  contentHtml += '</ul>';
+
+  if (day.notes) {
+    contentHtml += `<p class="day-notes">${day.notes}</p>`;
+  }
 
   return `
     <div class="card day-card" data-city="${day.meta.city || ''}">
@@ -329,26 +265,17 @@ function renderDayCard(day, tripStart) {
         </div>
       </div>
       <h2>${day.meta.title || day.meta.date}</h2>
-      <div class="day-content">${content}</div>
+      <div class="day-content">${contentHtml}</div>
     </div>
   `;
 }
 
-function processPoiLinks(markdown) {
-  return markdown.replace(/\[([^\]]+)\]\(poi:([^)]+)\)/g, (match, text, poiId) => {
-    const poi = allPois[poiId];
-    if (!poi) return text;
-    const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
-    return `<span class="poi-link" data-poi="${poiId}"><span class="poi-inline-pin"><span class="poi-inline-pin-body" style="background:${color}"></span><span class="poi-inline-pin-tail" style="border-top-color:${color}"></span><span class="poi-inline-pin-inner"></span></span>${text}</span>`;
-  });
-}
-
 function formatTime(isoString) {
-  return isoString.split('T')[1].substring(0, 5);
+  return String(isoString).split('T')[1].substring(0, 5);
 }
 
 function formatDate(dateStr) {
-  const d = new Date(dateStr + 'T12:00:00');
+  const d = new Date(String(dateStr) + 'T12:00:00');
   return d.toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
