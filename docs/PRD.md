@@ -6,7 +6,7 @@ A scroll-driven storytelling website for a family trip: Klagenfurt → Singapore
 
 ## Trip Summary
 
-- 4 travelers (2 adults, 2 twelve-year-olds)
+- 3 travelers (1 adult, 2 twelve-year-olds)
 - 3 nights Singapore (Robertson Quay) → 6 nights Seoul (Myeongdong)
 - 3 flight journeys: LJU→IST→SIN, SIN→ICN, ICN→MUC→LJU
 - Turkish Airlines outbound, Singapore Airlines mid-leg, Lufthansa return
@@ -15,53 +15,77 @@ A scroll-driven storytelling website for a family trip: Klagenfurt → Singapore
 
 ```
 travel/
-├── index.html              # Single page app entry
+├── index.html              # Storytelling SPA (scroll-driven)
+├── planning.html           # AI-powered planning tool
+├── planning-server.js      # Express + Vertex AI agent backend
 ├── css/style.css            # Vanilla CSS, no framework
 ├── js/
 │   ├── app.js               # Orchestrator: fetch data, render, init
-│   ├── map.js               # Mapbox GL JS: globe, routes, markers
-│   └── scroll.js            # IntersectionObserver scroll controller
+│   ├── data.js              # TripStore: YAML data layer + API client
+│   ├── map.js               # Mapbox GL JS: globe, routes, markers, POIs
+│   ├── scroll.js            # IntersectionObserver scroll controller
+│   └── timeline.js          # Timeline drawer navigation
 ├── data/
-│   ├── trip.json            # Trip meta + day file manifest
-│   ├── flights.json         # Flight journeys with coordinates
-│   └── accommodations.json  # Lodging with coordinates
-└── days/
-    ├── day-02-singapore-arrival.md
-    ├── ...
-    └── day-10-seoul.md
+│   └── system-prompt.md     # AI agent system prompt template
+└── trips/
+    └── singapore-seoul-2026/
+        ├── trip.yaml         # Trip meta, origin, transport/flights
+        ├── travelers.md      # Traveler profiles & preferences
+        └── locations/
+            ├── singapore/
+            │   └── location.yaml  # Accommodations, POIs, days
+            └── seoul/
+                └── location.yaml
 ```
 
 ### Key decisions
 
 | Decision           | Choice                                         |
 |--------------------|-------------------------------------------------|
-| Hosting            | GitHub Pages (public repo)                      |
+| Hosting            | GitHub Pages (storytelling) + local server (planning) |
 | Rendering          | Pure client-side, no build step                 |
 | Maps               | Mapbox GL JS, globe projection                  |
-| Data format        | JSON (structured) + Markdown per day (narrative)|
+| Data format        | YAML (trip + location data, parsed client-side via js-yaml) |
 | UX model           | Scroll-driven storytelling                      |
 | Visual design      | Dark/cinematic (flights) ↔ Light/editorial (days)|
 | CSS                | Vanilla, CSS custom properties for theming      |
-| Markdown parser    | marked.js (CDN)                                 |
+| Planning AI        | Vertex AI (Gemini) with tool-use agent loop     |
 | API key            | Domain-restricted in Mapbox dashboard            |
 | Mobile             | Desktop-first, gracefully degraded mobile       |
 | Browser testing    | Playwright MCP (screenshots + console errors)   |
 
 ### Data contract
 
-**Day markdown frontmatter:**
+**Location YAML structure:**
 ```yaml
----
-date: 2026-07-12
-city: singapore
-status: planned | confirmed | open
-title: Gardens & Marina Bay
+name: Singapore
 coordinates: [103.8636, 1.2816]
-zoom: 14
----
+dates:
+  from: "2026-07-11"
+  to: "2026-07-13"
+accommodations:
+  - id: singapore
+    neighborhood: Robertson Quay
+    type: Serviced Apartment
+    coordinates: [103.8365, 1.2906]
+pois:
+  - id: gardens-by-the-bay
+    name: Gardens by the Bay
+    coordinates: [103.8636, 1.2816]
+    description: ...
+    category: attraction  # attraction|food|culture|shopping|nature|transport
+    image: https://...
+days:
+  - date: "2026-07-12"
+    title: Gardens & Marina Bay
+    status: planned  # planned|confirmed|open
+    activities:
+      - poi: gardens-by-the-bay
+        notes: Cloud Forest & Flower Dome
+    notes: Optional day-level notes
 ```
 
-**Chapter ordering:** App loads flights.json + day files, sorts by date. Flights come before days on same date. No explicit chapter manifest needed.
+**Chapter ordering:** App loads trip.yaml + location YAMLs, builds chapters from transport + days, sorts by date. Flights come before days on same date.
 
 ---
 
@@ -69,19 +93,20 @@ zoom: 14
 
 **Goal:** Working scroll-through site with map, flight cards, day cards. Ugly is fine. Functional is required.
 
-- [x] File structure: `data/`, `days/`, `js/`, `css/`
-- [x] `flights.json` with all 5 legs across 3 journeys
-- [x] `accommodations.json` with Robertson Quay + Myeongdong
-- [x] 9 day markdown files with frontmatter
-- [x] `index.html` loading Mapbox GL JS, marked.js from CDN
-- [x] `app.js`: fetch data, parse frontmatter, build chapters, render DOM
+- [x] File structure: `trips/`, `js/`, `css/`
+- [x] `trip.yaml` with transport (5 legs across 3 journeys)
+- [x] Location YAMLs with accommodations, POIs, days
+- [x] `index.html` loading Mapbox GL JS, js-yaml from CDN
+- [x] `app.js`: fetch YAML data, build chapters, render DOM
+- [x] `data.js`: TripStore data layer for static + API access
 - [x] `map.js`: globe projection, flight route lines, airport markers, accommodation markers, flyTo
 - [x] `scroll.js`: IntersectionObserver triggers map transitions
+- [x] `timeline.js`: collapsible timeline drawer navigation
 - [x] Hero section with globe view + slow rotation
 - [x] Flight chapters: dark translucent cards with flight details
-- [x] Day chapters: light translucent cards with rendered markdown
+- [x] Day chapters: light translucent cards with activity lists
 - [x] Card fade-in on scroll (opacity transition)
-- [x] **Verify it actually works** (fixed: marked.js CDN path)
+- [x] **Verify it actually works**
 
 ---
 
@@ -102,35 +127,37 @@ zoom: 14
 
 ---
 
-## Phase 3: Visual Polish
+## Phase 3: Visual Polish ✅
 
 **Goal:** Make it beautiful. Typography, spacing, transitions, dark/light mode contrast.
 
-- [ ] Refine typography: font sizes, weights, line heights, letter spacing
-- [ ] Hero section: bigger presence, animated subtitle, better scroll indicator
-- [ ] Flight cards: tighter layout, airline-colored accents (TK red, SQ blue, LH yellow)
-- [ ] Day cards: warmer background, better markdown heading styles
-- [ ] Dark ↔ light map style transition between flight and day chapters
-- [ ] Smooth card entrance animations (slide + fade, not just opacity)
-- [ ] Better spacing rhythm between chapters (tune margin-bottom)
-- [ ] Footer section: trip stats (3 countries, 5 flights, 10 days, X km total distance)
-- [ ] Overview card after hero: quick stats, trip status summary, confirmed/open counts
-- [ ] Glassmorphism refinement: border, shadow, blur tuning
-- [ ] Color palette per city (Singapore: tropical greens, Seoul: neon pinks)
+- [x] Refine typography: Inter font, weights 200–700, letter spacing, line heights
+- [x] Hero section: animated subtitle (fadeInUp), bouncing scroll indicator
+- [x] Flight cards: airline-colored accents (TK red, SQ blue, LH yellow via data-airline)
+- [x] Day cards: warm background (rgba(255, 252, 248, 0.93)), city-colored top borders
+- [x] Dark ↔ light map style transition (dark-v11 for flights, standard for days)
+- [x] Smooth card entrance animations (translateX + opacity with cubic-bezier)
+- [x] Better spacing rhythm (35vh margin between chapters)
+- [x] Footer section: countries, flights, days, total km (haversine calculation)
+- [x] Overview card after hero: stats grid, status badges (confirmed/planned/open)
+- [x] Glassmorphism: backdrop-filter blur, translucent backgrounds, subtle borders
+- [x] Color palette per city (--city-singapore: #00b894, --city-seoul: #e84393)
 
 ---
 
-## Phase 4: Flight Animations
+## Phase 4: Flight Animations ✅
 
 **Goal:** Animated flight arcs and plane icons. The cinematic centerpiece.
 
-- [ ] Animated arc drawing: line progressively draws itself when flight chapter activates
-- [ ] Plane icon: small aircraft marker traces the arc path using requestAnimationFrame
-- [ ] Camera follows the plane during animation (subtle pan along route)
-- [ ] Arc glow effect: subtle glow/bloom on the active flight line
-- [ ] Departure/arrival pulse: pulsing dot at origin and destination airports
-- [ ] Speed proportional to flight duration (short hops fast, long hauls slow)
-- [ ] Animation replays when scrolling back to a flight chapter
+- [x] Scroll-driven arc drawing: line progressively draws as user scrolls through flight chapter
+- [x] Plane icon: SVG aircraft marker traces interpolated route path
+- [x] Camera follows plane (map.jumpTo tracks plane position)
+- [x] Arc glow effect: separate glow layer with blur behind animated line
+- [x] Departure/arrival pulse: pulsing dot markers at endpoints
+- [x] Speed proportional to scroll position (natural pacing)
+- [x] Animation replays when scrolling back (setupScrollDrivenFlight re-initializes)
+- [x] Dashed preview line showing full route ahead of animation
+- [x] Route highlight: active flight route brightens, others dim
 
 ---
 
@@ -138,13 +165,14 @@ zoom: 14
 
 **Goal:** Add visual richness. Stock images now, own photos after the trip.
 
-- [ ] Add `hero_image` field to day frontmatter (external URL)
-- [ ] Render hero images as card backgrounds or header images
-- [ ] Curate 1-2 stock images per city section (Unsplash, royalty-free)
-- [ ] Image lazy loading (native `loading="lazy"`)
-- [ ] Photo gallery component in day cards (scrollable image strip)
+- [x] POI images used as day card header strips (grid of up to 4 images)
+- [x] Flight card header images (Unsplash, per journey)
+- [x] Curate stock images per POI (Unsplash URLs in location YAML)
+- [x] Image lazy loading (native `loading="lazy"` + onerror fallback)
+- [x] Image strip component in day cards (CSS grid, auto-columns)
 - [ ] Post-trip: swap stock images for personal photos
 - [ ] Post-trip: add trip journal entries with narrative text + photos
+- [ ] Lightbox/gallery component for photo viewing
 - [ ] Image hosting strategy: external CDN or GitHub LFS to keep repo small
 
 ---
@@ -155,15 +183,26 @@ zoom: 14
 
 - [ ] Countdown timer on hero ("X days until departure")
 - [ ] Logistics checklist in footer (visas, apps, packing, insurance)
-- [ ] Checklist state stored in `data/checklist.json`
 - [ ] Booking links: direct links to SG Arrival Card portal, K-ETA portal
 - [ ] Weather widget or static weather expectations per city
-- [ ] Day status progression: update markdown frontmatter as plans firm up
-- [x] POI data: per-city JSON files (`data/pois/singapore.json`, `data/pois/seoul.json`) with id, name, coordinates, image, description, category
-- [x] POI markers on map: pin-style markers in category colors, shown only for active day, with name labels
+- [x] Day status tracking (planned/confirmed/open in location YAML)
+- [x] POI data: per-location YAML with id, name, coordinates, image, description, category
+- [x] POI markers on map: symbol layer with category-colored pin images, shown per active day
 - [x] Map auto-zoom: fitBounds to day's POIs + accommodation
-- [x] Day→POI linking: frontmatter `pois` array + inline `[Name](poi:id)` markdown syntax
-- [x] Inline POI rendering: mini pin icons in category colors next to POI names in day cards
+- [x] Day→POI linking: activities array with poi references + notes
+- [x] Inline POI rendering: category-colored pin icons next to POI names in day cards
+- [x] POI click interaction: flyTo + rich popup with image, description, hours, cost, link
+- [x] POI↔card hover cross-highlighting
+- [x] AI planning tool (`planning.html` + `planning-server.js`):
+  - [x] Vertex AI (Gemini) agent with tool-use loop
+  - [x] Web search + YouTube transcript extraction
+  - [x] Interactive POI proposal cards with select/skip
+  - [x] Day schedule proposals
+  - [x] Choice picker UI
+  - [x] Drag-and-drop POI→day assignment
+  - [x] Per-location chat history
+  - [x] Traveler alignment scoring per POI
+  - [x] Map integration: proposal pins with glow, popup previews
 
 ---
 
@@ -174,8 +213,8 @@ zoom: 14
 - [x] GitHub repo init + first commit
 - [x] Enable GitHub Pages (from main branch)
 - [x] `.nojekyll` added for raw file serving
-- [ ] Domain-restrict Mapbox token to `geoberle.github.io` + `localhost` (in progress — 403 on tiles)
-- [ ] Verify site works on GitHub Pages
+- [ ] Domain-restrict Mapbox token to `geoberle.github.io` + `localhost`
+- [ ] Verify site works on GitHub Pages end-to-end
 - [ ] Share URL with family
 - [ ] Optional: custom domain via CNAME
 

@@ -1,180 +1,199 @@
 name: Seoul
-coordinates: [126.9857, 37.5636]
+coordinates:
+  - 126.9857
+  - 37.5636
 dates:
   from: "2026-07-14"
   to: "2026-07-19"
-
 accommodations:
   - id: seoul
     neighborhood: Myeongdong
     type: Airbnb Penthouse
     config: 2-Bedroom
-    coordinates: [126.9857, 37.5636]
+    coordinates:
+      - 126.9857
+      - 37.5636
     checkIn: "2026-07-14"
     checkOut: "2026-07-20"
     status: planned
-
 pois:
   - id: myeongdong
     name: Myeongdong
-    coordinates: [126.9857, 37.5636]
-    image: "https://images.unsplash.com/photo-1583400225968-3d6e7e8e6f8c?w=800"
+    coordinates:
+      - 126.9857
+      - 37.5636
+    image: https://images.unsplash.com/photo-1538670178144-b8db27bad945?w=800
     description: Energetic shopping and street food district. Giant ice creams, character cotton candy, Korean snacks.
     category: food
-
   - id: gyeongbokgung
     name: Gyeongbokgung Palace
-    coordinates: [126.9770, 37.5796]
-    image: "https://images.unsplash.com/photo-1546874177-9e664107314e?w=800"
+    coordinates:
+      - 126.977
+      - 37.5796
+    image: https://images.unsplash.com/photo-1546874177-9e664107314e?w=800
     description: Grand Joseon dynasty palace with changing of the guard ceremony. Hanbok rental available.
     category: culture
-
   - id: bukchon-hanok
     name: Bukchon Hanok Village
-    coordinates: [126.9849, 37.5824]
-    image: "https://images.unsplash.com/photo-1573047571536-fe69674e1e89?w=800"
+    coordinates:
+      - 126.9849
+      - 37.5824
+    image: https://images.unsplash.com/photo-1704240649486-3729c2d44ae3?w=800
     description: Hillside neighbourhood of traditional Korean houses between two palaces.
     category: culture
-
   - id: insadong
     name: Insadong
-    coordinates: [126.9856, 37.5738]
-    image: "https://images.unsplash.com/photo-1597655601841-214a4cfe8b2c?w=800"
+    coordinates:
+      - 126.9856
+      - 37.5738
+    image: https://images.unsplash.com/photo-1597655601841-214a4cfe8b2c?w=800
     description: Art and antiques district with galleries, traditional tea houses, and craft shops.
     category: culture
-
   - id: lotte-world
     name: Lotte World
-    coordinates: [127.0980, 37.5111]
-    image: "https://images.unsplash.com/photo-1578377375762-ee96d63b6773?w=800"
+    coordinates:
+      - 127.098
+      - 37.5111
+    image: https://images.unsplash.com/photo-1640927023021-fda655832937?w=800
     description: Massive indoor and outdoor theme park in Jamsil. Great rainy day option.
     category: attraction
-
   - id: dongdaemun-design-plaza
     name: Dongdaemun Design Plaza
-    coordinates: [127.0096, 37.5671]
-    image: "https://images.unsplash.com/photo-1578469550956-0e16b69c6a3d?w=800"
+    coordinates:
+      - 127.0096
+      - 37.5671
+    image: https://images.unsplash.com/photo-1578469550956-0e16b69c6a3d?w=800
     description: Zaha Hadid-designed futuristic landmark with exhibitions, shops, and night market nearby.
     category: culture
-
   - id: coex-starfield
     name: COEX Mall & Starfield Library
-    coordinates: [127.0590, 37.5116]
-    image: "https://images.unsplash.com/photo-1583225214464-9296029427aa?w=800"
+    coordinates:
+      - 127.059
+      - 37.5116
+    image: https://images.unsplash.com/photo-1583225214464-9296029427aa?w=800
     description: Massive underground mall with the stunning open Starfield Library at its centre.
     category: shopping
-
   - id: bongeunsa
     name: Bongeunsa Temple
-    coordinates: [127.0579, 37.5153]
-    image: "https://images.unsplash.com/photo-1578469645742-46cae010e5d6?w=800"
+    coordinates:
+      - 127.0579
+      - 37.5153
+    image: https://images.unsplash.com/photo-1632908717683-a94696d9c685?w=800
     description: Peaceful 8th-century Buddhist temple hidden in the heart of Gangnam.
     category: culture
-
   - id: garosu-gil
     name: Garosu-gil
-    coordinates: [127.0234, 37.5194]
-    image: "https://images.unsplash.com/photo-1553653924-39b70295e044?w=800"
+    coordinates:
+      - 127.0234
+      - 37.5194
+    image: https://images.unsplash.com/photo-1655467022709-6a7a2b05967a?w=800
     description: Tree-lined street in Sinsa-dong with trendy cafes, boutiques, and galleries.
     category: shopping
-
   - id: han-river-park
     name: Han River Park
-    coordinates: [127.0050, 37.5170]
-    image: "https://images.unsplash.com/photo-1601749345291-afcc60647944?w=800"
+    coordinates:
+      - 127.005
+      - 37.517
+    image: https://images.unsplash.com/photo-1684847412161-9c846be62363?w=800
     description: Riverside parks perfect for picnics, cycling, and watching Banpo Bridge fountain show.
     category: nature
-
   - id: banpo-bridge
     name: Banpo Bridge Rainbow Fountain
-    coordinates: [126.9957, 37.5079]
-    image: "https://images.unsplash.com/photo-1574786198875-4254d4a58547?w=800"
-    description: "World's longest bridge fountain. Rainbow light show on seasonal evenings."
+    coordinates:
+      - 126.9957
+      - 37.5079
+    image: https://images.unsplash.com/photo-1590287480190-7cac0ac013f4?w=800
+    description: World's longest bridge fountain. Rainbow light show on seasonal evenings.
     category: attraction
-
   - id: namsan-tower
     name: N Seoul Tower (Namsan)
-    coordinates: [126.9882, 37.5512]
-    image: "https://images.unsplash.com/photo-1541694382-3148799c027e?w=800"
+    coordinates:
+      - 126.9882
+      - 37.5512
+    image: https://images.unsplash.com/photo-1741311653793-f8581cff30a8?w=800
     description: Iconic tower on Namsan mountain. Cable car up, walk down. Love lock fence at the top.
     category: attraction
-
   - id: itaewon
     name: Itaewon
-    coordinates: [126.9946, 37.5345]
-    image: "https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=800"
+    coordinates:
+      - 126.9946
+      - 37.5345
+    image: https://images.unsplash.com/photo-1601621915196-2621bfb0cd6e?w=800
     description: International neighbourhood with diverse food, vintage shops, and lively nightlife.
     category: shopping
-
   - id: hongdae
     name: Hongdae
-    coordinates: [126.9246, 37.5568]
-    image: "https://images.unsplash.com/photo-1570076663930-81bfcbf22ec8?w=800"
+    coordinates:
+      - 126.9246
+      - 37.5568
+    image: https://images.unsplash.com/photo-1574442274210-ba4925b7ae61?w=800
     description: University district with street performances, indie shops, and vibrant nightlife.
     category: shopping
-
+  - id: korean-demilitarized-zone-dmz
+    name: Korean Demilitarized Zone (DMZ)
+    coordinates:
+      - 126.6775
+      - 37.9056
+    description: A heavily fortified buffer zone separating North and South Korea, offering a unique insight into modern Korean history, including infiltration tunnels and observatories.
+    category: attraction
+    image: ""
 days:
   - date: "2026-07-14"
     title: Arrival in Seoul
     status: planned
     activities:
       - poi: myeongdong
-        notes: "Street food market, giant ice creams, character cotton candy"
-    notes: "Arrive ICN ~15:30. Check into penthouse. Explore neighbourhood."
-
+        notes: Street food market, giant ice creams, character cotton candy
+    notes: Arrive ICN ~15:30. Check into penthouse. Explore neighbourhood.
   - date: "2026-07-15"
     title: Palaces & Hanok Village
     status: planned
     activities:
       - poi: gyeongbokgung
-        notes: "Changing of the guard. Rent hanbok."
+        notes: Changing of the guard. Rent hanbok.
       - poi: bukchon-hanok
-        notes: "Traditional Korean houses"
+        notes: Traditional Korean houses
       - poi: insadong
-        notes: "Art district, traditional tea house"
-    notes: "Korean BBQ dinner"
-
+        notes: Art district, traditional tea house
+    notes: Korean BBQ dinner
   - date: "2026-07-16"
     title: DMZ or Adventure Day
     status: open
     activities:
       - poi: lotte-world
-        notes: "Indoor + outdoor theme park, great rainy day option"
+        notes: Indoor + outdoor theme park, great rainy day option
       - poi: dongdaemun-design-plaza
-        notes: "Night market street food"
+        notes: Night market street food
     notes: "Alternative: DMZ Peace Tour (half-day, passport required, check age requirements)"
-
   - date: "2026-07-17"
     title: Modern Seoul
     status: open
     activities:
       - poi: coex-starfield
-        notes: "Starfield Library, Gangnam district"
+        notes: Starfield Library, Gangnam district
       - poi: bongeunsa
-        notes: "Peaceful temple in Gangnam"
+        notes: Peaceful temple in Gangnam
       - poi: garosu-gil
-        notes: "Cafe hopping, trendy street"
+        notes: Cafe hopping, trendy street
       - poi: han-river-park
-        notes: "Picnic, convenience store snacks + fried chicken delivery"
+        notes: Picnic, convenience store snacks + fried chicken delivery
       - poi: banpo-bridge
-        notes: "Rainbow Fountain show (seasonal, check schedule)"
-
+        notes: Rainbow Fountain show (seasonal, check schedule)
   - date: "2026-07-18"
     title: Namsan & Culture
     status: open
     activities:
       - poi: namsan-tower
-        notes: "Cable car up, walk down. Love locks. City views."
+        notes: Cable car up, walk down. Love locks. City views.
       - poi: itaewon
-        notes: "Shopping and cafes option"
+        notes: Shopping and cafes option
       - poi: hongdae
-        notes: "Shopping and cafes option"
+        notes: Shopping and cafes option
     notes: "Optional: Korean cooking class"
-
   - date: "2026-07-19"
     title: Last Day in Seoul
     status: open
     activities:
       - poi: myeongdong
-        notes: "Last-minute shopping, souvenirs"
-    notes: "Sleep in or revisit favourite spot. Farewell dinner. Early night (flight at 11:40)."
+        notes: Last-minute shopping, souvenirs
+    notes: Sleep in or revisit favourite spot. Farewell dinner. Early night (flight at 11:40).

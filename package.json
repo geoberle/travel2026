@@ -22,7 +22,9 @@
   },
   "homepage": "https://github.com/geoberle/travel2026#readme",
   "dependencies": {
+    "@google-cloud/vertexai": "^1.12.0",
     "express": "^5.2.1",
+    "google-auth-library": "^10.7.0",
     "js-yaml": "^4.2.0",
     "openai": "^6.42.0",
     "youtube-transcript": "^1.3.1"

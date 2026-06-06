@@ -49,7 +49,7 @@ pois:
     coordinates:
       - 103.861
       - 1.2834
-    image: https://images.unsplash.com/photo-1567253508412-3c5df402a68e?w=800
+    image: https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800
     description: Iconic hotel with rooftop observation deck offering panoramic views of the city skyline.
     category: attraction
   - id: artscience-museum
@@ -85,7 +85,7 @@ pois:
     coordinates:
       - 103.823
       - 1.2494
-    image: https://images.unsplash.com/photo-1585147484299-a2d1f8ef0469?w=800
+    image: https://images.unsplash.com/photo-1662385834577-0c6628d57eab?w=800
     description: Resort island with beaches, Universal Studios, S.E.A. Aquarium, and cable car rides.
     category: attraction
   - id: singapore-zoo
@@ -93,7 +93,7 @@ pois:
     coordinates:
       - 103.7908
       - 1.4043
-    image: https://images.unsplash.com/photo-1535338454528-1b5c8e9b23b3?w=800
+    image: https://images.unsplash.com/photo-1619262336523-3e217d76ab47?w=800
     description: World-class open-concept zoo. Night Safari opens at 18:15 — the world's first nocturnal zoo.
     category: nature
   - id: orchard-road
@@ -117,7 +117,7 @@ pois:
     coordinates:
       - 103.9915
       - 1.3644
-    image: https://images.unsplash.com/photo-1563789031959-4c02bcb0b1e4?w=800
+    image: https://images.unsplash.com/photo-1576603009046-55d44f643e60?w=800
     description: Award-winning airport with Jewel Changi indoor waterfall and gardens.
     category: transport
   - id: botanic-gardens
@@ -125,7 +125,7 @@ pois:
     coordinates:
       - 103.8162
       - 1.315
-    image: https://images.unsplash.com/photo-4L5uPIHDe9M?w=800
+    image: https://images.unsplash.com/photo-1669639938568-cd6cebb71c9d?w=800
     description: UNESCO World Heritage tropical garden with orchid garden. Free entry, shaded paths, near Orchard Road.
     category: nature
   - id: bugis-plus
@@ -133,7 +133,7 @@ pois:
     coordinates:
       - 103.8541
       - 1.2997
-    image: https://images.unsplash.com/photo-Gf_KqXHU-PY?w=800
+    image: https://images.unsplash.com/photo-1613487957484-32c977a8bd62?w=800
     description: Mall near Bugis MRT with anime, manga, and figure shops across several floors.
     category: shopping
   - id: bugis-street-market
@@ -141,7 +141,7 @@ pois:
     coordinates:
       - 103.8557
       - 1.2995
-    image: https://images.unsplash.com/photo-i2HK5PLpSDw?w=800
+    image: https://images.unsplash.com/photo-1655634251586-518211d5598d?w=800
     description: Bustling street market with cheap clothes, accessories, and souvenirs. Haggling expected.
     category: shopping
   - id: haji-lane
@@ -149,7 +149,7 @@ pois:
     coordinates:
       - 103.8593
       - 1.3005
-    image: https://images.unsplash.com/photo-smXi8qgr_fo?w=800
+    image: https://images.unsplash.com/photo-1617710135795-a42d57c7e85e?w=800
     description: Narrow street of indie boutiques, vintage shops, and street art in Kampong Glam.
     category: shopping
   - id: kinokuniya
@@ -157,7 +157,7 @@ pois:
     coordinates:
       - 103.8346
       - 1.3026
-    image: https://images.unsplash.com/photo-O37Ab5ftD08?w=800
+    image: https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=800
     description: Massive Japanese bookstore with huge manga section in English and Japanese.
     category: shopping
 days:
