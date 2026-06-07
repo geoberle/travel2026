@@ -377,10 +377,27 @@ Return only real, specific places with accurate coordinates. Skip vague mentions
 
   try {
     const parsed = JSON.parse(json);
-    return (parsed.pois || []).filter(p => p.name && p.coordinates?.length === 2);
+    const pois = (parsed.pois || []).filter(p => p.name && p.coordinates?.length === 2);
+    await Promise.all(pois.map(poi => fillPoiImage(poi, context)));
+    return pois;
   } catch {
     console.error('[extract] Failed to parse POI JSON:', json.substring(0, 200));
     return [];
+  }
+}
+
+async function fillPoiImage(poi, context) {
+  if (poi.image) return;
+  try {
+    const query = encodeURIComponent(`${poi.name} ${context || ''}`.trim().substring(0, 80));
+    const res = await fetch(`https://unsplash.com/napi/search/photos?query=${query}&per_page=1`);
+    const data = await res.json();
+    const photo = data.results?.[0];
+    if (photo) {
+      poi.image = `${photo.urls?.raw || photo.urls?.regular}&w=800&h=400&fit=crop`;
+    }
+  } catch {
+    // no image is fine
   }
 }
 

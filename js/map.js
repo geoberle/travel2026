@@ -32,6 +32,12 @@ function initMap(containerId, token) {
       map.setConfigProperty('basemap', 'lightPreset', 'night');
     }
 
+    map.getStyle().layers.forEach(layer => {
+      if (layer.id.includes('poi') && layer.type === 'symbol') {
+        map.setLayoutProperty(layer.id, 'visibility', 'none');
+      }
+    });
+
     if (_journeys) {
       _addRouteLayers(map, _journeys);
       if (_pendingHighlight) {
@@ -151,49 +157,46 @@ function addAirportMarkers(map, journeys) {
   });
 }
 
+let _accommodationMarkers = [];
+
 function addAccommodationMarkers(map, accommodations) {
   _accommodations = accommodations;
-  if (map.getSource('accommodation-markers')) return;
+  _accommodationMarkers.forEach(m => m.remove());
+  _accommodationMarkers = [];
 
   const stayColor = '#ff6b6b';
-  const id = 'pin-stay';
-  if (!map.hasImage(id)) {
-    const imageData = createPinImageData(stayColor, 32);
-    map.addImage(id, { width: imageData.width, height: imageData.height, data: new Uint8Array(imageData.data.buffer) });
-  }
 
-  const features = accommodations.map(acc => ({
-    type: 'Feature',
-    geometry: { type: 'Point', coordinates: acc.coordinates },
-    properties: { name: acc.neighborhood, type: acc.type }
-  }));
+  accommodations.forEach(acc => {
+    const el = document.createElement('div');
+    el.className = 'poi-circle-marker no-img';
+    el.textContent = '🏠';
+    el.style.borderColor = stayColor;
+    el.style.boxShadow = `0 0 12px ${stayColor}88, 0 0 4px rgba(255,255,255,0.3)`;
+    el.style.fontSize = '1.2rem';
 
-  map.addSource('accommodation-markers', {
-    type: 'geojson',
-    data: { type: 'FeatureCollection', features }
-  });
+    const label = document.createElement('div');
+    label.className = 'poi-marker-label';
+    label.textContent = acc.neighborhood;
 
-  map.addLayer({
-    id: 'accommodation-icons',
-    type: 'symbol',
-    source: 'accommodation-markers',
-    layout: {
-      'icon-image': 'pin-stay',
-      'icon-size': 1,
-      'icon-anchor': 'bottom',
-      'icon-allow-overlap': true,
-      'text-field': ['get', 'name'],
-      'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
-      'text-size': 11,
-      'text-offset': [0, 0.3],
-      'text-anchor': 'top',
-      'text-optional': true
-    },
-    paint: {
-      'text-color': 'rgba(255,255,255,0.9)',
-      'text-halo-color': 'rgba(0,0,0,0.8)',
-      'text-halo-width': 1.5
-    }
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (activePopup) activePopup.remove();
+      activePopup = new mapboxgl.Popup({ offset: [0, -30], anchor: 'bottom', maxWidth: '220px', closeButton: true })
+        .setLngLat(acc.coordinates)
+        .setHTML(`<div class="poi-popup-body"><strong>${acc.neighborhood}</strong><div class="poi-popup-desc">${acc.type}${acc.config ? ' · ' + acc.config : ''}</div></div>`)
+        .addTo(map);
+    });
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'poi-marker-wrap accommodation-wrap';
+    wrapper.appendChild(el);
+    wrapper.appendChild(label);
+
+    const marker = new mapboxgl.Marker({ element: wrapper, anchor: 'center' })
+      .setLngLat(acc.coordinates)
+      .addTo(map);
+
+    _accommodationMarkers.push(marker);
   });
 }
 
@@ -574,70 +577,64 @@ let _poiEventsRegistered = false;
 function showPoiMarkers(map, pois, showLabels) {
   _lastMap = map;
   _activePois = pois;
-  ensurePinImages(map);
 
-  const features = pois.map(poi => ({
-    type: 'Feature',
-    geometry: { type: 'Point', coordinates: poi.coordinates },
-    properties: { id: poi.id, name: poi.name, category: poi.category }
-  }));
+  clearPoiMarkers(map);
 
-  if (map.getSource('poi-markers')) {
-    map.getSource('poi-markers').setData({ type: 'FeatureCollection', features });
-  } else {
-    map.addSource('poi-markers', {
-      type: 'geojson',
-      data: { type: 'FeatureCollection', features }
-    });
+  const CATEGORY_COLORS = {
+    attraction: '#4ecdc4', food: '#ff9f43', culture: '#a55eea',
+    shopping: '#fd79a8', nature: '#00b894', transport: '#636e72'
+  };
 
-    map.addLayer({
-      id: 'poi-icons',
-      type: 'symbol',
-      source: 'poi-markers',
-      layout: {
-        'icon-image': ['concat', 'pin-', ['get', 'category']],
-        'icon-size': 1,
-        'icon-anchor': 'bottom',
-        'icon-allow-overlap': true,
-        'text-field': showLabels ? ['get', 'name'] : '',
-        'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
-        'text-size': 11,
-        'text-offset': [0, 0.3],
-        'text-anchor': 'top',
-        'text-allow-overlap': false,
-        'text-optional': true
-      },
-      paint: {
-        'text-color': 'rgba(255,255,255,0.9)',
-        'text-halo-color': 'rgba(0,0,0,0.8)',
-        'text-halo-width': 1.5
-      }
-    });
+  pois.forEach(poi => {
+    const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
 
-    if (!_poiEventsRegistered) {
-      _poiEventsRegistered = true;
-
-      map.on('click', 'poi-icons', (e) => {
-        const props = e.features[0].properties;
-        const poi = _activePois.find(p => p.id === props.id);
-        if (poi) {
-          map.flyTo({ center: poi.coordinates, zoom: 16, duration: 800 });
-          map.once('moveend', () => showPoiPopup(map, poi));
-        }
-      });
-
-      map.on('mouseenter', 'poi-icons', (e) => {
-        map.getCanvas().style.cursor = 'pointer';
-        const id = e.features[0].properties.id;
-        highlightPoi(id, true);
-      });
-
-      map.on('mouseleave', 'poi-icons', () => {
-        map.getCanvas().style.cursor = '';
-        document.querySelectorAll('.poi-link.poi-highlight').forEach(el => el.classList.remove('poi-highlight'));
-      });
+    const el = document.createElement('div');
+    el.className = 'poi-circle-marker';
+    if (poi.image) {
+      const img = document.createElement('img');
+      img.src = poi.image;
+      img.alt = poi.name;
+      img.onerror = () => { el.classList.add('no-img'); img.remove(); el.textContent = poi.name.charAt(0); };
+      el.appendChild(img);
+    } else {
+      el.classList.add('no-img');
+      el.textContent = poi.name.charAt(0);
     }
-  }
+    el.style.borderColor = color;
+    el.style.boxShadow = `0 0 12px ${color}88, 0 0 4px rgba(255,255,255,0.3)`;
+    el.dataset.poiId = poi.id;
+
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      map.flyTo({ center: poi.coordinates, zoom: 16, duration: 800 });
+      map.once('moveend', () => showPoiPopup(map, poi));
+    });
+    el.addEventListener('mouseenter', () => {
+      el.classList.add('active');
+      highlightPoi(poi.id, true);
+    });
+    el.addEventListener('mouseleave', () => {
+      el.classList.remove('active');
+      highlightPoi(poi.id, false);
+    });
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'poi-marker-wrap';
+    wrapper.appendChild(el);
+
+    if (showLabels) {
+      const label = document.createElement('div');
+      label.className = 'poi-marker-label';
+      label.textContent = poi.name;
+      wrapper.appendChild(label);
+    }
+
+    const marker = new mapboxgl.Marker({ element: wrapper, anchor: 'center' })
+      .setLngLat(poi.coordinates)
+      .addTo(map);
+
+    activePoiMarkers.push(marker);
+  });
 
   setupInlinePoiHover();
 }
@@ -682,6 +679,9 @@ function highlightPoi(poiId, active) {
   document.querySelectorAll(`.poi-link[data-poi="${poiId}"]`).forEach(el => {
     el.classList.toggle('poi-highlight', active);
   });
+  document.querySelectorAll(`.poi-circle-marker[data-poi-id="${poiId}"]`).forEach(el => {
+    el.classList.toggle('active', active);
+  });
 }
 
 function setupInlinePoiHover() {
@@ -703,9 +703,6 @@ function clearPoiMarkers(map) {
   activePoiMarkers = [];
   _activePois = [];
   if (activePopup) { activePopup.remove(); activePopup = null; }
-  if (map.getSource('poi-markers')) {
-    map.getSource('poi-markers').setData({ type: 'FeatureCollection', features: [] });
-  }
 }
 
 function fitToPoiBounds(map, pois, accommodation) {

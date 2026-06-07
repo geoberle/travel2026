@@ -56,6 +56,7 @@
     /* POI suggestions from AI */
     .poi-suggestion { background: var(--bg-card); border-radius: 8px; padding: 10px 12px; margin: 6px 0; font-size: 0.8rem; position: relative; cursor: pointer; transition: background 0.2s; }
     .poi-suggestion:hover { background: rgba(78,205,196,0.08); }
+    .poi-suggestion-img { width: 100%; height: 80px; object-fit: cover; border-radius: 4px; margin-bottom: 6px; }
     .poi-suggestion .name { font-weight: 600; margin-bottom: 4px; }
     .poi-suggestion .desc { opacity: 0.7; font-size: 0.75rem; margin-bottom: 6px; }
     .poi-suggestion .cat { font-size: 0.65rem; text-transform: uppercase; opacity: 0.5; }
@@ -145,6 +146,14 @@
     .poi-popup-meta { font-size: 0.7rem; opacity: 0.6; margin-bottom: 3px; }
     .poi-popup-link { display: inline-block; margin-top: 6px; font-size: 0.7rem; font-weight: 600; color: var(--accent); text-decoration: none; }
     .poi-popup-link:hover { text-decoration: underline; }
+
+    /* Proposal markers (circular image) */
+    .proposal-marker-wrap { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+    .proposal-marker { width: 48px; height: 48px; border-radius: 50%; border: 3px solid #4ecdc4; outline: 2.5px solid rgba(255,255,255,0.7); overflow: hidden; background: var(--bg-card); transition: transform 0.2s, box-shadow 0.2s; }
+    .proposal-marker img { width: 100%; height: 100%; object-fit: cover; }
+    .proposal-marker.no-img { display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+    .proposal-marker.active, .proposal-marker:hover { transform: scale(1.25); }
+    .proposal-marker-label { font-size: 0.6rem; font-weight: 600; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.9); margin-top: 3px; white-space: nowrap; max-width: 100px; overflow: hidden; text-overflow: ellipsis; text-align: center; }
 
     .poi-item.highlight { background: rgba(78,205,196,0.15); }
 
@@ -654,71 +663,54 @@
     }
 
     let _proposalPois = [];
-    let _proposalPinEventsRegistered = false;
+    let _proposalMarkers = [];
 
     function showProposalPins(pois) {
       dimMapMarkers(true);
+      clearProposalPins();
       _proposalPois = pois;
-      const features = pois.filter(p => p.coordinates).map((poi, i) => ({
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: poi.coordinates },
-        properties: { name: poi.name, category: poi.category || 'attraction', index: i }
-      }));
-      const data = { type: 'FeatureCollection', features };
 
-      if (map.getSource('proposal-pois')) {
-        map.getSource('proposal-pois').setData(data);
-      } else {
-        map.addSource('proposal-pois', { type: 'geojson', data });
-        map.addLayer({
-          id: 'proposal-poi-glow',
-          type: 'circle',
-          source: 'proposal-pois',
-          paint: {
-            'circle-radius': 18,
-            'circle-color': '#4ecdc4',
-            'circle-opacity': 0.15,
-            'circle-blur': 1
-          }
-        });
-        map.addLayer({
-          id: 'proposal-poi-icons',
-          type: 'symbol',
-          source: 'proposal-pois',
-          layout: {
-            'icon-image': ['concat', 'pin-', ['get', 'category']],
-            'icon-size': 1.1,
-            'icon-anchor': 'bottom',
-            'icon-allow-overlap': true,
-            'text-field': ['get', 'name'],
-            'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
-            'text-size': 11,
-            'text-offset': [0, 0.3],
-            'text-anchor': 'top',
-            'text-optional': true
-          },
-          paint: {
-            'text-color': '#4ecdc4',
-            'text-halo-color': 'rgba(0,0,0,0.9)',
-            'text-halo-width': 2
-          }
-        });
-      }
+      pois.forEach((poi, i) => {
+        if (!poi.coordinates) return;
+        const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
 
-      if (!_proposalPinEventsRegistered) {
-        _proposalPinEventsRegistered = true;
-        map.on('click', 'proposal-poi-icons', (e) => {
-          const idx = e.features[0].properties.index;
-          const poi = _proposalPois[idx];
-          if (poi) showProposalPopup(poi);
-        });
-        map.on('mouseenter', 'proposal-poi-icons', () => { map.getCanvas().style.cursor = 'pointer'; });
-        map.on('mouseleave', 'proposal-poi-icons', () => { map.getCanvas().style.cursor = ''; });
-      }
+        const el = document.createElement('div');
+        el.className = 'proposal-marker';
+        if (poi.image) {
+          const img = document.createElement('img');
+          img.src = poi.image;
+          img.alt = poi.name;
+          img.onerror = () => { el.classList.add('no-img'); img.remove(); };
+          el.appendChild(img);
+        } else {
+          el.classList.add('no-img');
+        }
+        el.style.borderColor = color;
+        el.style.boxShadow = `0 0 12px ${color}88, 0 0 4px rgba(255,255,255,0.3)`;
 
-      if (features.length > 0) {
+        el.addEventListener('click', (e) => { e.stopPropagation(); showProposalPopup(poi); });
+
+        const label = document.createElement('div');
+        label.className = 'proposal-marker-label';
+        label.textContent = poi.name;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'proposal-marker-wrap';
+        wrapper.dataset.index = i;
+        wrapper.appendChild(el);
+        wrapper.appendChild(label);
+
+        const marker = new mapboxgl.Marker({ element: wrapper, anchor: 'center' })
+          .setLngLat(poi.coordinates)
+          .addTo(map);
+
+        _proposalMarkers.push(marker);
+      });
+
+      const withCoords = pois.filter(p => p.coordinates);
+      if (withCoords.length > 0) {
         const bounds = new mapboxgl.LngLatBounds();
-        features.forEach(f => bounds.extend(f.geometry.coordinates));
+        withCoords.forEach(p => bounds.extend(p.coordinates));
         map.fitBounds(bounds, { padding: 80, maxZoom: 15, duration: 1000 });
         map.once('idle', applyDim);
       }
@@ -735,9 +727,10 @@
       const addHtml = isExisting
         ? `<div style="margin-top:8px;font-size:0.7rem;color:var(--accent);font-weight:600;">Already saved</div>`
         : `<button id="${addBtnId}" style="margin-top:8px;background:#4ecdc4;color:#0a0a0f;border:none;padding:6px 14px;border-radius:5px;font-size:0.7rem;font-weight:600;cursor:pointer;font-family:var(--font);">+ Add to trip</button>`;
+      const imgHtml = poi.image ? `<img src="${poi.image}" alt="${poi.name}" onerror="this.remove()" class="poi-popup-img">` : '';
       activePopup = new mapboxgl.Popup({ offset: [0, -45], anchor: 'bottom', maxWidth: '240px', closeButton: true })
         .setLngLat(poi.coordinates)
-        .setHTML(`<div class="poi-popup-body"><div class="poi-popup-header">${catHtml}<strong>${poi.name}</strong></div><p class="poi-popup-desc">${poi.description || ''}</p>${priceHtml}${ratingHtml}${addHtml}</div>`)
+        .setHTML(`${imgHtml}<div class="poi-popup-body"><div class="poi-popup-header">${catHtml}<strong>${poi.name}</strong></div><p class="poi-popup-desc">${poi.description || ''}</p>${priceHtml}${ratingHtml}${addHtml}</div>`)
         .addTo(map);
 
       if (!isExisting) {
@@ -755,16 +748,15 @@
     }
 
     function clearProposalPins() {
-      if (map.getSource('proposal-pois')) {
-        map.getSource('proposal-pois').setData({ type: 'FeatureCollection', features: [] });
-      }
+      _proposalMarkers.forEach(m => m.remove());
+      _proposalMarkers = [];
     }
 
     function highlightProposalPin(index, active) {
-      if (!map.getLayer('proposal-poi-glow')) return;
-      map.setPaintProperty('proposal-poi-glow', 'circle-opacity',
-        active ? ['case', ['==', ['get', 'index'], index], 0.4, 0.15] : 0.15
-      );
+      _proposalMarkers.forEach((m, i) => {
+        const el = m.getElement().querySelector('.proposal-marker');
+        if (el) el.classList.toggle('active', i === index && active);
+      });
     }
 
     function alignmentHtml(alignment) {
@@ -819,7 +811,9 @@
             poi.price_range ? poi.price_range : '',
             poi.rating ? `★ ${poi.rating}` : ''
           ].filter(Boolean).join(' · ');
+          const imgHtml = poi.image ? `<img class="poi-suggestion-img" src="${poi.image}" alt="${poi.name}" onerror="this.remove()">` : '';
           div.innerHTML = `
+            ${imgHtml}
             <div class="name" style="color:${color}">${poi.name}${badge}</div>
             <div class="desc">${poi.description || ''}</div>
             <div class="cat">${metaHtml}</div>
