@@ -132,6 +132,7 @@
     .poi-suggestion.existing { opacity: 0.5; }
     .poi-suggestion .existing-badge { font-size: 0.55rem; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); border-radius: 3px; padding: 0 4px; margin-left: 4px; }
     .poi-suggestion.decided { pointer-events: none; }
+    .poi-suggestion.highlight { background: rgba(78,205,196,0.12); outline: 1px solid rgba(78,205,196,0.3); }
     .poi-suggestion-img { width: 100%; height: 60px; object-fit: cover; border-radius: 4px; margin-bottom: 4px; }
     .poi-actions { display: flex; gap: 4px; margin-top: 6px; }
     .poi-add-btn { background: var(--accent); color: #0a0a0f; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; font-weight: 600; cursor: pointer; font-family: var(--font); }
@@ -677,6 +678,72 @@
 
     function clearMarkers() { _planningMarkers.forEach(m => m.remove()); _planningMarkers = []; if (activePopup) { activePopup.remove(); activePopup = null; } }
 
+    // --- Proposal markers ---
+    let _proposalMarkers = [];
+
+    function dimExistingMarkers(dim) {
+      _planningMarkers.forEach(m => { m.getElement().style.opacity = dim ? '0.15' : '1'; m.getElement().style.pointerEvents = dim ? 'none' : 'auto'; });
+    }
+
+    function showProposalMarkers(pois) {
+      clearProposalMarkers();
+      dimExistingMarkers(true);
+
+      pois.forEach((poi, i) => {
+        if (!poi.coordinates) return;
+        const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+
+        const el = document.createElement('div');
+        el.className = 'poi-circle-marker proposal';
+        if (poi.image) { el.style.backgroundImage = `url(${poi.image})`; el.style.backgroundSize = 'cover'; el.style.backgroundPosition = 'center'; }
+        else { el.classList.add('no-img'); el.textContent = poi.name.charAt(0); }
+        el.style.borderColor = color;
+        el.style.boxShadow = `0 0 16px ${color}aa, 0 0 6px rgba(255,255,255,0.4)`;
+        el.dataset.index = i;
+
+        el.addEventListener('click', (e) => { e.stopPropagation(); highlightProposalCard(i); });
+        el.addEventListener('mouseenter', () => highlightProposalCard(i, true));
+        el.addEventListener('mouseleave', () => highlightProposalCard(i, false));
+
+        const label = document.createElement('div'); label.className = 'poi-marker-label'; label.textContent = poi.name;
+        const wrapper = document.createElement('div'); wrapper.className = 'poi-marker-wrap proposal-marker-wrap'; wrapper.dataset.index = i; wrapper.appendChild(el); wrapper.appendChild(label);
+
+        const marker = new mapboxgl.Marker({ element: wrapper, anchor: 'center' }).setLngLat(poi.coordinates).addTo(map);
+        _proposalMarkers.push(marker);
+      });
+
+      const withCoords = pois.filter(p => p.coordinates);
+      if (withCoords.length > 0) {
+        const bounds = new mapboxgl.LngLatBounds();
+        withCoords.forEach(p => bounds.extend(p.coordinates));
+        map.fitBounds(bounds, { padding: 80, maxZoom: 15, duration: 1000 });
+      }
+    }
+
+    function clearProposalMarkers() {
+      _proposalMarkers.forEach(m => m.remove());
+      _proposalMarkers = [];
+      dimExistingMarkers(false);
+    }
+
+    function highlightProposalPin(index, active) {
+      _proposalMarkers.forEach((m, i) => {
+        const el = m.getElement().querySelector('.poi-circle-marker');
+        if (el) el.classList.toggle('active', i === index && active);
+      });
+    }
+
+    function highlightProposalCard(index, hoverOnly) {
+      document.querySelectorAll('.poi-suggestion').forEach((card, i) => {
+        card.classList.toggle('highlight', i === index);
+      });
+      highlightProposalPin(index, true);
+      if (!hoverOnly && _proposalMarkers[index]) {
+        const lngLat = _proposalMarkers[index].getLngLat();
+        map.flyTo({ center: lngLat, zoom: 16, duration: 800 });
+      }
+    }
+
     function highlightPoiInList(id, active) { document.querySelectorAll(`.poi-item[data-id="${id}"]`).forEach(el => el.classList.toggle('highlight', active)); }
 
     function showPopup(poi) {
@@ -828,14 +895,23 @@
       }).join('') + '</div>';
     }
 
+    function checkProposalDone(container) {
+      if (container.querySelectorAll('.poi-suggestion:not(.decided)').length === 0) {
+        clearProposalMarkers();
+      }
+    }
+
     function renderProposal(proposal, message) {
       const el = document.getElementById('chat-messages');
       const msg = proposal.message || message;
       if (msg) addChatMsg('ai', msg);
 
       if (proposal.type === 'propose_pois') {
+        const pois = proposal.pois || [];
+        showProposalMarkers(pois);
+
         const container = document.createElement('div');
-        (proposal.pois || []).forEach(poi => {
+        pois.forEach((poi, i) => {
           const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
           const isExisting = !!poi.existing;
           const div = document.createElement('div');
@@ -845,15 +921,25 @@
           const img = poi.image ? `<img class="poi-suggestion-img" src="${poi.image}" onerror="this.remove()">` : '';
           const meta = [poi.category, poi.price_range, poi.rating ? `★${poi.rating}` : ''].filter(Boolean).join(' · ');
           div.innerHTML = `${img}<div class="name" style="color:${color}">${poi.name}${badge}</div><div class="desc">${poi.description || ''}</div><div class="cat">${meta}</div>${alignmentHtml(poi.alignment)}${btns}`;
+
+          div.addEventListener('mouseenter', () => highlightProposalPin(i, true));
+          div.addEventListener('mouseleave', () => highlightProposalPin(i, false));
+          div.addEventListener('click', (e) => {
+            if (e.target.closest('.poi-add-btn, .poi-dismiss-btn')) return;
+            if (poi.coordinates) map.flyTo({ center: poi.coordinates, zoom: 16, duration: 800 });
+          });
+
           if (!isExisting) {
             div.querySelector('.poi-add-btn')?.addEventListener('click', (e) => {
               e.stopPropagation(); div.classList.add('decided');
               div.querySelector('.poi-actions').innerHTML = '<span class="poi-status added">✓ Added</span>';
               window._chatSend(`Add this POI to ${activeLocation}:\n${poi.name} [${poi.coordinates}] (${poi.category}): ${poi.description || ''}`);
+              checkProposalDone(container);
             });
             div.querySelector('.poi-dismiss-btn')?.addEventListener('click', (e) => {
               e.stopPropagation(); div.classList.add('decided', 'existing');
               div.querySelector('.poi-actions').innerHTML = '<span class="poi-status dismissed">Dismissed</span>';
+              checkProposalDone(container);
             });
           }
           container.appendChild(div);
