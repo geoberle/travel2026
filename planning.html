@@ -390,18 +390,6 @@
         </div>`;
       });
 
-      const assignedIds = new Set();
-      (block.days || []).forEach(d => (d.activities || []).forEach(a => assignedIds.add(a.poi)));
-      const allPois = TripStore.getLocationPois(block.location);
-      const unassigned = allPois.filter(p => !assignedIds.has(p.id));
-      let unassignedHtml = '';
-      if (unassigned.length > 0) {
-        unassignedHtml = `<div class="unassigned"><div class="unassigned-header">Unassigned (${unassigned.length})</div>
-          <div class="unassigned-drop" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleUnassignDrop(event, '${block.id}')">
-          ${unassigned.map(p => poiChipHtml(p)).join('')}
-          </div></div>`;
-      }
-
       return `<div class="block stay${sel}" data-block-id="${block.id}">
         <div class="block-header">
           <div class="block-icon">🏠</div>
@@ -413,7 +401,6 @@
         </div>
         <div class="stay-days">
           ${daysHtml}
-          ${unassignedHtml}
         </div>
       </div>`;
     }
@@ -788,7 +775,7 @@
       let html = `<div class="poi-count">${pois.length} places · ${TripStore.locations[activeLocation]?.name || activeLocation}</div>`;
       pois.forEach(poi => {
         const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
-        html += `<div class="poi-item" data-id="${poi.id}" onclick="flyAndShow('${poi.id}')">
+        html += `<div class="poi-item" data-id="${poi.id}" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${poi.id}')" onclick="flyAndShow('${poi.id}')">
           <div class="dot" style="background:${color}"></div>
           <div class="info"><div class="name">${poi.name}</div><div class="cat">${poi.category}</div></div>
           <div class="actions"><button onclick="event.stopPropagation();delPoi('${poi.id}')" title="Delete">✕</button></div>
