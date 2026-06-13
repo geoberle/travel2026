@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(express.static(__dirname, { etag: false, lastModified: false, setHeaders: (res) => res.setHeader('Cache-Control', 'no-store') }));
 
 const VERTEX_PROJECT = process.env.GOOGLE_CLOUD_PROJECT || process.env.CLOUD_ML_PROJECT_ID;
-const VERTEX_REGION = process.env.GOOGLE_CLOUD_REGION || process.env.CLOUD_ML_REGION || 'us-central1';
+const VERTEX_REGION = process.env.GOOGLE_CLOUD_REGION || 'us-central1';
 const AI_MODEL = process.env.AI_MODEL || 'gemini-2.5-flash';
 
 if (!VERTEX_PROJECT) {
