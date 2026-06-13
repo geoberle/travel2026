@@ -861,12 +861,12 @@ When the user pastes a URL or YouTube link:
 
 const MAX_TURNS = 10;
 
-app.get('/api/ai/chat', async (req, res) => {
+app.post('/api/ai/chat', async (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
 
-  const { messages, activeLocation, activeStayId } = JSON.parse(req.query.payload);
+  const { messages, activeLocation, activeStayId } = req.body;
 
   const send = (event, data) => {
     res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
