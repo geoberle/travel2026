@@ -493,10 +493,9 @@
         clearMarkers();
         renderPois();
         if (block.legs?.length > 0) {
-          const first = block.legs[0].departure.coordinates;
-          const last = block.legs[block.legs.length - 1].arrival.coordinates;
-          const center = [(first[0] + last[0]) / 2, (first[1] + last[1]) / 2];
-          map.flyTo({ center, zoom: block.mapView?.zoom || 3, pitch: 15, duration: 1500 });
+          const bounds = new mapboxgl.LngLatBounds();
+          block.legs.forEach(l => { bounds.extend(l.departure.coordinates); bounds.extend(l.arrival.coordinates); });
+          map.fitBounds(bounds, { padding: 80, pitch: 15, bearing: 0, duration: 1500, maxZoom: 10 });
         }
       }
 
