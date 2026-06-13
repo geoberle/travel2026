@@ -107,15 +107,10 @@ const TripStore = {
               activities: day.activities || [],
               notes: day.notes || ''
             },
-            id: `day-${dateStr}`
+            id: `day-${block.id}-${idx}`
           });
         });
       }
-    });
-
-    chapters.sort((a, b) => {
-      if (a.date === b.date) return a.type === 'transit' ? -1 : 1;
-      return a.date.localeCompare(b.date);
     });
 
     return chapters;
