@@ -167,16 +167,20 @@ function renderTransitCard(journey) {
   const modeIcon = MODE_ICONS[primaryMode] || '✈';
   const modeLabel = primaryMode.charAt(0).toUpperCase() + primaryMode.slice(1);
 
+  const multiLeg = (journey.legs || []).length > 1;
+
   const legs = (journey.legs || []).map(leg => {
     const mode = leg.mode || 'drive';
+    const depName = leg.departure.airport || leg.departure.city;
+    const arrName = leg.arrival.airport || leg.arrival.city;
+    const routeHtml = multiLeg
+      ? `<div class="flight-route"><span class="airport">${depName}</span><span class="arrow">→</span><span class="airport">${arrName}</span></div>`
+      : '';
+
     if (mode === 'drive') {
       return `
         <div class="flight-leg drive-leg">
-          <div class="flight-route">
-            <span class="airport">${leg.departure.city}</span>
-            <span class="arrow">→</span>
-            <span class="airport">${leg.arrival.airport || leg.arrival.city}</span>
-          </div>
+          ${routeHtml}
           <div class="flight-detail">Drive · ${leg.duration}</div>
           <div class="flight-times">
             <span>${formatTime(leg.departure.time)}</span>
@@ -190,11 +194,7 @@ function renderTransitCard(journey) {
       const f = leg.flight || {};
       return `
         <div class="flight-leg">
-          <div class="flight-route">
-            <span class="airport">${leg.departure.airport}</span>
-            <span class="arrow">→</span>
-            <span class="airport">${leg.arrival.airport}</span>
-          </div>
+          ${routeHtml}
           <div class="flight-detail">${f.airline || ''} · ${f.number || ''}</div>
           <div class="flight-detail">${f.aircraft || ''}</div>
           <div class="flight-times">
@@ -208,11 +208,7 @@ function renderTransitCard(journey) {
     const sub = leg[mode] || {};
     return `
       <div class="flight-leg">
-        <div class="flight-route">
-          <span class="airport">${leg.departure.airport || leg.departure.city}</span>
-          <span class="arrow">→</span>
-          <span class="airport">${leg.arrival.airport || leg.arrival.city}</span>
-        </div>
+        ${routeHtml}
         <div class="flight-detail">${sub.operator || ''} · ${sub.number || ''}</div>
         <div class="flight-times">
           <span>${formatTime(leg.departure.time)}</span>

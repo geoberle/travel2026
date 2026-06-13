@@ -425,10 +425,16 @@ function _initFlightLayers(map, chapter) {
 
   addPulseMarker(map, departure);
 
-  const planeEl = document.createElement('div');
-  planeEl.className = 'plane-marker';
-  planeEl.innerHTML = '<svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L10 9H4l2 3.5L4 16h6l2 6 2-6h6l-2-3.5L20 9h-6L12 2z"/></svg>';
-  activePlaneMarker = new mapboxgl.Marker({ element: planeEl, anchor: 'center', rotationAlignment: 'map' })
+  const mode = getTransitMode(journey);
+  const markerEl = document.createElement('div');
+  markerEl.className = 'plane-marker';
+  if (mode === 'flight') {
+    markerEl.innerHTML = '<svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L10 9H4l2 3.5L4 16h6l2 6 2-6h6l-2-3.5L20 9h-6L12 2z"/></svg>';
+  } else {
+    markerEl.textContent = MODE_ICONS[mode] || '●';
+    markerEl.style.cssText = 'font-size:20px;text-align:center;line-height:32px;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.7));';
+  }
+  activePlaneMarker = new mapboxgl.Marker({ element: markerEl, anchor: 'center', rotationAlignment: mode === 'flight' ? 'map' : 'viewport' })
     .setLngLat(interpolated[0])
     .addTo(map);
 
@@ -480,7 +486,7 @@ function _initFlightLayers(map, chapter) {
     const pos = interpolated[idx];
     if (activePlaneMarker) {
       activePlaneMarker.setLngLat(pos);
-      if (idx > 0) {
+      if (mode === 'flight' && idx > 0) {
         const prev = interpolated[Math.max(0, idx - 5)];
         const dLon = (pos[0] - prev[0]) * Math.PI / 180;
         const lat1 = prev[1] * Math.PI / 180;
