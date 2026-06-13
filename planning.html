@@ -23,18 +23,20 @@
 
     #map { flex: 1; }
 
-    /* Sidebar */
-    #sidebar { width: 420px; display: flex; flex-direction: column; background: var(--bg-panel); border-left: 1px solid var(--border); overflow: hidden; }
+    #sidebar { width: 420px; display: flex; flex-direction: column; background: var(--bg-panel); border-left: 1px solid var(--border); overflow: hidden; position: relative; }
 
-    /* Trip header */
+    /* --- View container (slide-over) --- */
+    .view { position: absolute; inset: 0; display: flex; flex-direction: column; transition: transform 0.3s ease; }
+    .view.hidden-left { transform: translateX(-100%); }
+    .view.hidden-right { transform: translateX(100%); }
+
+    /* --- Itinerary view --- */
     .trip-header { padding: 14px 16px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
     .trip-header h1 { font-size: 1rem; font-weight: 600; letter-spacing: -0.01em; }
     .trip-header .meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
 
-    /* Itinerary timeline */
     .itinerary { flex: 1; overflow-y: auto; padding: 8px 0; }
 
-    /* Insert point */
     .insert-point { display: flex; justify-content: center; padding: 4px 0; }
     .insert-btn { width: 24px; height: 24px; border-radius: 50%; border: 1px dashed var(--border); background: transparent; color: var(--text-muted); font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
     .insert-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(78,205,196,0.08); }
@@ -43,7 +45,6 @@
     .insert-option { padding: 8px 12px; background: var(--bg-card); border-radius: 6px; border: 1px solid var(--border); color: var(--text); font-size: 0.75rem; font-family: var(--font); cursor: pointer; text-align: left; transition: all 0.2s; }
     .insert-option:hover { border-color: var(--accent); background: rgba(78,205,196,0.08); }
 
-    /* Blocks */
     .block { margin: 2px 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); transition: border-color 0.2s; }
     .block.selected { border-color: var(--accent); }
     .block-header { display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; transition: background 0.15s; }
@@ -52,14 +53,22 @@
     .block-info { flex: 1; min-width: 0; }
     .block-label { font-size: 0.8rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .block-meta { font-size: 0.65rem; color: var(--text-muted); margin-top: 1px; }
-    .block-chevron { font-size: 0.6rem; color: var(--text-muted); transition: transform 0.2s; flex-shrink: 0; }
-    .block.expanded .block-chevron { transform: rotate(90deg); }
+    .block-chevron { font-size: 0.6rem; color: var(--text-muted); flex-shrink: 0; }
 
-    /* Stay days */
-    .stay-days { display: none; padding: 0 8px 8px; }
-    .block.expanded .stay-days { display: block; }
+    /* --- Detail view --- */
+    .detail-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .back-btn { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; padding: 4px; transition: color 0.2s; }
+    .back-btn:hover { color: var(--text); }
+    .detail-title { flex: 1; }
+    .detail-title h2 { font-size: 0.95rem; font-weight: 600; }
+    .detail-title .meta { font-size: 0.65rem; color: var(--text-muted); margin-top: 1px; }
 
-    .stay-day { padding: 6px 10px; margin: 3px 0; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; font-size: 0.78rem; transition: background 0.15s; border: 1px solid transparent; min-height: 34px; }
+    .detail-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+
+    .detail-section { padding: 8px 12px; }
+    .detail-section-header { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.3; padding: 8px 4px 6px; }
+
+    .stay-day { padding: 8px 10px; margin: 3px 0; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; font-size: 0.78rem; transition: background 0.15s; border: 1px solid transparent; }
     .stay-day:hover { background: rgba(255,255,255,0.06); }
     .stay-day.selected { border-color: var(--accent); background: rgba(78,205,196,0.06); }
     .stay-day.drag-over { outline: 2px dashed var(--accent); }
@@ -74,34 +83,22 @@
     .day-remove { background: none; border: none; color: var(--text-muted); font-size: 0.7rem; cursor: pointer; padding: 2px 4px; flex-shrink: 0; opacity: 0; transition: opacity 0.15s; }
     .stay-day:hover .day-remove { opacity: 1; }
     .day-remove:hover { color: var(--danger); }
+
+    .poi-chip { padding: 4px 10px; margin: 2px 0; background: rgba(255,255,255,0.05); border-radius: 5px; font-size: 0.72rem; cursor: grab; display: flex; align-items: center; gap: 6px; }
+    .poi-chip:active { cursor: grabbing; }
+    .poi-chip .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
     .poi-chip.assigned { position: relative; padding-right: 24px; }
     .poi-unassign { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); font-size: 0.6rem; cursor: pointer; padding: 2px; opacity: 0; transition: opacity 0.15s; }
     .poi-chip.assigned:hover .poi-unassign { opacity: 1; }
     .poi-unassign:hover { color: var(--danger); }
 
-    .add-day-btn { display: block; width: 100%; padding: 6px; margin-top: 4px; background: none; border: 1px dashed var(--border); border-radius: 6px; color: var(--text-muted); font-size: 0.7rem; font-family: var(--font); cursor: pointer; transition: all 0.2s; }
-    .add-day-btn:hover { border-color: var(--accent); color: var(--accent); }
+    /* --- Bottom tabs (inside detail view) --- */
+    .detail-tabs { display: flex; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .detail-tab { flex: 1; padding: 8px; text-align: center; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; opacity: 0.4; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .detail-tab.active { opacity: 1; border-bottom-color: var(--accent); }
+    .detail-tab-content { flex: 1; overflow-y: auto; display: none; flex-direction: column; }
+    .detail-tab-content.active { display: flex; }
 
-    /* Unassigned POIs */
-    .unassigned { padding: 0 8px 8px; }
-    .unassigned-header { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.3; padding: 6px 10px 4px; }
-    .unassigned-drop { min-height: 30px; padding: 4px 0; border: 1px dashed transparent; border-radius: 6px; transition: border-color 0.2s; }
-    .unassigned-drop.drag-over { border-color: var(--accent); }
-
-    /* Draggable POI chip */
-    .poi-chip { padding: 4px 10px; margin: 2px 0; background: rgba(255,255,255,0.05); border-radius: 5px; font-size: 0.72rem; cursor: grab; display: flex; align-items: center; gap: 6px; }
-    .poi-chip:active { cursor: grabbing; }
-    .poi-chip .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-
-    /* Bottom panel: tabs */
-    .bottom-panel { border-top: 1px solid var(--border); display: flex; flex-direction: column; max-height: 50%; flex-shrink: 0; }
-    .bottom-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-    .bottom-tab { flex: 1; padding: 8px; text-align: center; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; opacity: 0.4; border-bottom: 2px solid transparent; transition: all 0.2s; }
-    .bottom-tab.active { opacity: 1; border-bottom-color: var(--accent); }
-    .bottom-content { flex: 1; overflow-y: auto; display: none; flex-direction: column; }
-    .bottom-content.active { display: flex; }
-
-    /* POI list */
     .poi-list { padding: 8px; }
     .poi-count { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.3; padding: 4px 8px 6px; }
     .poi-item { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 6px; cursor: pointer; transition: background 0.15s; margin-bottom: 2px; }
@@ -114,7 +111,6 @@
     .poi-item .actions button:hover { color: var(--text); }
     .poi-item.highlight { background: rgba(78,205,196,0.15); }
 
-    /* Chat */
     .chat-messages { flex: 1; overflow-y: auto; padding: 8px; }
     .chat-msg { margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; line-height: 1.45; max-width: 95%; }
     .chat-msg.user { background: var(--bg-card); margin-left: auto; }
@@ -124,12 +120,10 @@
     .chat-input-wrap textarea.scrollable { overflow-y: auto; }
     .chat-input-wrap button { background: var(--accent); color: #0a0a0f; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.75rem; transition: opacity 0.2s; }
     .chat-input-wrap button:disabled { opacity: 0.3; cursor: default; }
-
     .chat-chips { display: flex; flex-wrap: wrap; gap: 5px; padding: 8px; justify-content: center; }
     .chat-chip { background: rgba(78,205,196,0.08); border: 1px solid rgba(78,205,196,0.15); color: var(--accent); padding: 6px 12px; border-radius: 16px; font-size: 0.7rem; cursor: pointer; font-family: var(--font); transition: all 0.2s; }
     .chat-chip:hover { background: rgba(78,205,196,0.2); border-color: var(--accent); }
 
-    /* POI suggestion cards */
     .poi-suggestion { background: var(--bg-card); border-radius: 6px; padding: 8px 10px; margin: 4px 0; font-size: 0.75rem; position: relative; cursor: pointer; transition: background 0.2s; }
     .poi-suggestion:hover { background: rgba(78,205,196,0.06); }
     .poi-suggestion .name { font-weight: 600; margin-bottom: 3px; }
@@ -145,12 +139,10 @@
     .poi-status { font-size: 0.65rem; font-weight: 600; }
     .poi-status.added { color: var(--accent); }
     .poi-status.dismissed { color: var(--text-muted); }
-
     .poi-alignment { display: flex; gap: 4px; margin-top: 4px; }
     .alignment-badge { display: flex; align-items: center; gap: 3px; font-size: 0.6rem; }
     .alignment-avatar { width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.5rem; font-weight: 700; color: #0a0a0f; }
     .alignment-pct { opacity: 0.6; }
-
     .choice-option { display: flex; align-items: center; gap: 8px; padding: 8px 10px; margin: 3px 0; background: var(--bg-card); border-radius: 6px; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; border: 2px solid transparent; }
     .choice-option:hover { background: rgba(78,205,196,0.08); }
     .choice-option.selected { border-color: var(--accent); }
@@ -160,7 +152,6 @@
     .proposal-actions .confirm-btn { background: var(--accent); color: #0a0a0f; }
     .proposal-actions .skip-btn { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
 
-    /* Agent loading */
     .agent-loading { display: flex; align-items: center; gap: 8px; padding: 8px 12px; }
     .agent-spinner { display: flex; gap: 3px; }
     .agent-spinner .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); animation: pulse 1.4s ease-in-out infinite; }
@@ -169,14 +160,12 @@
     @keyframes pulse { 0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1.2); } }
     .agent-loading .loading-text { font-size: 0.7rem; color: var(--accent); opacity: 0.8; }
 
-    /* POI map markers */
     .poi-marker-wrap { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
     .poi-circle-marker { width: 44px; height: 44px; border-radius: 50%; border: 3px solid #4ecdc4; outline: 2px solid rgba(255,255,255,0.6); overflow: hidden; background-color: var(--bg-card); background-size: cover; background-position: center; transition: transform 0.2s, box-shadow 0.2s; }
     .poi-circle-marker.no-img { display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: #4ecdc4; }
     .poi-circle-marker.active, .poi-circle-marker:hover { transform: scale(1.25); z-index: 10; }
     .poi-marker-label { font-size: 0.6rem; font-weight: 600; color: rgba(255,255,255,0.95); text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.6); margin-top: 3px; white-space: nowrap; max-width: 110px; overflow: hidden; text-overflow: ellipsis; text-align: center; }
 
-    /* Mapbox popup */
     .mapboxgl-popup-content { background: rgba(15,15,25,0.95); color: #e8e8f0; border-radius: 8px; padding: 0; font-family: var(--font); overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
     .mapboxgl-popup-tip { border-top-color: rgba(15,15,25,0.95); }
     .mapboxgl-popup-close-button { color: rgba(255,255,255,0.6); font-size: 18px; right: 4px; top: 2px; }
@@ -190,7 +179,6 @@
     .poi-popup-link { display: inline-block; margin-top: 4px; font-size: 0.65rem; font-weight: 600; color: var(--accent); text-decoration: none; }
     .poi-popup-link:hover { text-decoration: underline; }
 
-    /* Confirm dialog */
     .confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: flex; align-items: center; justify-content: center; }
     .confirm-dialog { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; max-width: 320px; text-align: center; }
     .confirm-dialog p { font-size: 0.85rem; margin-bottom: 16px; line-height: 1.4; }
@@ -203,27 +191,39 @@
 <body>
   <div id="map"></div>
   <div id="sidebar">
-    <div class="trip-header" id="trip-header"></div>
-    <div class="itinerary" id="itinerary"></div>
-    <div class="bottom-panel">
-      <div class="bottom-tabs">
-        <div class="bottom-tab active" data-tab="pois">POIs</div>
-        <div class="bottom-tab" data-tab="discover">Discover</div>
+    <!-- Itinerary view -->
+    <div class="view" id="view-itinerary">
+      <div class="trip-header" id="trip-header"></div>
+      <div class="itinerary" id="itinerary"></div>
+    </div>
+
+    <!-- Detail view (stay) -->
+    <div class="view hidden-right" id="view-detail">
+      <div class="detail-header">
+        <button class="back-btn" onclick="showItinerary()">←</button>
+        <div class="detail-title" id="detail-title"></div>
       </div>
-      <div class="bottom-content active" id="tab-pois">
-        <div class="poi-list" id="poi-list"></div>
-      </div>
-      <div class="bottom-content" id="tab-discover">
-        <div class="chat-messages" id="chat-messages">
-          <div class="chat-chips" id="chat-chips">
-            <button class="chat-chip" data-prompt="Find good food spots nearby">🍜 Food</button>
-            <button class="chat-chip" data-prompt="Find manga shops and gaming cafes">🎮 Manga</button>
-            <button class="chat-chip" data-prompt="Find a travel vlog and extract interesting places">🎥 Vlog</button>
-          </div>
+      <div class="detail-body">
+        <div class="detail-section" id="detail-days"></div>
+        <div class="detail-tabs">
+          <div class="detail-tab active" data-tab="pois">POIs</div>
+          <div class="detail-tab" data-tab="discover">Discover</div>
         </div>
-        <div class="chat-input-wrap">
-          <textarea id="chat-input" placeholder="Ask anything, paste a link..." rows="1"></textarea>
-          <button id="chat-send" disabled>Send</button>
+        <div class="detail-tab-content active" id="dtab-pois">
+          <div class="poi-list" id="poi-list"></div>
+        </div>
+        <div class="detail-tab-content" id="dtab-discover">
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-chips" id="chat-chips">
+              <button class="chat-chip" data-prompt="Find good food spots nearby">🍜 Food</button>
+              <button class="chat-chip" data-prompt="Find manga shops and gaming cafes">🎮 Manga</button>
+              <button class="chat-chip" data-prompt="Find a travel vlog and extract interesting places">🎥 Vlog</button>
+            </div>
+          </div>
+          <div class="chat-input-wrap">
+            <textarea id="chat-input" placeholder="Ask anything, paste a link..." rows="1"></textarea>
+            <button id="chat-send" disabled>Send</button>
+          </div>
         </div>
       </div>
     </div>
@@ -240,37 +240,72 @@
     };
     const TRAVELER_COLORS = { G: '#4ecdc4', C: '#ff9f43', L: '#a55eea' };
 
-    let map;
-    let selectedBlockId = null;
-    let selectedDayIndex = null;
-    let activeLocation = null;
-    let chatHistories = {};
-    let activePopup = null;
-    let _planningMarkers = [];
+    let map, selectedBlockId = null, selectedDayIndex = null, activeLocation = null;
+    let chatHistories = {}, activePopup = null, _planningMarkers = [], _transitRouteId = null;
+    let currentView = 'itinerary';
 
     async function init() {
       mapboxgl.accessToken = MAPBOX_TOKEN;
-      map = new mapboxgl.Map({
-        container: 'map', style: 'mapbox://styles/mapbox/dark-v11',
-        center: [82, 28], zoom: 3, projection: 'globe'
-      });
-      map.on('style.load', () => {
-        map.setFog({ color: 'rgb(15,15,25)', 'high-color': 'rgb(30,30,60)', 'horizon-blend': 0.06, 'space-color': 'rgb(8,8,12)', 'star-intensity': 0.5 });
-      });
+      map = new mapboxgl.Map({ container: 'map', style: 'mapbox://styles/mapbox/dark-v11', center: [82, 28], zoom: 3, projection: 'globe' });
+      map.on('style.load', () => { map.setFog({ color: 'rgb(15,15,25)', 'high-color': 'rgb(30,30,60)', 'horizon-blend': 0.06, 'space-color': 'rgb(8,8,12)', 'star-intensity': 0.5 }); });
 
       await TripStore.loadApi();
-
       Object.keys(TripStore.locations).forEach(n => { chatHistories[n] = []; });
-
-      setupBottomTabs();
+      setupDetailTabs();
       setupChat();
 
       map.on('load', () => {
         renderTripHeader();
         renderItinerary();
-        const firstStay = TripStore.getItinerary().find(b => b.type === 'stay');
-        if (firstStay) selectBlock(firstStay.id);
       });
+    }
+
+    // --- Views ---
+    function showItinerary() {
+      currentView = 'itinerary';
+      document.getElementById('view-itinerary').classList.remove('hidden-left');
+      document.getElementById('view-detail').classList.add('hidden-right');
+      selectedBlockId = null;
+      selectedDayIndex = null;
+      clearTransitRoute();
+      clearMarkers();
+      renderItinerary();
+    }
+
+    function showDetail(stayId) {
+      currentView = 'detail';
+      selectedBlockId = stayId;
+      selectedDayIndex = null;
+
+      const stay = TripStore.getStay(stayId);
+      if (!stay) return;
+
+      activeLocation = stay.location;
+      const loc = TripStore.locations[activeLocation];
+      const locName = loc?.name || activeLocation;
+      const checkIn = formatDate(stay.accommodation?.checkIn);
+      const checkOut = formatDate(stay.accommodation?.checkOut);
+      const accName = stay.accommodation?.neighborhood;
+
+      document.getElementById('detail-title').innerHTML = `
+        <h2>${locName}</h2>
+        <div class="meta">${checkIn} — ${checkOut}${accName ? ' · ' + accName : ''} · ${(stay.days || []).length}d</div>
+      `;
+
+      document.getElementById('view-itinerary').classList.add('hidden-left');
+      document.getElementById('view-detail').classList.remove('hidden-right');
+
+      renderDetailDays();
+      renderPois();
+      clearTransitRoute();
+      refreshMarkers();
+
+      const acc = stay.accommodation;
+      if (acc?.coordinates) {
+        map.flyTo({ center: acc.coordinates, zoom: 12, pitch: 45, bearing: -15, duration: 1500 });
+      }
+
+      renderItinerary();
     }
 
     // --- Trip header ---
@@ -294,7 +329,7 @@
       return d.toISOString().split('T')[0];
     }
 
-    // --- Itinerary timeline ---
+    // --- Itinerary view ---
     function renderItinerary() {
       const container = document.getElementById('itinerary');
       const itinerary = TripStore.getItinerary();
@@ -305,7 +340,23 @@
         if (block.type === 'transit') {
           html += transitBlockHtml(block);
         } else if (block.type === 'stay') {
-          html += stayBlockHtml(block);
+          const sel = selectedBlockId === block.id ? ' selected' : '';
+          const loc = TripStore.locations[block.location];
+          const locName = loc?.name || block.location;
+          const checkIn = formatDate(block.accommodation?.checkIn);
+          const checkOut = formatDate(block.accommodation?.checkOut);
+          const dayCount = (block.days || []).length;
+          const accName = block.accommodation?.neighborhood;
+          html += `<div class="block stay${sel}" data-block-id="${block.id}">
+            <div class="block-header">
+              <div class="block-icon">🏠</div>
+              <div class="block-info">
+                <div class="block-label">${locName}</div>
+                <div class="block-meta">${checkIn} — ${checkOut}${accName ? ' · ' + accName : ''} · ${dayCount}d</div>
+              </div>
+              <div class="block-chevron">▶</div>
+            </div>
+          </div>`;
         }
       });
       html += insertPointHtml(itinerary.length);
@@ -315,15 +366,11 @@
     }
 
     function insertPointHtml(position) {
-      const itinerary = TripStore.getItinerary();
-      const prev = itinerary[position - 1];
-      const next = itinerary[position];
-      const smartType = prev?.type === 'stay' ? 'transit' : 'stay';
       return `<div class="insert-point" data-position="${position}">
         <button class="insert-btn" title="Add block">+</button>
-        <div class="insert-menu" data-smart="${smartType}">
+        <div class="insert-menu">
           <button class="insert-option" data-type="stay">🏠 Add stay</button>
-          <button class="insert-option" data-type="transit">✈ Add transit</button>
+          <button class="insert-option" data-type="transit">🚀 Add transit</button>
         </div>
       </div>`;
     }
@@ -334,7 +381,7 @@
       const meta = block.date ? formatDate(block.date) : 'Date TBD';
       const dur = block.totalDuration ? ` · ${block.totalDuration}` : '';
       const icon = MODE_ICONS[getTransitMode(block)] || '✈';
-      return `<div class="block flight${sel}" data-block-id="${block.id}">
+      return `<div class="block transit${sel}" data-block-id="${block.id}">
         <div class="block-header">
           <div class="block-icon">${icon}</div>
           <div class="block-info">
@@ -345,92 +392,18 @@
       </div>`;
     }
 
-    function stayBlockHtml(block) {
-      const sel = selectedBlockId === block.id ? ' selected expanded' : '';
-      const loc = TripStore.locations[block.location];
-      const locName = loc?.name || block.location;
-      const checkIn = formatDate(block.accommodation?.checkIn);
-      const checkOut = formatDate(block.accommodation?.checkOut);
-      const dayCount = (block.days || []).length;
-      const accName = block.accommodation?.neighborhood;
-
-      let daysHtml = '';
-      (block.days || []).forEach((day, idx) => {
-        const daySel = selectedBlockId === block.id && selectedDayIndex === idx ? ' selected' : '';
-        const dateStr = formatDate(deriveDayDate(block, idx));
-        const title = day.title || '';
-        const titleClass = title ? 'day-title' : 'day-title empty';
-        const titleText = title || 'Untitled';
-        const pin = day.pinnedDate ? '<span class="day-pin">📌</span>' : '';
-        const draggable = day.pinnedDate ? '' : ' draggable="true"';
-
-        let poisHtml = '';
-        (day.activities || []).forEach(a => {
-          const p = TripStore.allPois[a.poi];
-          if (p) {
-            const color = CATEGORY_COLORS[p.category] || '#4ecdc4';
-            poisHtml += `<div class="poi-chip assigned" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${p.id}')" data-poi="${p.id}">
-              <div class="dot" style="background:${color}"></div>${p.name}<button class="poi-unassign" onclick="event.stopPropagation();unassignPoi('${block.id}',${idx},'${p.id}')" title="Remove">✕</button>
-            </div>`;
-          }
-        });
-
-        daysHtml += `<div class="stay-day${daySel}" data-stay-id="${block.id}" data-day-index="${idx}"${draggable}
-          ondragover="event.preventDefault();this.classList.add('drag-over')"
-          ondragleave="this.classList.remove('drag-over')"
-          ondrop="handleDayDrop(event, '${block.id}', ${idx})">
-          <div class="day-header-row">
-            <span class="day-num">${idx + 1}</span>
-            <span class="${titleClass}">${titleText}</span>
-            ${pin}
-            <span class="block-meta">${dateStr}</span>
-            <button class="day-remove" onclick="event.stopPropagation();removeDay('${block.id}',${idx})" title="Remove day">✕</button>
-          </div>
-          ${poisHtml ? `<div class="day-pois">${poisHtml}</div>` : ''}
-        </div>`;
-      });
-
-      return `<div class="block stay${sel}" data-block-id="${block.id}">
-        <div class="block-header">
-          <div class="block-icon">🏠</div>
-          <div class="block-info">
-            <div class="block-label">${locName}</div>
-            <div class="block-meta">${checkIn} — ${checkOut}${accName ? ' · ' + accName : ''} · ${dayCount}d</div>
-          </div>
-          <div class="block-chevron">▶</div>
-        </div>
-        <div class="stay-days">
-          ${daysHtml}
-        </div>
-      </div>`;
-    }
-
-    function poiChipHtml(p) {
-      const color = CATEGORY_COLORS[p.category] || '#4ecdc4';
-      return `<div class="poi-chip" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${p.id}')" data-poi="${p.id}">
-        <div class="dot" style="background:${color}"></div>${p.name}</div>`;
-    }
-
     function bindItineraryEvents() {
       document.querySelectorAll('.block-header').forEach(el => {
         el.addEventListener('click', () => {
-          const blockId = el.closest('.block').dataset.blockId;
-          selectBlock(blockId);
+          const blockEl = el.closest('.block');
+          const blockId = blockEl.dataset.blockId;
+          const block = TripStore.getItinerary().find(b => b.id === blockId);
+          if (block?.type === 'stay') {
+            showDetail(blockId);
+          } else if (block?.type === 'transit') {
+            selectTransit(blockId);
+          }
         });
-      });
-
-      document.querySelectorAll('.stay-day').forEach(el => {
-        el.addEventListener('click', (e) => {
-          if (e.target.closest('.day-remove')) return;
-          selectDay(el.dataset.stayId, parseInt(el.dataset.dayIndex));
-        });
-        if (el.draggable) {
-          el.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('application/day-reorder', JSON.stringify({
-              stayId: el.dataset.stayId, dayIndex: parseInt(el.dataset.dayIndex)
-            }));
-          });
-        }
       });
 
       document.querySelectorAll('.insert-btn').forEach(btn => {
@@ -460,42 +433,85 @@
       });
     }
 
-    function selectBlock(blockId) {
+    function selectTransit(blockId) {
       selectedBlockId = blockId;
-      selectedDayIndex = null;
-
       const block = TripStore.getItinerary().find(b => b.id === blockId);
       if (!block) return;
 
-      if (block.type === 'stay') {
-        activeLocation = block.location;
-        clearTransitRoute();
-        renderPois();
-        refreshMarkers();
-        const acc = block.accommodation;
-        if (acc?.coordinates) {
-          map.flyTo({ center: acc.coordinates, zoom: 12, pitch: 45, bearing: -15, duration: 1500 });
-        }
-      } else if (block.type === 'transit') {
-        activeLocation = null;
-        clearMarkers();
-        renderPois();
-        showTransitRoute(block);
-        if (block.legs?.length > 0) {
-          const bounds = new mapboxgl.LngLatBounds();
-          block.legs.forEach(l => { bounds.extend(l.departure.coordinates); bounds.extend(l.arrival.coordinates); });
-          map.fitBounds(bounds, { padding: 80, pitch: 15, bearing: 0, duration: 1500, maxZoom: 10 });
-        }
+      activeLocation = null;
+      clearMarkers();
+      showTransitRoute(block);
+      if (block.legs?.length > 0) {
+        const bounds = new mapboxgl.LngLatBounds();
+        block.legs.forEach(l => { bounds.extend(l.departure.coordinates); bounds.extend(l.arrival.coordinates); });
+        map.fitBounds(bounds, { padding: 80, pitch: 15, bearing: 0, duration: 1500, maxZoom: 10 });
       }
-
       renderItinerary();
     }
 
-    function selectDay(stayId, dayIndex) {
-      if (selectedBlockId !== stayId) selectBlock(stayId);
-      selectedBlockId = stayId;
-      selectedDayIndex = dayIndex;
+    // --- Detail view: days ---
+    function renderDetailDays() {
+      const stay = TripStore.getStay(selectedBlockId);
+      if (!stay) return;
 
+      let html = '<div class="detail-section-header">Days</div>';
+      (stay.days || []).forEach((day, idx) => {
+        const daySel = selectedDayIndex === idx ? ' selected' : '';
+        const dateStr = formatDate(deriveDayDate(stay, idx));
+        const title = day.title || '';
+        const titleClass = title ? 'day-title' : 'day-title empty';
+        const titleText = title || 'Untitled';
+        const pin = day.pinnedDate ? '<span class="day-pin">📌</span>' : '';
+        const draggable = day.pinnedDate ? '' : ' draggable="true"';
+
+        let poisHtml = '';
+        (day.activities || []).forEach(a => {
+          const p = TripStore.allPois[a.poi];
+          if (p) {
+            const color = CATEGORY_COLORS[p.category] || '#4ecdc4';
+            poisHtml += `<div class="poi-chip assigned" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${p.id}')" data-poi="${p.id}">
+              <div class="dot" style="background:${color}"></div>${p.name}<button class="poi-unassign" onclick="event.stopPropagation();unassignPoi('${stay.id}',${idx},'${p.id}')" title="Remove">✕</button>
+            </div>`;
+          }
+        });
+
+        html += `<div class="stay-day${daySel}" data-stay-id="${stay.id}" data-day-index="${idx}"${draggable}
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="handleDayDrop(event, '${stay.id}', ${idx})">
+          <div class="day-header-row">
+            <span class="day-num">${idx + 1}</span>
+            <span class="${titleClass}">${titleText}</span>
+            ${pin}
+            <span class="block-meta">${dateStr}</span>
+            <button class="day-remove" onclick="event.stopPropagation();removeDay('${stay.id}',${idx})" title="Remove day">✕</button>
+          </div>
+          ${poisHtml ? `<div class="day-pois">${poisHtml}</div>` : ''}
+        </div>`;
+      });
+
+      document.getElementById('detail-days').innerHTML = html;
+      bindDayEvents();
+    }
+
+    function bindDayEvents() {
+      document.querySelectorAll('.stay-day').forEach(el => {
+        el.addEventListener('click', (e) => {
+          if (e.target.closest('.day-remove, .poi-unassign')) return;
+          selectDay(el.dataset.stayId, parseInt(el.dataset.dayIndex));
+        });
+        if (el.draggable) {
+          el.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('application/day-reorder', JSON.stringify({
+              stayId: el.dataset.stayId, dayIndex: parseInt(el.dataset.dayIndex)
+            }));
+          });
+        }
+      });
+    }
+
+    function selectDay(stayId, dayIndex) {
+      selectedDayIndex = dayIndex;
       const stay = TripStore.getStay(stayId);
       if (!stay) return;
 
@@ -510,15 +526,10 @@
         map.fitBounds(bounds, { padding: 80, maxZoom: 15, duration: 1000 });
       }
 
-      renderItinerary();
+      renderDetailDays();
     }
 
     // --- Day operations ---
-    async function addDay(stayId) {
-      await TripStore.addDayToStay(stayId);
-      renderItinerary();
-    }
-
     async function removeDay(stayId, dayIndex) {
       const stay = TripStore.getStay(stayId);
       if (!stay) return;
@@ -527,14 +538,14 @@
 
       if (actCount > 0) {
         const confirmed = await showConfirm(
-          `Remove "${day.title || 'Untitled'}" with ${actCount} activit${actCount === 1 ? 'y' : 'ies'}? Activities return to unassigned.`
+          `Remove "${day.title || 'Untitled'}" with ${actCount} activit${actCount === 1 ? 'y' : 'ies'}?`
         );
         if (!confirmed) return;
       }
 
       await TripStore.removeDayFromStay(stayId, dayIndex);
       if (selectedDayIndex === dayIndex) selectedDayIndex = null;
-      renderItinerary();
+      renderDetailDays();
     }
 
     async function handleDayDrop(event, stayId, targetIndex) {
@@ -547,41 +558,22 @@
       if (dayReorder) {
         const { stayId: srcStayId, dayIndex: srcIndex } = JSON.parse(dayReorder);
         if (srcStayId !== stayId || srcIndex === targetIndex) return;
-
         const stay = TripStore.getStay(stayId);
         if (!stay) return;
         const order = stay.days.map((_, i) => i);
         order.splice(srcIndex, 1);
         order.splice(targetIndex, 0, srcIndex);
         await TripStore.reorderDays(stayId, order);
-        renderItinerary();
+        renderDetailDays();
       } else if (poiId) {
         await TripStore.assignPoiToDay(stayId, targetIndex, poiId, '');
-        renderItinerary();
+        renderDetailDays();
       }
     }
 
     async function unassignPoi(stayId, dayIndex, poiId) {
       await TripStore.unassignPoiFromDay(stayId, dayIndex, poiId);
-      renderItinerary();
-    }
-
-    async function handleUnassignDrop(event, stayId) {
-      event.preventDefault();
-      event.currentTarget.classList.remove('drag-over');
-      const poiId = event.dataTransfer.getData('text/plain');
-      if (!poiId) return;
-
-      const stay = TripStore.getStay(stayId);
-      if (!stay) return;
-
-      for (let i = 0; i < (stay.days || []).length; i++) {
-        const day = stay.days[i];
-        if ((day.activities || []).some(a => a.poi === poiId)) {
-          await TripStore.unassignPoiFromDay(stayId, i, poiId);
-        }
-      }
-      renderItinerary();
+      renderDetailDays();
     }
 
     // --- Block CRUD ---
@@ -593,12 +585,11 @@
       const checkOut = prompt('Check-out date (YYYY-MM-DD):');
       if (!checkOut) return;
 
-      const block = {
+      await TripStore.addBlock(position, {
         type: 'stay',
         location: city.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
         accommodation: { checkIn, checkOut, coordinates: [0, 0], neighborhood: '', type: '', config: '', status: 'open' }
-      };
-      await TripStore.addBlock(position, block);
+      });
       await TripStore.loadApi();
       renderItinerary();
       renderTripHeader();
@@ -610,8 +601,9 @@
       const to = prompt('To city:');
       if (!to) return;
 
-      const block = { type: 'transit', from, to, label: `${from} → ${to}`, date: '', legs: [], layovers: [], totalDuration: '' };
-      await TripStore.addBlock(position, block);
+      await TripStore.addBlock(position, {
+        type: 'transit', from, to, label: `${from} → ${to}`, date: '', legs: [], layovers: [], totalDuration: ''
+      });
       await TripStore.loadApi();
       renderItinerary();
       renderTripHeader();
@@ -622,13 +614,7 @@
       return new Promise(resolve => {
         const overlay = document.createElement('div');
         overlay.className = 'confirm-overlay';
-        overlay.innerHTML = `<div class="confirm-dialog">
-          <p>${message}</p>
-          <div class="btns">
-            <button class="btn-cancel">Cancel</button>
-            <button class="btn-danger">Remove</button>
-          </div>
-        </div>`;
+        overlay.innerHTML = `<div class="confirm-dialog"><p>${message}</p><div class="btns"><button class="btn-cancel">Cancel</button><button class="btn-danger">Remove</button></div></div>`;
         document.body.appendChild(overlay);
         overlay.querySelector('.btn-cancel').addEventListener('click', () => { overlay.remove(); resolve(false); });
         overlay.querySelector('.btn-danger').addEventListener('click', () => { overlay.remove(); resolve(true); });
@@ -636,18 +622,13 @@
     }
 
     // --- Transit route ---
-    let _transitRouteId = null;
-
     function showTransitRoute(block) {
       clearTransitRoute();
       const coords = [];
       (block.legs || []).forEach(leg => {
         if (leg.route) {
-          if (coords.length === 0 || coords[coords.length - 1].toString() !== leg.route[0].toString()) {
-            coords.push(...leg.route);
-          } else {
-            coords.push(...leg.route.slice(1));
-          }
+          if (coords.length === 0 || coords[coords.length - 1].toString() !== leg.route[0].toString()) coords.push(...leg.route);
+          else coords.push(...leg.route.slice(1));
         } else {
           if (coords.length === 0) coords.push(leg.departure.coordinates);
           coords.push(leg.arrival.coordinates);
@@ -659,23 +640,14 @@
       const lineId = `planning-route-line-${block.id}`;
       _transitRouteId = block.id;
 
-      map.addSource(srcId, {
-        type: 'geojson',
-        data: { type: 'Feature', geometry: { type: 'LineString', coordinates: coords } }
-      });
-      map.addLayer({
-        id: lineId, type: 'line', source: srcId,
-        layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: { 'line-color': '#4ecdc4', 'line-width': 3, 'line-opacity': 0.8 }
-      });
+      map.addSource(srcId, { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: coords } } });
+      map.addLayer({ id: lineId, type: 'line', source: srcId, layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#4ecdc4', 'line-width': 3, 'line-opacity': 0.8 } });
     }
 
     function clearTransitRoute() {
       if (!_transitRouteId) return;
-      const lineId = `planning-route-line-${_transitRouteId}`;
-      const srcId = `planning-route-${_transitRouteId}`;
-      if (map.getLayer(lineId)) map.removeLayer(lineId);
-      if (map.getSource(srcId)) map.removeSource(srcId);
+      if (map.getLayer(`planning-route-line-${_transitRouteId}`)) map.removeLayer(`planning-route-line-${_transitRouteId}`);
+      if (map.getSource(`planning-route-${_transitRouteId}`)) map.removeSource(`planning-route-${_transitRouteId}`);
       _transitRouteId = null;
     }
 
@@ -683,63 +655,29 @@
     function refreshMarkers() {
       clearMarkers();
       if (!activeLocation) return;
-      const pois = TripStore.getLocationPois(activeLocation);
-      pois.forEach(poi => {
+      TripStore.getLocationPois(activeLocation).forEach(poi => {
         const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
-
         const el = document.createElement('div');
         el.className = 'poi-circle-marker';
-        if (poi.image) {
-          el.style.backgroundImage = `url(${poi.image})`;
-          el.style.backgroundSize = 'cover';
-          el.style.backgroundPosition = 'center';
-        } else {
-          el.classList.add('no-img');
-          el.textContent = poi.name.charAt(0);
-        }
+        if (poi.image) { el.style.backgroundImage = `url(${poi.image})`; el.style.backgroundSize = 'cover'; el.style.backgroundPosition = 'center'; }
+        else { el.classList.add('no-img'); el.textContent = poi.name.charAt(0); }
         el.style.borderColor = color;
         el.style.boxShadow = `0 0 12px ${color}88, 0 0 4px rgba(255,255,255,0.3)`;
-        el.dataset.poiId = poi.id;
 
-        el.addEventListener('click', (e) => {
-          e.stopPropagation();
-          map.flyTo({ center: poi.coordinates, zoom: 16, duration: 800 });
-          map.once('moveend', () => showPopup(poi));
-        });
-        el.addEventListener('mouseenter', () => {
-          el.classList.add('active');
-          highlightPoiInList(poi.id, true);
-        });
-        el.addEventListener('mouseleave', () => {
-          el.classList.remove('active');
-          highlightPoiInList(poi.id, false);
-        });
+        el.addEventListener('click', (e) => { e.stopPropagation(); map.flyTo({ center: poi.coordinates, zoom: 16, duration: 800 }); map.once('moveend', () => showPopup(poi)); });
+        el.addEventListener('mouseenter', () => { el.classList.add('active'); highlightPoiInList(poi.id, true); });
+        el.addEventListener('mouseleave', () => { el.classList.remove('active'); highlightPoiInList(poi.id, false); });
 
-        const label = document.createElement('div');
-        label.className = 'poi-marker-label';
-        label.textContent = poi.name;
+        const label = document.createElement('div'); label.className = 'poi-marker-label'; label.textContent = poi.name;
+        const wrapper = document.createElement('div'); wrapper.className = 'poi-marker-wrap'; wrapper.appendChild(el); wrapper.appendChild(label);
 
-        const wrapper = document.createElement('div');
-        wrapper.className = 'poi-marker-wrap';
-        wrapper.appendChild(el);
-        wrapper.appendChild(label);
-
-        const marker = new mapboxgl.Marker({ element: wrapper, anchor: 'center' })
-          .setLngLat(poi.coordinates)
-          .addTo(map);
-        _planningMarkers.push(marker);
+        _planningMarkers.push(new mapboxgl.Marker({ element: wrapper, anchor: 'center' }).setLngLat(poi.coordinates).addTo(map));
       });
     }
 
-    function clearMarkers() {
-      _planningMarkers.forEach(m => m.remove());
-      _planningMarkers = [];
-      if (activePopup) { activePopup.remove(); activePopup = null; }
-    }
+    function clearMarkers() { _planningMarkers.forEach(m => m.remove()); _planningMarkers = []; if (activePopup) { activePopup.remove(); activePopup = null; } }
 
-    function highlightPoiInList(id, active) {
-      document.querySelectorAll(`.poi-item[data-id="${id}"]`).forEach(el => el.classList.toggle('highlight', active));
-    }
+    function highlightPoiInList(id, active) { document.querySelectorAll(`.poi-item[data-id="${id}"]`).forEach(el => el.classList.toggle('highlight', active)); }
 
     function showPopup(poi) {
       if (activePopup) activePopup.remove();
@@ -755,14 +693,14 @@
         .addTo(map);
     }
 
-    // --- Bottom panel ---
-    function setupBottomTabs() {
-      document.querySelectorAll('.bottom-tab').forEach(tab => {
+    // --- Detail tabs ---
+    function setupDetailTabs() {
+      document.querySelectorAll('.detail-tab').forEach(tab => {
         tab.addEventListener('click', () => {
-          document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
-          document.querySelectorAll('.bottom-content').forEach(c => c.classList.remove('active'));
+          document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.detail-tab-content').forEach(c => c.classList.remove('active'));
           tab.classList.add('active');
-          document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+          document.getElementById(`dtab-${tab.dataset.tab}`).classList.add('active');
         });
       });
     }
@@ -784,19 +722,12 @@
       list.innerHTML = html;
     }
 
-    function flyAndShow(id) {
-      const poi = TripStore.allPois[id];
-      if (!poi) return;
-      map.flyTo({ center: poi.coordinates, zoom: 15, duration: 1000 });
-      map.once('moveend', () => showPopup(poi));
-    }
+    function flyAndShow(id) { const poi = TripStore.allPois[id]; if (poi) { map.flyTo({ center: poi.coordinates, zoom: 15, duration: 1000 }); map.once('moveend', () => showPopup(poi)); } }
 
     async function delPoi(id) {
       if (!activeLocation) return;
       await TripStore.deletePoi(activeLocation, id);
-      renderPois();
-      renderItinerary();
-      refreshMarkers();
+      renderPois(); renderDetailDays(); refreshMarkers();
     }
 
     // --- Chat ---
@@ -827,7 +758,7 @@
           else if (data.message) addChatMsg('ai', data.message);
           else addChatMsg('ai', 'No results. Try different query.');
           if (data.message) messages.push({ role: 'assistant', content: data.message });
-          if (data.refresh) { await TripStore.loadApi(); renderPois(); renderItinerary(); refreshMarkers(); }
+          if (data.refresh) { await TripStore.loadApi(); renderPois(); renderDetailDays(); refreshMarkers(); }
         });
         es.addEventListener('agent_error', (e) => { done = true; es.close(); removeLoading(); addChatMsg('ai', `Error: ${JSON.parse(e.data).error}`); });
         es.addEventListener('error', () => { es.close(); if (!done) { removeLoading(); addChatMsg('ai', 'Connection error.'); } });
@@ -876,7 +807,7 @@
 
       if (proposal.type === 'propose_pois') {
         const container = document.createElement('div');
-        (proposal.pois || []).forEach((poi, i) => {
+        (proposal.pois || []).forEach(poi => {
           const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
           const isExisting = !!poi.existing;
           const div = document.createElement('div');
@@ -886,7 +817,6 @@
           const img = poi.image ? `<img class="poi-suggestion-img" src="${poi.image}" onerror="this.remove()">` : '';
           const meta = [poi.category, poi.price_range, poi.rating ? `★${poi.rating}` : ''].filter(Boolean).join(' · ');
           div.innerHTML = `${img}<div class="name" style="color:${color}">${poi.name}${badge}</div><div class="desc">${poi.description || ''}</div><div class="cat">${meta}</div>${alignmentHtml(poi.alignment)}${btns}`;
-
           if (!isExisting) {
             div.querySelector('.poi-add-btn')?.addEventListener('click', (e) => {
               e.stopPropagation(); div.classList.add('decided');
