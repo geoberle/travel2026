@@ -199,30 +199,30 @@ itinerary:
         route:
           - - 126.97
             - 37.55
-          - - 127.00
+          - - 127
             - 37.48
           - - 127.05
             - 37.35
-          - - 127.10
+          - - 127.1
             - 37.15
           - - 127.15
             - 36.95
           - - 127.38
             - 36.63
-          - - 127.40
+          - - 127.4
             - 36.35
-          - - 127.90
-            - 36.00
-          - - 128.20
+          - - 127.9
+            - 36
+          - - 128.2
             - 35.85
-          - - 128.60
+          - - 128.6
             - 35.87
           - - 128.62
-            - 35.80
-          - - 128.70
+            - 35.8
+          - - 128.7
             - 35.55
           - - 128.85
-            - 35.30
+            - 35.3
           - - 129.04
             - 35.12
     layovers: []
@@ -244,6 +244,9 @@ itinerary:
       - title: Beach & Arrival
         status: open
         notes: Travel Seoul to Busan (KTX ~2.5h). Haeundae Beach.
+        activities:
+          - poi: haeundae-beach
+            notes: ""
       - title: Culture & Temple
         status: open
         notes: Gamcheon Culture Village, Haedong Yonggungsa Temple.
@@ -269,7 +272,7 @@ itinerary:
           city: Sokcho
           coordinates:
             - 128.5918
-            - 38.2070
+            - 38.207
         duration: 5h 20m
         route:
           - - 129.06
@@ -282,7 +285,7 @@ itinerary:
             - 35.53
           - - 129.21
             - 35.85
-          - - 129.30
+          - - 129.3
             - 36.03
           - - 129.37
             - 36.35
@@ -290,13 +293,13 @@ itinerary:
             - 36.63
           - - 129.36
             - 36.99
-          - - 129.30
+          - - 129.3
             - 37.25
-          - - 129.20
+          - - 129.2
             - 37.45
           - - 129.05
-            - 37.70
-          - - 128.90
+            - 37.7
+          - - 128.9
             - 37.88
           - - 128.75
             - 38.05
@@ -313,7 +316,7 @@ itinerary:
       config: ""
       coordinates:
         - 128.5918
-        - 38.2070
+        - 38.207
       checkIn: "2026-07-28"
       checkOut: "2026-07-30"
       status: open
@@ -338,7 +341,7 @@ itinerary:
           city: Sokcho
           coordinates:
             - 128.5918
-            - 38.2070
+            - 38.207
         arrival:
           city: Seoul
           coordinates:
@@ -349,22 +352,22 @@ itinerary:
           - - 128.59
             - 38.21
           - - 128.35
-            - 38.10
+            - 38.1
           - - 128.15
             - 37.95
           - - 127.95
             - 37.88
           - - 127.77
             - 37.87
-          - - 127.60
+          - - 127.6
             - 37.82
           - - 127.45
             - 37.75
-          - - 127.30
+          - - 127.3
             - 37.68
           - - 127.15
-            - 37.60
-          - - 127.00
+            - 37.6
+          - - 127
             - 37.51
     layovers: []
     totalDuration: 2h 30m
