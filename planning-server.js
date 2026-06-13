@@ -607,8 +607,8 @@ async function executeTool(name, args) {
     case 'get_itinerary': {
       const trip = readTripYaml();
       const summary = (trip.itinerary || []).map(b => {
-        if (b.type === 'flight') {
-          return { type: 'flight', id: b.id, label: b.label, date: b.date };
+        if (b.type === 'transit') {
+          return { type: 'transit', id: b.id, label: b.label, date: b.date };
         }
         return {
           type: 'stay', id: b.id, location: b.location,
@@ -806,8 +806,8 @@ function buildSystemPrompt(activeStayId) {
   const trip = readTripYaml();
 
   const itinerarySummary = (trip.itinerary || []).map((b, i) => {
-    if (b.type === 'flight') {
-      return `${i + 1}. Flight: ${b.label || `${b.from} → ${b.to}`} (${b.date || 'date TBD'})`;
+    if (b.type === 'transit') {
+      return `${i + 1}. Transit: ${b.label || `${b.from} → ${b.to}`} (${b.date || 'date TBD'})`;
     }
     const loc = readLocationYaml(b.location);
     const locName = loc?.name || b.location;

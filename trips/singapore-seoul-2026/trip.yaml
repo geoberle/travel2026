@@ -8,7 +8,7 @@ origin:
     - 46.6247
 travelers: 3
 itinerary:
-  - type: flight
+  - type: transit
     id: outbound
     label: Klagenfurt → Singapore
     from: Klagenfurt
@@ -37,9 +37,11 @@ itinerary:
             - 46.2237
           time: "2026-07-10T11:00:00"
         duration: 1h 0m
-      - flightNumber: TK1052
-        airline: Turkish Airlines
-        aircraft: Boeing 737-800
+      - mode: flight
+        flight:
+          number: TK1052
+          airline: Turkish Airlines
+          aircraft: Boeing 737-800
         departure:
           airport: LJU
           city: Ljubljana
@@ -76,9 +78,11 @@ itinerary:
             - 41.3
           - - 28.75
             - 41.28
-      - flightNumber: TK518
-        airline: Turkish Airlines
-        aircraft: Boeing 787-9
+      - mode: flight
+        flight:
+          number: TK518
+          airline: Turkish Airlines
+          aircraft: Boeing 787-9
         departure:
           airport: IST
           city: Istanbul
@@ -193,7 +197,7 @@ itinerary:
           - poi: orchard-road
             notes: Browse malls
         notes: Last dinner in Singapore. Pack for Seoul (early departure).
-  - type: flight
+  - type: transit
     id: singapore-seoul
     label: Singapore → Seoul
     from: Singapore
@@ -207,9 +211,11 @@ itinerary:
       zoom: 3.5
       pitch: 15
     legs:
-      - flightNumber: SQ600
-        airline: Singapore Airlines
-        aircraft: Boeing 787
+      - mode: flight
+        flight:
+          number: SQ600
+          airline: Singapore Airlines
+          aircraft: Boeing 787
         departure:
           airport: SIN
           city: Singapore
@@ -323,7 +329,7 @@ itinerary:
           - poi: myeongdong
             notes: Last-minute shopping, souvenirs
         notes: Sleep in or revisit favourite spot. Farewell dinner. Early night (flight at 11:40).
-  - type: flight
+  - type: transit
     id: return
     label: Seoul → Klagenfurt
     from: Seoul
@@ -337,9 +343,11 @@ itinerary:
       zoom: 2.5
       pitch: 15
     legs:
-      - flightNumber: LH719
-        airline: Lufthansa
-        aircraft: Airbus A350-900
+      - mode: flight
+        flight:
+          number: LH719
+          airline: Lufthansa
+          aircraft: Airbus A350-900
         departure:
           airport: ICN
           city: Seoul
@@ -402,9 +410,11 @@ itinerary:
             - 47.8
           - - 11.78
             - 48.35
-      - flightNumber: LH1698
-        airline: Lufthansa
-        aircraft: Airbus A319
+      - mode: flight
+        flight:
+          number: LH1698
+          airline: Lufthansa
+          aircraft: Airbus A319
         departure:
           airport: MUC
           city: Munich

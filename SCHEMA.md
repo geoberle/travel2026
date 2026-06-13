@@ -27,12 +27,14 @@ trips/singapore-seoul-2026/
 
 ### Itinerary blocks
 
-Every block has `type` (`flight` or `stay`) and a unique `id`.
+Every block has `type` (`transit` or `stay`) and a unique `id`.
 
-#### Flight block
+#### Transit block
+
+Represents any journey between locations — flights, trains, buses, drives.
 
 ```yaml
-- type: flight
+- type: transit
   id: outbound
   label: "Klagenfurt → Singapore"
   from: Klagenfurt
@@ -44,9 +46,11 @@ Every block has `type` (`flight` or `stay`) and a unique `id`.
     zoom: 4
     pitch: 20
   legs:                             # optional — filled when booking details known
-    - flightNumber: TK1052
-      airline: Turkish Airlines
-      aircraft: Boeing 737-800
+    - mode: flight                  # explicit mode on every leg
+      flight:                       # mode-specific fields nested under mode name
+        number: TK1052
+        airline: Turkish Airlines
+        aircraft: Boeing 737-800
       departure:
         airport: LJU
         city: Ljubljana
@@ -59,10 +63,23 @@ Every block has `type` (`flight` or `stay`) and a unique `id`.
         time: "2026-07-10T17:15:00"
       duration: "2h 25m"
       route: [[14.46, 46.22], ...]  # coordinate waypoints for map arc
-    - mode: drive                   # non-flight leg (car, train, etc.)
+    - mode: drive
       departure: { city: Klagenfurt, coordinates: [...], time: "..." }
       arrival: { airport: LJU, city: Ljubljana, coordinates: [...], time: "..." }
       duration: "1h 0m"
+    - mode: train
+      train:
+        number: KTX 101
+        operator: Korail
+      departure: { city: Seoul, coordinates: [...], time: "..." }
+      arrival: { city: Busan, coordinates: [...], time: "..." }
+      duration: "2h 30m"
+    - mode: bus
+      bus:
+        operator: Express Bus
+      departure: { city: Busan, coordinates: [...], time: "..." }
+      arrival: { city: Sokcho, coordinates: [...], time: "..." }
+      duration: "4h 30m"
   layovers:
     - airport: IST
       city: Istanbul
@@ -70,7 +87,20 @@ Every block has `type` (`flight` or `stay`) and a unique `id`.
   totalDuration: "15h 20m"
 ```
 
-A flight block can start as a **minimal stub** (just `from` + `to`) with legs/layovers/times filled later from booking confirmations.
+##### Leg modes
+
+| Mode | Icon | Mode-specific fields |
+|------|------|---------------------|
+| `flight` | ✈ | `flight: { number, airline, aircraft }` |
+| `train` | 🚄 | `train: { number, operator }` |
+| `bus` | 🚌 | `bus: { operator }` |
+| `drive` | 🚗 | (none) |
+
+Every leg has `mode` set explicitly. Generic fields (`departure`, `arrival`, `duration`, `route`) are outer. Mode-specific fields nest under a subobject named after the mode.
+
+The block's display icon is derived from the highest-priority mode in its legs: flight > train > bus > drive.
+
+A transit block can start as a **minimal stub** (just `from` + `to`) with legs/layovers/times filled later from booking confirmations.
 
 #### Stay block
 

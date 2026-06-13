@@ -1,5 +1,17 @@
 const TRIP_DIR = 'trips/seoul-2026';
 
+const MODE_PRIORITY = { flight: 0, train: 1, bus: 2, drive: 3 };
+const MODE_ICONS = { flight: '✈', train: '🚄', bus: '🚌', drive: '🚗' };
+
+function getTransitMode(journey) {
+  let best = 'drive';
+  for (const leg of (journey.legs || [])) {
+    const mode = leg.mode || 'drive';
+    if ((MODE_PRIORITY[mode] ?? 99) < (MODE_PRIORITY[best] ?? 99)) best = mode;
+  }
+  return best;
+}
+
 const TripStore = {
   _trip: null,
   _locations: {},
@@ -62,12 +74,12 @@ const TripStore = {
     const chapters = [];
 
     (this._trip.itinerary || []).forEach(block => {
-      if (block.type === 'flight') {
+      if (block.type === 'transit') {
         chapters.push({
-          type: 'flight',
+          type: 'transit',
           date: String(block.date),
           journey: block,
-          id: `flight-${block.id}`
+          id: `transit-${block.id}`
         });
       } else if (block.type === 'stay') {
         const checkIn = new Date(block.accommodation.checkIn + 'T00:00:00');
@@ -102,7 +114,7 @@ const TripStore = {
     });
 
     chapters.sort((a, b) => {
-      if (a.date === b.date) return a.type === 'flight' ? -1 : 1;
+      if (a.date === b.date) return a.type === 'transit' ? -1 : 1;
       return a.date.localeCompare(b.date);
     });
 
@@ -119,7 +131,7 @@ const TripStore = {
   },
 
   getTransport() {
-    return (this._trip.itinerary || []).filter(b => b.type === 'flight');
+    return (this._trip.itinerary || []).filter(b => b.type === 'transit');
   },
 
   getDates() {

@@ -133,7 +133,7 @@ function addDrivingRoute(map, origin, firstAirportCoords) {
   });
 }
 
-function addFlightRoutes(map, journeys) {
+function addTransitRoutes(map, journeys) {
   _journeys = journeys;
   _addRouteLayers(map, journeys);
 }
@@ -233,14 +233,14 @@ function flyToGlobe(map) {
 }
 
 function flyToChapter(map, chapter) {
-  if (chapter.type === 'flight') {
-    flyToFlight(map, chapter.journey);
+  if (chapter.type === 'transit') {
+    flyToTransit(map, chapter.journey);
   } else if (chapter.type === 'day') {
     flyToDay(map, chapter.day);
   }
 }
 
-function flyToFlight(map, journey) {
+function flyToTransit(map, journey) {
   const changed = switchStyle(map, 'dark');
   if (changed) {
     _pendingHighlight = journey.id;
@@ -295,10 +295,10 @@ function flyToDay(map, day) {
 }
 
 function highlightRoute(map, journeyId) {
-  ['outbound', 'singapore-seoul', 'return'].forEach(id => {
-    const layerId = `route-${id}`;
+  (_journeys || []).forEach(j => {
+    const layerId = `route-${j.id}`;
     if (map.getLayer(layerId)) {
-      const active = id === journeyId;
+      const active = j.id === journeyId;
       map.setPaintProperty(layerId, 'line-opacity', active ? 1 : 0.12);
       map.setPaintProperty(layerId, 'line-width', active ? 4 : 1.5);
     }
@@ -306,8 +306,8 @@ function highlightRoute(map, journeyId) {
 }
 
 function resetRouteHighlights(map) {
-  ['outbound', 'singapore-seoul', 'return'].forEach(id => {
-    const layerId = `route-${id}`;
+  (_journeys || []).forEach(j => {
+    const layerId = `route-${j.id}`;
     if (map.getLayer(layerId)) {
       map.setPaintProperty(layerId, 'line-opacity', 0.6);
       map.setPaintProperty(layerId, 'line-width', 2.5);
@@ -372,8 +372,8 @@ function _initFlightLayers(map, chapter) {
   const departure = coords[0];
   const arrival = coords[coords.length - 1];
 
-  ['outbound', 'singapore-seoul', 'return'].forEach(id => {
-    const layerId = `route-${id}`;
+  (_journeys || []).forEach(j => {
+    const layerId = `route-${j.id}`;
     if (map.getLayer(layerId)) {
       map.setPaintProperty(layerId, 'line-opacity', 0);
     }

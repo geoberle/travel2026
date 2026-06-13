@@ -297,8 +297,8 @@
 
       itinerary.forEach((block, i) => {
         html += insertPointHtml(i);
-        if (block.type === 'flight') {
-          html += flightBlockHtml(block);
+        if (block.type === 'transit') {
+          html += transitBlockHtml(block);
         } else if (block.type === 'stay') {
           html += stayBlockHtml(block);
         }
@@ -313,24 +313,25 @@
       const itinerary = TripStore.getItinerary();
       const prev = itinerary[position - 1];
       const next = itinerary[position];
-      const smartType = prev?.type === 'stay' ? 'flight' : 'stay';
+      const smartType = prev?.type === 'stay' ? 'transit' : 'stay';
       return `<div class="insert-point" data-position="${position}">
         <button class="insert-btn" title="Add block">+</button>
         <div class="insert-menu" data-smart="${smartType}">
           <button class="insert-option" data-type="stay">🏠 Add stay</button>
-          <button class="insert-option" data-type="flight">✈ Add flight</button>
+          <button class="insert-option" data-type="transit">✈ Add transit</button>
         </div>
       </div>`;
     }
 
-    function flightBlockHtml(block) {
+    function transitBlockHtml(block) {
       const sel = selectedBlockId === block.id ? ' selected' : '';
       const label = block.label || `${block.from || '?'} → ${block.to || '?'}`;
       const meta = block.date ? formatDate(block.date) : 'Date TBD';
       const dur = block.totalDuration ? ` · ${block.totalDuration}` : '';
+      const icon = MODE_ICONS[getTransitMode(block)] || '✈';
       return `<div class="block flight${sel}" data-block-id="${block.id}">
         <div class="block-header">
-          <div class="block-icon">✈</div>
+          <div class="block-icon">${icon}</div>
           <div class="block-info">
             <div class="block-label">${label}</div>
             <div class="block-meta">${meta}${dur}</div>
@@ -445,7 +446,7 @@
           const type = opt.dataset.type;
           opt.closest('.insert-menu').classList.remove('open');
           if (type === 'stay') promptAddStay(pos);
-          else promptAddFlight(pos);
+          else promptAddTransit(pos);
         });
       });
 
@@ -471,7 +472,7 @@
         if (acc?.coordinates) {
           map.flyTo({ center: acc.coordinates, zoom: 12, pitch: 45, bearing: -15, duration: 1500 });
         }
-      } else if (block.type === 'flight') {
+      } else if (block.type === 'transit') {
         activeLocation = null;
         clearMarkers();
         renderPois();
@@ -594,13 +595,13 @@
       renderTripHeader();
     }
 
-    async function promptAddFlight(position) {
+    async function promptAddTransit(position) {
       const from = prompt('From city:');
       if (!from) return;
       const to = prompt('To city:');
       if (!to) return;
 
-      const block = { type: 'flight', from, to, label: `${from} → ${to}`, date: '', legs: [], layovers: [], totalDuration: '' };
+      const block = { type: 'transit', from, to, label: `${from} → ${to}`, date: '', legs: [], layovers: [], totalDuration: '' };
       await TripStore.addBlock(position, block);
       await TripStore.loadApi();
       renderItinerary();

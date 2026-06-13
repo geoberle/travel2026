@@ -22,12 +22,12 @@ function initTimeline(chapters) {
 
   chapters.forEach(ch => {
     let label, icon, city;
-    if (ch.type === 'flight') {
-      const legs = ch.journey.legs.filter(l => l.mode !== 'drive');
-      const first = legs[0]?.departure.airport || '';
-      const last = legs[legs.length - 1]?.arrival.airport || '';
+    if (ch.type === 'transit') {
+      const legs = (ch.journey.legs || []).filter(l => l.mode !== 'drive');
+      const first = legs[0]?.departure.airport || legs[0]?.departure.city || '';
+      const last = legs[legs.length - 1]?.arrival.airport || legs[legs.length - 1]?.arrival.city || '';
       label = `${first} → ${last}`;
-      icon = '✈';
+      icon = MODE_ICONS[getTransitMode(ch.journey)] || '✈';
       city = null;
     } else {
       const d = new Date(ch.day.meta.date + 'T12:00:00');
