@@ -830,8 +830,8 @@
 
     function renderProposal(proposal, message) {
       const el = document.getElementById('chat-messages');
-      if (message) addChatMsg('ai', message);
-      if (proposal.message) addChatMsg('ai', proposal.message);
+      const msg = proposal.message || message;
+      if (msg) addChatMsg('ai', msg);
 
       if (proposal.type === 'propose_pois') {
         const container = document.createElement('div');
