@@ -445,16 +445,15 @@ function _initFlightLayers(map, chapter) {
   }
 
   map.setBearing(0);
-  let scrollReady = false;
+  let scrollReady = true;
 
   if (depView.zoom) {
-    map.flyTo({ center: depView.center, zoom: depView.zoom, pitch: depView.pitch || 25, bearing: 0, duration: 2000 });
+    map.jumpTo({ center: depView.center, zoom: depView.zoom, pitch: depView.pitch || 25, bearing: 0 });
   } else {
     const routeBounds = new mapboxgl.LngLatBounds();
     journey.legs.forEach(leg => { routeBounds.extend(leg.departure.coordinates); routeBounds.extend(leg.arrival.coordinates); });
-    map.fitBounds(routeBounds, { padding: { top: 100, bottom: 100, left: 100, right: 100 }, pitch: depView.pitch || 25, bearing: 0, duration: 2000, maxZoom: 10 });
+    map.fitBounds(routeBounds, { padding: { top: 100, bottom: 100, left: 100, right: 100 }, pitch: depView.pitch || 25, bearing: 0, duration: 0, maxZoom: 10 });
   }
-  map.once('moveend', () => { scrollReady = true; });
 
   let lastProgress = -1;
 
