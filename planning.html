@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trip Planner — Singapore & Seoul</title>
+  <title>Trip Planner</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/mapbox-gl@3/dist/mapbox-gl.css" rel="stylesheet">
   <style>
@@ -14,10 +14,9 @@
       --text: #e8e8f0;
       --text-muted: rgba(232,232,240,0.5);
       --accent: #4ecdc4;
+      --danger: #ff6b6b;
       --border: rgba(255,255,255,0.08);
       --font: 'Inter', -apple-system, sans-serif;
-      --city-singapore: #00b894;
-      --city-seoul: #e84393;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: var(--font); background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; }
@@ -27,186 +26,199 @@
     /* Sidebar */
     #sidebar { width: 420px; display: flex; flex-direction: column; background: var(--bg-panel); border-left: 1px solid var(--border); overflow: hidden; }
 
-    .sidebar-toggle { display: none; }
+    /* Trip header */
+    .trip-header { padding: 14px 16px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .trip-header h1 { font-size: 1rem; font-weight: 600; letter-spacing: -0.01em; }
+    .trip-header .meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
 
-    /* Location selector */
-    .location-selector { display: flex; gap: 6px; padding: 12px 12px 8px; flex-shrink: 0; }
-    .location-pill { flex: 1; padding: 8px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-family: var(--font); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; cursor: pointer; text-align: center; transition: all 0.25s; }
-    .location-pill:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
-    .location-pill.active { color: #fff; border-color: transparent; }
+    /* Itinerary timeline */
+    .itinerary { flex: 1; overflow-y: auto; padding: 8px 0; }
 
-    .tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-    .tab { flex: 1; padding: 10px; text-align: center; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; opacity: 0.5; border-bottom: 2px solid transparent; transition: all 0.2s; }
-    .tab.active { opacity: 1; border-bottom-color: var(--accent); }
+    /* Insert point */
+    .insert-point { display: flex; justify-content: center; padding: 4px 0; }
+    .insert-btn { width: 24px; height: 24px; border-radius: 50%; border: 1px dashed var(--border); background: transparent; color: var(--text-muted); font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .insert-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(78,205,196,0.08); }
+    .insert-menu { display: none; flex-direction: column; gap: 4px; padding: 8px 16px; }
+    .insert-menu.open { display: flex; }
+    .insert-option { padding: 8px 12px; background: var(--bg-card); border-radius: 6px; border: 1px solid var(--border); color: var(--text); font-size: 0.75rem; font-family: var(--font); cursor: pointer; text-align: left; transition: all 0.2s; }
+    .insert-option:hover { border-color: var(--accent); background: rgba(78,205,196,0.08); }
 
-    .tab-content { flex: 1; overflow-y: auto; display: none; flex-direction: column; }
-    .tab-content.active { display: flex; }
+    /* Blocks */
+    .block { margin: 2px 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); transition: border-color 0.2s; }
+    .block.selected { border-color: var(--accent); }
+    .block-header { display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; transition: background 0.15s; }
+    .block-header:hover { background: rgba(255,255,255,0.03); }
+    .block-icon { font-size: 1rem; width: 24px; text-align: center; flex-shrink: 0; }
+    .block-info { flex: 1; min-width: 0; }
+    .block-label { font-size: 0.8rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .block-meta { font-size: 0.65rem; color: var(--text-muted); margin-top: 1px; }
+    .block-chevron { font-size: 0.6rem; color: var(--text-muted); transition: transform 0.2s; flex-shrink: 0; }
+    .block.expanded .block-chevron { transform: rotate(90deg); }
 
-    /* Discover tab */
-    .chat-messages { flex: 1; overflow-y: auto; padding: 12px; }
-    .chat-msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; line-height: 1.5; max-width: 95%; }
+    /* Stay days */
+    .stay-days { display: none; padding: 0 8px 8px; }
+    .block.expanded .stay-days { display: block; }
+
+    .stay-day { padding: 6px 10px; margin: 3px 0; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.78rem; transition: background 0.15s; border: 1px solid transparent; min-height: 34px; }
+    .stay-day:hover { background: rgba(255,255,255,0.06); }
+    .stay-day.selected { border-color: var(--accent); background: rgba(78,205,196,0.06); }
+    .stay-day.drag-over { outline: 2px dashed var(--accent); }
+    .stay-day[draggable="true"] { cursor: grab; }
+    .stay-day[draggable="true"]:active { cursor: grabbing; }
+    .day-num { font-size: 0.6rem; font-weight: 700; color: var(--text-muted); width: 18px; flex-shrink: 0; }
+    .day-title { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .day-title.empty { font-style: italic; opacity: 0.3; }
+    .day-pin { font-size: 0.65rem; opacity: 0.5; flex-shrink: 0; }
+    .day-count { font-size: 0.55rem; color: var(--text-muted); background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; flex-shrink: 0; }
+    .day-remove { background: none; border: none; color: var(--text-muted); font-size: 0.7rem; cursor: pointer; padding: 2px 4px; flex-shrink: 0; opacity: 0; transition: opacity 0.15s; }
+    .stay-day:hover .day-remove { opacity: 1; }
+    .day-remove:hover { color: var(--danger); }
+
+    .add-day-btn { display: block; width: 100%; padding: 6px; margin-top: 4px; background: none; border: 1px dashed var(--border); border-radius: 6px; color: var(--text-muted); font-size: 0.7rem; font-family: var(--font); cursor: pointer; transition: all 0.2s; }
+    .add-day-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Unassigned POIs */
+    .unassigned { padding: 0 8px 8px; }
+    .unassigned-header { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.3; padding: 6px 10px 4px; }
+    .unassigned-drop { min-height: 30px; padding: 4px 0; border: 1px dashed transparent; border-radius: 6px; transition: border-color 0.2s; }
+    .unassigned-drop.drag-over { border-color: var(--accent); }
+
+    /* Draggable POI chip */
+    .poi-chip { padding: 4px 10px; margin: 2px 0; background: rgba(255,255,255,0.05); border-radius: 5px; font-size: 0.72rem; cursor: grab; display: flex; align-items: center; gap: 6px; }
+    .poi-chip:active { cursor: grabbing; }
+    .poi-chip .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Bottom panel: tabs */
+    .bottom-panel { border-top: 1px solid var(--border); display: flex; flex-direction: column; max-height: 50%; flex-shrink: 0; }
+    .bottom-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .bottom-tab { flex: 1; padding: 8px; text-align: center; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; opacity: 0.4; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .bottom-tab.active { opacity: 1; border-bottom-color: var(--accent); }
+    .bottom-content { flex: 1; overflow-y: auto; display: none; flex-direction: column; }
+    .bottom-content.active { display: flex; }
+
+    /* POI list */
+    .poi-list { padding: 8px; }
+    .poi-count { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.3; padding: 4px 8px 6px; }
+    .poi-item { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 6px; cursor: pointer; transition: background 0.15s; margin-bottom: 2px; }
+    .poi-item:hover { background: rgba(255,255,255,0.05); }
+    .poi-item .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .poi-item .info { flex: 1; min-width: 0; }
+    .poi-item .info .name { font-size: 0.78rem; font-weight: 500; }
+    .poi-item .info .cat { font-size: 0.6rem; text-transform: uppercase; opacity: 0.35; letter-spacing: 0.06em; }
+    .poi-item .actions button { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.7rem; padding: 2px 4px; }
+    .poi-item .actions button:hover { color: var(--text); }
+    .poi-item.highlight { background: rgba(78,205,196,0.15); }
+
+    /* Chat */
+    .chat-messages { flex: 1; overflow-y: auto; padding: 8px; }
+    .chat-msg { margin-bottom: 8px; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; line-height: 1.45; max-width: 95%; }
     .chat-msg.user { background: var(--bg-card); margin-left: auto; }
-    .chat-msg.ai { background: rgba(78,205,196,0.1); border: 1px solid rgba(78,205,196,0.15); }
-    .chat-input-wrap { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--border); align-items: flex-end; }
-    .chat-input-wrap textarea { flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; font-family: var(--font); resize: none; min-height: 40px; max-height: 120px; line-height: 1.4; overflow-y: hidden; }
+    .chat-msg.ai { background: rgba(78,205,196,0.08); border: 1px solid rgba(78,205,196,0.12); }
+    .chat-input-wrap { display: flex; gap: 6px; padding: 8px; border-top: 1px solid var(--border); align-items: flex-end; }
+    .chat-input-wrap textarea { flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; font-family: var(--font); resize: none; min-height: 36px; max-height: 100px; line-height: 1.4; overflow-y: hidden; }
     .chat-input-wrap textarea.scrollable { overflow-y: auto; }
-    .chat-input-wrap button { background: var(--accent); color: #0a0a0f; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.8rem; transition: opacity 0.2s; }
+    .chat-input-wrap button { background: var(--accent); color: #0a0a0f; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.75rem; transition: opacity 0.2s; }
     .chat-input-wrap button:disabled { opacity: 0.3; cursor: default; }
 
-    /* POI suggestions from AI */
-    .poi-suggestion { background: var(--bg-card); border-radius: 8px; padding: 10px 12px; margin: 6px 0; font-size: 0.8rem; position: relative; cursor: pointer; transition: background 0.2s; }
-    .poi-suggestion:hover { background: rgba(78,205,196,0.08); }
-    .poi-suggestion-img { width: 100%; height: 80px; object-fit: cover; border-radius: 4px; margin-bottom: 6px; }
-    .poi-suggestion .name { font-weight: 600; margin-bottom: 4px; }
-    .poi-suggestion .desc { opacity: 0.7; font-size: 0.75rem; margin-bottom: 6px; }
-    .poi-suggestion .cat { font-size: 0.65rem; text-transform: uppercase; opacity: 0.5; }
+    .chat-chips { display: flex; flex-wrap: wrap; gap: 5px; padding: 8px; justify-content: center; }
+    .chat-chip { background: rgba(78,205,196,0.08); border: 1px solid rgba(78,205,196,0.15); color: var(--accent); padding: 6px 12px; border-radius: 16px; font-size: 0.7rem; cursor: pointer; font-family: var(--font); transition: all 0.2s; }
+    .chat-chip:hover { background: rgba(78,205,196,0.2); border-color: var(--accent); }
+
+    /* POI suggestion cards */
+    .poi-suggestion { background: var(--bg-card); border-radius: 6px; padding: 8px 10px; margin: 4px 0; font-size: 0.75rem; position: relative; cursor: pointer; transition: background 0.2s; }
+    .poi-suggestion:hover { background: rgba(78,205,196,0.06); }
+    .poi-suggestion .name { font-weight: 600; margin-bottom: 3px; }
+    .poi-suggestion .desc { opacity: 0.6; font-size: 0.7rem; margin-bottom: 4px; }
+    .poi-suggestion .cat { font-size: 0.6rem; text-transform: uppercase; opacity: 0.4; }
     .poi-suggestion.existing { opacity: 0.5; }
-    .poi-suggestion .existing-badge { display: inline-block; font-size: 0.6rem; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: middle; }
+    .poi-suggestion .existing-badge { font-size: 0.55rem; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); border-radius: 3px; padding: 0 4px; margin-left: 4px; }
     .poi-suggestion.decided { pointer-events: none; }
-    .poi-actions { display: flex; gap: 6px; margin-top: 8px; }
-    .poi-add-btn { background: var(--accent); color: #0a0a0f; border: none; padding: 5px 12px; border-radius: 5px; font-size: 0.7rem; font-weight: 600; cursor: pointer; font-family: var(--font); }
-    .poi-add-btn:hover { opacity: 0.85; }
-    .poi-dismiss-btn { background: transparent; color: var(--text-muted); border: 1px solid var(--border); padding: 5px 10px; border-radius: 5px; font-size: 0.7rem; cursor: pointer; font-family: var(--font); }
-    .poi-dismiss-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
-    .poi-status { font-size: 0.7rem; font-weight: 600; }
+    .poi-suggestion-img { width: 100%; height: 60px; object-fit: cover; border-radius: 4px; margin-bottom: 4px; }
+    .poi-actions { display: flex; gap: 4px; margin-top: 6px; }
+    .poi-add-btn { background: var(--accent); color: #0a0a0f; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; font-weight: 600; cursor: pointer; font-family: var(--font); }
+    .poi-dismiss-btn { background: transparent; color: var(--text-muted); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; font-family: var(--font); }
+    .poi-status { font-size: 0.65rem; font-weight: 600; }
     .poi-status.added { color: var(--accent); }
     .poi-status.dismissed { color: var(--text-muted); }
 
-    /* Alignment badges */
-    .poi-alignment { display: flex; gap: 6px; margin-top: 6px; }
-    .alignment-badge { display: flex; align-items: center; gap: 4px; font-size: 0.65rem; }
-    .alignment-avatar { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.55rem; font-weight: 700; color: #0a0a0f; }
-    .alignment-pct { opacity: 0.7; }
+    .poi-alignment { display: flex; gap: 4px; margin-top: 4px; }
+    .alignment-badge { display: flex; align-items: center; gap: 3px; font-size: 0.6rem; }
+    .alignment-avatar { width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.5rem; font-weight: 700; color: #0a0a0f; }
+    .alignment-pct { opacity: 0.6; }
 
-    /* Proposal picker */
-    .proposal-actions { display: flex; gap: 8px; padding: 8px 0; }
-    .proposal-actions button { padding: 8px 16px; border-radius: 6px; border: none; font-family: var(--font); font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+    .choice-option { display: flex; align-items: center; gap: 8px; padding: 8px 10px; margin: 3px 0; background: var(--bg-card); border-radius: 6px; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; border: 2px solid transparent; }
+    .choice-option:hover { background: rgba(78,205,196,0.08); }
+    .choice-option.selected { border-color: var(--accent); }
+    .choice-option input { accent-color: var(--accent); cursor: pointer; }
+    .proposal-actions { display: flex; gap: 6px; padding: 6px 0; }
+    .proposal-actions button { padding: 6px 14px; border-radius: 5px; border: none; font-family: var(--font); font-size: 0.75rem; font-weight: 600; cursor: pointer; }
     .proposal-actions .confirm-btn { background: var(--accent); color: #0a0a0f; }
     .proposal-actions .skip-btn { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
 
-    /* Steps */
-    .chat-steps { font-size: 0.7rem; color: var(--text-muted); padding: 6px 10px; margin-bottom: 6px; }
-    .chat-steps .step { padding: 2px 0; }
-    .chat-steps .step::before { content: '→ '; opacity: 0.5; }
-
-    /* Suggestion chips */
-    .chat-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px; justify-content: center; }
-    .chat-chip { background: rgba(78,205,196,0.1); border: 1px solid rgba(78,205,196,0.2); color: var(--accent); padding: 8px 14px; border-radius: 20px; font-size: 0.75rem; cursor: pointer; font-family: var(--font); transition: all 0.2s; }
-    .chat-chip:hover { background: rgba(78,205,196,0.2); border-color: var(--accent); }
-
-    /* Choice picker */
-    .choice-option { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 4px 0; background: var(--bg-card); border-radius: 8px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; border: 2px solid transparent; }
-    .choice-option:hover { background: rgba(78,205,196,0.1); }
-    .choice-option.selected { border-color: var(--accent); }
-    .choice-option input[type="checkbox"], .choice-option input[type="radio"] { accent-color: var(--accent); cursor: pointer; }
-
-    /* POIs tab */
-    .poi-list { padding: 12px; }
-    .poi-count { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.4; padding: 4px 10px 10px; }
-    .poi-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px; cursor: pointer; transition: background 0.2s; margin-bottom: 4px; }
-    .poi-item:hover { background: rgba(255,255,255,0.05); }
-    .poi-item .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .poi-item .info { flex: 1; min-width: 0; }
-    .poi-item .info .name { font-size: 0.85rem; font-weight: 500; }
-    .poi-item .info .cat { font-size: 0.65rem; text-transform: uppercase; opacity: 0.4; letter-spacing: 0.06em; }
-    .poi-item .actions { display: flex; gap: 4px; }
-    .poi-item .actions button { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.8rem; padding: 4px; }
-    .poi-item .actions button:hover { color: var(--text); }
-
-    /* Days tab */
-    .day-slot { margin: 8px 12px; padding: 12px; background: var(--bg-card); border-radius: 8px; min-height: 60px; }
-    .day-slot.drag-over, .unassigned-section.drag-over { outline: 2px dashed var(--accent); }
-    .day-slot-header { font-size: 0.75rem; font-weight: 600; margin-bottom: 8px; display: flex; justify-content: space-between; }
-    .day-slot-header .day-date { font-size: 0.6rem; text-transform: uppercase; opacity: 0.5; }
-    .unassigned-section { margin: 12px; padding: 12px; border: 1px dashed var(--border); border-radius: 8px; min-height: 40px; }
-    .unassigned-header { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.4; margin-bottom: 8px; }
-    .draggable-poi { padding: 6px 10px; margin: 3px 0; background: rgba(255,255,255,0.05); border-radius: 6px; font-size: 0.8rem; cursor: grab; display: flex; align-items: center; gap: 8px; }
-    .draggable-poi:active { cursor: grabbing; }
-    .draggable-poi .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-
-    /* Mapbox popup */
-    .mapboxgl-popup-content {
-      background: rgba(15, 15, 25, 0.95);
-      color: #e8e8f0;
-      border-radius: 8px;
-      padding: 0;
-      font-family: var(--font);
-      overflow: hidden;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-    }
-    .mapboxgl-popup-tip { border-top-color: rgba(15, 15, 25, 0.95); }
-    .mapboxgl-popup-close-button { color: rgba(255,255,255,0.6); font-size: 18px; right: 4px; top: 2px; }
-
-    .poi-popup-img { width: 100%; height: 110px; object-fit: cover; display: block; }
-    .poi-popup-body { padding: 10px 12px 12px; }
-    .poi-popup-header { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
-    .poi-popup-header strong { font-size: 0.85rem; }
-    .poi-popup-category { font-size: 0.55rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 6px; border-radius: 4px; }
-    .poi-popup-desc { font-size: 0.75rem; line-height: 1.45; opacity: 0.8; margin: 0 0 6px; }
-    .poi-popup-meta { font-size: 0.7rem; opacity: 0.6; margin-bottom: 3px; }
-    .poi-popup-link { display: inline-block; margin-top: 6px; font-size: 0.7rem; font-weight: 600; color: var(--accent); text-decoration: none; }
-    .poi-popup-link:hover { text-decoration: underline; }
-
-    /* Proposal markers (circular image) */
-    .proposal-marker-wrap { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-    .proposal-marker { width: 48px; height: 48px; border-radius: 50%; border: 3px solid #4ecdc4; outline: 2.5px solid rgba(255,255,255,0.7); overflow: hidden; background: var(--bg-card); transition: transform 0.2s, box-shadow 0.2s; }
-    .proposal-marker img { width: 100%; height: 100%; object-fit: cover; }
-    .proposal-marker.no-img { display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; color: var(--accent); }
-    .proposal-marker.active, .proposal-marker:hover { transform: scale(1.25); }
-    .proposal-marker-label { font-size: 0.6rem; font-weight: 600; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.9); margin-top: 3px; white-space: nowrap; max-width: 100px; overflow: hidden; text-overflow: ellipsis; text-align: center; }
-
-    .poi-item.highlight { background: rgba(78,205,196,0.15); }
-
-    /* Agent spinner */
-    .agent-loading { display: flex; align-items: center; gap: 10px; padding: 10px 14px; }
-    .agent-spinner { display: flex; gap: 3px; align-items: center; }
-    .agent-spinner .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); animation: agent-pulse 1.4s ease-in-out infinite; }
+    /* Agent loading */
+    .agent-loading { display: flex; align-items: center; gap: 8px; padding: 8px 12px; }
+    .agent-spinner { display: flex; gap: 3px; }
+    .agent-spinner .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); animation: pulse 1.4s ease-in-out infinite; }
     .agent-spinner .dot:nth-child(2) { animation-delay: 0.2s; }
     .agent-spinner .dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes agent-pulse {
-      0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
-      40% { opacity: 1; transform: scale(1.2); }
-    }
-    .agent-loading .loading-text { font-size: 0.75rem; color: var(--accent); opacity: 0.8; }
-    .loading { text-align: center; padding: 20px; opacity: 0.4; font-size: 0.8rem; }
+    @keyframes pulse { 0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1.2); } }
+    .agent-loading .loading-text { font-size: 0.7rem; color: var(--accent); opacity: 0.8; }
+
+    /* Mapbox popup */
+    .mapboxgl-popup-content { background: rgba(15,15,25,0.95); color: #e8e8f0; border-radius: 8px; padding: 0; font-family: var(--font); overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+    .mapboxgl-popup-tip { border-top-color: rgba(15,15,25,0.95); }
+    .mapboxgl-popup-close-button { color: rgba(255,255,255,0.6); font-size: 18px; right: 4px; top: 2px; }
+    .poi-popup-img { width: 100%; height: 100px; object-fit: cover; display: block; }
+    .poi-popup-body { padding: 8px 10px 10px; }
+    .poi-popup-header { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-bottom: 4px; }
+    .poi-popup-header strong { font-size: 0.8rem; }
+    .poi-popup-category { font-size: 0.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 1px 5px; border-radius: 3px; }
+    .poi-popup-desc { font-size: 0.7rem; line-height: 1.4; opacity: 0.75; margin: 0 0 4px; }
+    .poi-popup-meta { font-size: 0.65rem; opacity: 0.55; margin-bottom: 2px; }
+    .poi-popup-link { display: inline-block; margin-top: 4px; font-size: 0.65rem; font-weight: 600; color: var(--accent); text-decoration: none; }
+    .poi-popup-link:hover { text-decoration: underline; }
+
+    /* Confirm dialog */
+    .confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: flex; align-items: center; justify-content: center; }
+    .confirm-dialog { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; max-width: 320px; text-align: center; }
+    .confirm-dialog p { font-size: 0.85rem; margin-bottom: 16px; line-height: 1.4; }
+    .confirm-dialog .btns { display: flex; gap: 8px; justify-content: center; }
+    .confirm-dialog .btns button { padding: 8px 20px; border-radius: 6px; border: none; font-family: var(--font); font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+    .confirm-dialog .btn-danger { background: var(--danger); color: #fff; }
+    .confirm-dialog .btn-cancel { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
   </style>
 </head>
 <body>
   <div id="map"></div>
   <div id="sidebar">
-    <div class="location-selector" id="location-selector"></div>
-    <div class="tabs">
-      <div class="tab active" data-tab="discover">Discover</div>
-      <div class="tab" data-tab="pois">POIs</div>
-      <div class="tab" data-tab="days">Days</div>
-    </div>
-
-    <div class="tab-content active" id="tab-discover">
-      <div class="chat-messages" id="chat-messages">
-        <div class="chat-chips" id="chat-chips">
-          <button class="chat-chip" data-prompt="Find good food spots nearby">🍜 Food spots</button>
-          <button class="chat-chip" data-prompt="Find manga shops and gaming cafes">🎮 Manga & gaming</button>
-          <button class="chat-chip" data-prompt="Help me plan a day">📅 Plan a day</button>
-          <button class="chat-chip" data-prompt="Find a travel vlog and extract interesting places">🎥 Travel vlog</button>
+    <div class="trip-header" id="trip-header"></div>
+    <div class="itinerary" id="itinerary"></div>
+    <div class="bottom-panel">
+      <div class="bottom-tabs">
+        <div class="bottom-tab active" data-tab="pois">POIs</div>
+        <div class="bottom-tab" data-tab="discover">Discover</div>
+      </div>
+      <div class="bottom-content active" id="tab-pois">
+        <div class="poi-list" id="poi-list"></div>
+      </div>
+      <div class="bottom-content" id="tab-discover">
+        <div class="chat-messages" id="chat-messages">
+          <div class="chat-chips" id="chat-chips">
+            <button class="chat-chip" data-prompt="Find good food spots nearby">🍜 Food</button>
+            <button class="chat-chip" data-prompt="Find manga shops and gaming cafes">🎮 Manga</button>
+            <button class="chat-chip" data-prompt="Find a travel vlog and extract interesting places">🎥 Vlog</button>
+          </div>
+        </div>
+        <div class="chat-input-wrap">
+          <textarea id="chat-input" placeholder="Ask anything, paste a link..." rows="1"></textarea>
+          <button id="chat-send" disabled>Send</button>
         </div>
       </div>
-      <div class="chat-input-wrap">
-        <textarea id="chat-input" placeholder="Ask anything, paste a link..." rows="1"></textarea>
-        <button id="chat-send" disabled>Send</button>
-      </div>
-    </div>
-
-    <div class="tab-content" id="tab-pois">
-      <div class="poi-list" id="poi-list"></div>
-    </div>
-
-    <div class="tab-content" id="tab-days">
-      <div id="days-list"></div>
     </div>
   </div>
-  <button class="sidebar-toggle" id="sidebar-toggle">☰</button>
 
   <script src="https://unpkg.com/mapbox-gl@3/dist/mapbox-gl.js"></script>
+  <script src="https://unpkg.com/js-yaml@4/dist/js-yaml.min.js"></script>
   <script src="js/data.js"></script>
   <script>
     const MAPBOX_TOKEN = 'pk.eyJ1IjoiZ2VyZG9iZXJsZWNobmVyIiwiYSI6ImNtcHpwNjdzYjA2d3EycnBnZWJkZ2p5ODUifQ.vl5h0bVgSuSaW_ZPIH0CKA';
@@ -214,305 +226,478 @@
       attraction: '#4ecdc4', food: '#ff9f43', culture: '#a55eea',
       shopping: '#fd79a8', nature: '#00b894', transport: '#636e72'
     };
-    const LOCATION_COLORS = {};
     const TRAVELER_COLORS = { G: '#4ecdc4', C: '#ff9f43', L: '#a55eea' };
 
     let map;
+    let selectedBlockId = null;
+    let selectedDayIndex = null;
     let activeLocation = null;
     let chatHistories = {};
+    let activePopup = null;
+    let _planningMarkers = [];
 
     async function init() {
       mapboxgl.accessToken = MAPBOX_TOKEN;
       map = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/mapbox/dark-v11',
-        center: [82, 28],
-        zoom: 3,
-        projection: 'globe'
+        container: 'map', style: 'mapbox://styles/mapbox/dark-v11',
+        center: [82, 28], zoom: 3, projection: 'globe'
       });
-
       map.on('style.load', () => {
-        map.setFog({
-          color: 'rgb(15, 15, 25)', 'high-color': 'rgb(30, 30, 60)',
-          'horizon-blend': 0.06, 'space-color': 'rgb(8, 8, 12)', 'star-intensity': 0.5
-        });
+        map.setFog({ color: 'rgb(15,15,25)', 'high-color': 'rgb(30,30,60)', 'horizon-blend': 0.06, 'space-color': 'rgb(8,8,12)', 'star-intensity': 0.5 });
       });
-
 
       await TripStore.loadApi();
 
-      const locNames = Object.keys(TripStore.locations);
-      const colors = ['var(--city-singapore)', 'var(--city-seoul)', 'var(--accent)'];
-      locNames.forEach((name, i) => { LOCATION_COLORS[name] = colors[i] || colors[2]; });
-      locNames.forEach(name => { chatHistories[name] = []; });
+      Object.keys(TripStore.locations).forEach(n => { chatHistories[n] = []; });
 
-      renderLocationSelector();
-      setupTabs();
+      setupBottomTabs();
       setupChat();
-      setupSidebar();
 
       map.on('load', () => {
-        switchLocation(locNames[0]);
+        renderTripHeader();
+        renderItinerary();
+        const firstStay = TripStore.getItinerary().find(b => b.type === 'stay');
+        if (firstStay) selectBlock(firstStay.id);
       });
     }
 
-    function renderLocationSelector() {
-      const container = document.getElementById('location-selector');
-      const locNames = Object.keys(TripStore.locations);
-      container.innerHTML = locNames.map(name => {
-        const loc = TripStore.locations[name];
-        return `<button class="location-pill" data-location="${name}">${loc.name}</button>`;
-      }).join('');
-
-      container.querySelectorAll('.location-pill').forEach(pill => {
-        pill.addEventListener('click', () => switchLocation(pill.dataset.location));
-      });
+    // --- Trip header ---
+    function renderTripHeader() {
+      const trip = TripStore.trip;
+      const dates = TripStore.getDates();
+      document.getElementById('trip-header').innerHTML = `
+        <h1>${trip.title}</h1>
+        <div class="meta">${formatDate(dates.start)} — ${formatDate(dates.end)} · ${trip.travelers} travelers</div>
+      `;
     }
 
-    function switchLocation(locName) {
-      if (activeLocation === locName) return;
-
-      saveChatDom();
-      activeLocation = locName;
-      const loc = TripStore.locations[locName];
-      const color = LOCATION_COLORS[locName];
-
-      document.querySelectorAll('.location-pill').forEach(pill => {
-        const isActive = pill.dataset.location === locName;
-        pill.classList.toggle('active', isActive);
-        pill.style.background = isActive ? color : '';
-        pill.style.borderColor = isActive ? 'transparent' : '';
-      });
-
-      renderPois();
-      renderDays();
-      refreshMarkers();
-      restoreChatDom();
-
-      if (loc.coordinates) {
-        map.flyTo({ center: loc.coordinates, zoom: 12, pitch: 45, bearing: -15, duration: 1500 });
-      }
+    function formatDate(d) {
+      if (!d || d === 'undefined') return '';
+      return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
 
-    // --- Chat history per location ---
-    let chatDomCache = {};
-
-    function saveChatDom() {
-      if (!activeLocation) return;
-      const el = document.getElementById('chat-messages');
-      chatDomCache[activeLocation] = el.innerHTML;
+    function deriveDayDate(stay, idx) {
+      const checkIn = new Date(stay.accommodation.checkIn + 'T00:00:00');
+      const d = new Date(checkIn.getTime() + idx * 86400000);
+      return d.toISOString().split('T')[0];
     }
 
-    const CHIPS_HTML = `<div class="chat-chips" id="chat-chips">
-      <button class="chat-chip" data-prompt="Find good food spots nearby">🍜 Food spots</button>
-      <button class="chat-chip" data-prompt="Find manga shops and gaming cafes">🎮 Manga & gaming</button>
-      <button class="chat-chip" data-prompt="Help me plan a day">📅 Plan a day</button>
-      <button class="chat-chip" data-prompt="Find a travel vlog and extract interesting places">🎥 Travel vlog</button>
-    </div>`;
+    // --- Itinerary timeline ---
+    function renderItinerary() {
+      const container = document.getElementById('itinerary');
+      const itinerary = TripStore.getItinerary();
+      let html = '';
 
-    function restoreChatDom() {
-      const el = document.getElementById('chat-messages');
-      const cached = chatDomCache[activeLocation];
-      el.innerHTML = cached || CHIPS_HTML;
-      el.scrollTop = el.scrollHeight;
-      if (!cached) bindChips();
-    }
-
-    function bindChips() {
-      document.querySelectorAll('.chat-chip').forEach(chip => {
-        chip.addEventListener('click', () => window._chatSend(chip.dataset.prompt));
-      });
-    }
-
-    function getChatMessages() {
-      return chatHistories[activeLocation] || [];
-    }
-
-    // --- Map ---
-    let activePopup = null;
-    let poiEventsRegistered = false;
-
-    function createPinImageData(color, size) {
-      const w = size, h = Math.round(size * 1.4);
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      const cx = w / 2, r = w / 2 - 2, tipY = h - 2;
-      ctx.beginPath();
-      ctx.arc(cx, r + 2, r, Math.PI * 0.15, Math.PI * 0.85, true);
-      ctx.lineTo(cx, tipY);
-      ctx.closePath();
-      ctx.fillStyle = color; ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1.5; ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(cx, r + 2, r * 0.38, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fill();
-      return ctx.getImageData(0, 0, w, h);
-    }
-
-    function ensurePinImages() {
-      Object.entries(CATEGORY_COLORS).forEach(([cat, color]) => {
-        const id = `pin-${cat}`;
-        if (!map.hasImage(id)) {
-          const d = createPinImageData(color, 32);
-          map.addImage(id, { width: d.width, height: d.height, data: new Uint8Array(d.data.buffer) });
+      itinerary.forEach((block, i) => {
+        html += insertPointHtml(i);
+        if (block.type === 'flight') {
+          html += flightBlockHtml(block);
+        } else if (block.type === 'stay') {
+          html += stayBlockHtml(block);
         }
       });
-      if (!map.hasImage('pin-stay')) {
-        const d = createPinImageData('#ff6b6b', 32);
-        map.addImage('pin-stay', { width: d.width, height: d.height, data: new Uint8Array(d.data.buffer) });
-      }
+      html += insertPointHtml(itinerary.length);
+
+      container.innerHTML = html;
+      bindItineraryEvents();
     }
 
-    function refreshMarkers() {
-      ensurePinImages();
+    function insertPointHtml(position) {
+      const itinerary = TripStore.getItinerary();
+      const prev = itinerary[position - 1];
+      const next = itinerary[position];
+      const smartType = prev?.type === 'stay' ? 'flight' : 'stay';
+      return `<div class="insert-point" data-position="${position}">
+        <button class="insert-btn" title="Add block">+</button>
+        <div class="insert-menu" data-smart="${smartType}">
+          <button class="insert-option" data-type="stay">🏠 Add stay</button>
+          <button class="insert-option" data-type="flight">✈ Add flight</button>
+        </div>
+      </div>`;
+    }
 
-      const loc = TripStore.locations[activeLocation];
-      const pois = loc ? (loc.pois || []) : [];
+    function flightBlockHtml(block) {
+      const sel = selectedBlockId === block.id ? ' selected' : '';
+      const label = block.label || `${block.from || '?'} → ${block.to || '?'}`;
+      const meta = block.date ? formatDate(block.date) : 'Date TBD';
+      const dur = block.totalDuration ? ` · ${block.totalDuration}` : '';
+      return `<div class="block flight${sel}" data-block-id="${block.id}">
+        <div class="block-header">
+          <div class="block-icon">✈</div>
+          <div class="block-info">
+            <div class="block-label">${label}</div>
+            <div class="block-meta">${meta}${dur}</div>
+          </div>
+        </div>
+      </div>`;
+    }
 
-      const features = pois.map(poi => ({
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: poi.coordinates },
-        properties: { id: poi.id, name: poi.name, category: poi.category }
-      }));
+    function stayBlockHtml(block) {
+      const sel = selectedBlockId === block.id ? ' selected expanded' : '';
+      const loc = TripStore.locations[block.location];
+      const locName = loc?.name || block.location;
+      const checkIn = formatDate(block.accommodation?.checkIn);
+      const checkOut = formatDate(block.accommodation?.checkOut);
+      const dayCount = (block.days || []).length;
+      const accName = block.accommodation?.neighborhood;
 
-      const data = { type: 'FeatureCollection', features };
+      let daysHtml = '';
+      (block.days || []).forEach((day, idx) => {
+        const daySel = selectedBlockId === block.id && selectedDayIndex === idx ? ' selected' : '';
+        const dateStr = formatDate(deriveDayDate(block, idx));
+        const title = day.title || '';
+        const titleClass = title ? 'day-title' : 'day-title empty';
+        const titleText = title || 'Untitled';
+        const pin = day.pinnedDate ? '<span class="day-pin">📌</span>' : '';
+        const actCount = (day.activities || []).length;
+        const countBadge = actCount > 0 ? `<span class="day-count">${actCount}</span>` : '';
+        const draggable = day.pinnedDate ? '' : ' draggable="true"';
 
-      if (map.getSource('planning-pois')) {
-        map.getSource('planning-pois').setData(data);
-      } else {
-        map.addSource('planning-pois', { type: 'geojson', data });
-        map.addLayer({
-          id: 'planning-poi-icons',
-          type: 'symbol',
-          source: 'planning-pois',
-          layout: {
-            'icon-image': ['concat', 'pin-', ['get', 'category']],
-            'icon-size': 1,
-            'icon-anchor': 'bottom',
-            'icon-allow-overlap': true,
-            'text-field': ['get', 'name'],
-            'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
-            'text-size': 11,
-            'text-offset': [0, 0.3],
-            'text-anchor': 'top',
-            'text-optional': true
-          },
-          paint: {
-            'text-color': 'rgba(255,255,255,0.9)',
-            'text-halo-color': 'rgba(0,0,0,0.8)',
-            'text-halo-width': 1.5
-          }
+        daysHtml += `<div class="stay-day${daySel}" data-stay-id="${block.id}" data-day-index="${idx}"${draggable}
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="handleDayDrop(event, '${block.id}', ${idx})">
+          <span class="day-num">${idx + 1}</span>
+          <span class="${titleClass}">${titleText}</span>
+          ${pin}${countBadge}
+          <span class="block-meta">${dateStr}</span>
+          <button class="day-remove" onclick="event.stopPropagation();removeDay('${block.id}',${idx})" title="Remove day">✕</button>
+        </div>`;
+      });
+
+      const assignedIds = new Set();
+      (block.days || []).forEach(d => (d.activities || []).forEach(a => assignedIds.add(a.poi)));
+      const allPois = TripStore.getLocationPois(block.location);
+      const unassigned = allPois.filter(p => !assignedIds.has(p.id));
+      let unassignedHtml = '';
+      if (unassigned.length > 0) {
+        unassignedHtml = `<div class="unassigned"><div class="unassigned-header">Unassigned (${unassigned.length})</div>
+          <div class="unassigned-drop" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleUnassignDrop(event, '${block.id}')">
+          ${unassigned.map(p => poiChipHtml(p)).join('')}
+          </div></div>`;
+      }
+
+      return `<div class="block stay${sel}" data-block-id="${block.id}">
+        <div class="block-header">
+          <div class="block-icon">🏠</div>
+          <div class="block-info">
+            <div class="block-label">${locName}</div>
+            <div class="block-meta">${checkIn} — ${checkOut}${accName ? ' · ' + accName : ''} · ${dayCount}d</div>
+          </div>
+          <div class="block-chevron">▶</div>
+        </div>
+        <div class="stay-days">
+          ${daysHtml}
+          <button class="add-day-btn" onclick="event.stopPropagation();addDay('${block.id}')">+ Add day</button>
+          ${unassignedHtml}
+        </div>
+      </div>`;
+    }
+
+    function poiChipHtml(p) {
+      const color = CATEGORY_COLORS[p.category] || '#4ecdc4';
+      return `<div class="poi-chip" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${p.id}')" data-poi="${p.id}">
+        <div class="dot" style="background:${color}"></div>${p.name}</div>`;
+    }
+
+    function bindItineraryEvents() {
+      document.querySelectorAll('.block-header').forEach(el => {
+        el.addEventListener('click', () => {
+          const blockId = el.closest('.block').dataset.blockId;
+          selectBlock(blockId);
         });
+      });
 
-        if (!poiEventsRegistered) {
-          poiEventsRegistered = true;
-          map.on('click', 'planning-poi-icons', (e) => {
-            const id = e.features[0].properties.id;
-            const poi = TripStore.allPois[id];
-            if (poi) {
-              map.flyTo({ center: poi.coordinates, zoom: 16, duration: 800 });
-              map.once('moveend', () => showRichPopup(poi));
-            }
-          });
-          map.on('mouseenter', 'planning-poi-icons', () => {
-            map.getCanvas().style.cursor = 'pointer';
-          });
-          map.on('mouseleave', 'planning-poi-icons', () => {
-            map.getCanvas().style.cursor = '';
-            document.querySelectorAll('.poi-item.highlight').forEach(el => el.classList.remove('highlight'));
+      document.querySelectorAll('.stay-day').forEach(el => {
+        el.addEventListener('click', (e) => {
+          if (e.target.closest('.day-remove')) return;
+          selectDay(el.dataset.stayId, parseInt(el.dataset.dayIndex));
+        });
+        if (el.draggable) {
+          el.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('application/day-reorder', JSON.stringify({
+              stayId: el.dataset.stayId, dayIndex: parseInt(el.dataset.dayIndex)
+            }));
           });
         }
+      });
+
+      document.querySelectorAll('.insert-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const menu = btn.nextElementSibling;
+          const wasOpen = menu.classList.contains('open');
+          document.querySelectorAll('.insert-menu.open').forEach(m => m.classList.remove('open'));
+          if (!wasOpen) menu.classList.add('open');
+        });
+      });
+
+      document.querySelectorAll('.insert-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          const pos = parseInt(opt.closest('.insert-point').dataset.position);
+          const type = opt.dataset.type;
+          opt.closest('.insert-menu').classList.remove('open');
+          if (type === 'stay') promptAddStay(pos);
+          else promptAddFlight(pos);
+        });
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.insert-point')) {
+          document.querySelectorAll('.insert-menu.open').forEach(m => m.classList.remove('open'));
+        }
+      });
+    }
+
+    function selectBlock(blockId) {
+      selectedBlockId = blockId;
+      selectedDayIndex = null;
+
+      const block = TripStore.getItinerary().find(b => b.id === blockId);
+      if (!block) return;
+
+      if (block.type === 'stay') {
+        activeLocation = block.location;
+        renderPois();
+        refreshMarkers();
+        const acc = block.accommodation;
+        if (acc?.coordinates) {
+          map.flyTo({ center: acc.coordinates, zoom: 12, pitch: 45, bearing: -15, duration: 1500 });
+        }
+      } else if (block.type === 'flight') {
+        activeLocation = null;
+        clearMarkers();
+        renderPois();
+        if (block.legs?.length > 0) {
+          const first = block.legs[0].departure.coordinates;
+          const last = block.legs[block.legs.length - 1].arrival.coordinates;
+          const center = [(first[0] + last[0]) / 2, (first[1] + last[1]) / 2];
+          map.flyTo({ center, zoom: block.mapView?.zoom || 3, pitch: 15, duration: 1500 });
+        }
+      }
+
+      renderItinerary();
+    }
+
+    function selectDay(stayId, dayIndex) {
+      if (selectedBlockId !== stayId) selectBlock(stayId);
+      selectedBlockId = stayId;
+      selectedDayIndex = dayIndex;
+
+      const stay = TripStore.getStay(stayId);
+      if (!stay) return;
+
+      const day = stay.days[dayIndex];
+      if (!day) return;
+
+      const pois = TripStore.resolvePois((day.activities || []).map(a => a.poi));
+      if (pois.length > 0) {
+        const bounds = new mapboxgl.LngLatBounds();
+        pois.forEach(p => bounds.extend(p.coordinates));
+        if (stay.accommodation?.coordinates) bounds.extend(stay.accommodation.coordinates);
+        map.fitBounds(bounds, { padding: 80, maxZoom: 15, duration: 1000 });
+      }
+
+      renderItinerary();
+    }
+
+    // --- Day operations ---
+    async function addDay(stayId) {
+      await TripStore.addDayToStay(stayId);
+      renderItinerary();
+    }
+
+    async function removeDay(stayId, dayIndex) {
+      const stay = TripStore.getStay(stayId);
+      if (!stay) return;
+      const day = stay.days[dayIndex];
+      const actCount = (day?.activities || []).length;
+
+      if (actCount > 0) {
+        const confirmed = await showConfirm(
+          `Remove "${day.title || 'Untitled'}" with ${actCount} activit${actCount === 1 ? 'y' : 'ies'}? Activities return to unassigned.`
+        );
+        if (!confirmed) return;
+      }
+
+      await TripStore.removeDayFromStay(stayId, dayIndex);
+      if (selectedDayIndex === dayIndex) selectedDayIndex = null;
+      renderItinerary();
+    }
+
+    async function handleDayDrop(event, stayId, targetIndex) {
+      event.preventDefault();
+      event.currentTarget.classList.remove('drag-over');
+
+      const poiId = event.dataTransfer.getData('text/plain');
+      const dayReorder = event.dataTransfer.getData('application/day-reorder');
+
+      if (dayReorder) {
+        const { stayId: srcStayId, dayIndex: srcIndex } = JSON.parse(dayReorder);
+        if (srcStayId !== stayId || srcIndex === targetIndex) return;
+
+        const stay = TripStore.getStay(stayId);
+        if (!stay) return;
+        const order = stay.days.map((_, i) => i);
+        order.splice(srcIndex, 1);
+        order.splice(targetIndex, 0, srcIndex);
+        await TripStore.reorderDays(stayId, order);
+        renderItinerary();
+      } else if (poiId) {
+        await TripStore.assignPoiToDay(stayId, targetIndex, poiId, '');
+        renderItinerary();
       }
     }
 
-    function showRichPopup(poi) {
+    async function handleUnassignDrop(event, stayId) {
+      event.preventDefault();
+      event.currentTarget.classList.remove('drag-over');
+      const poiId = event.dataTransfer.getData('text/plain');
+      if (!poiId) return;
+
+      const stay = TripStore.getStay(stayId);
+      if (!stay) return;
+
+      for (let i = 0; i < (stay.days || []).length; i++) {
+        const day = stay.days[i];
+        if ((day.activities || []).some(a => a.poi === poiId)) {
+          await TripStore.unassignPoiFromDay(stayId, i, poiId);
+        }
+      }
+      renderItinerary();
+    }
+
+    // --- Block CRUD ---
+    async function promptAddStay(position) {
+      const city = prompt('City name:');
+      if (!city) return;
+      const checkIn = prompt('Check-in date (YYYY-MM-DD):');
+      if (!checkIn) return;
+      const checkOut = prompt('Check-out date (YYYY-MM-DD):');
+      if (!checkOut) return;
+
+      const block = {
+        type: 'stay',
+        location: city.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        accommodation: { checkIn, checkOut, coordinates: [0, 0], neighborhood: '', type: '', config: '', status: 'open' }
+      };
+      await TripStore.addBlock(position, block);
+      await TripStore.loadApi();
+      renderItinerary();
+      renderTripHeader();
+    }
+
+    async function promptAddFlight(position) {
+      const from = prompt('From city:');
+      if (!from) return;
+      const to = prompt('To city:');
+      if (!to) return;
+
+      const block = { type: 'flight', from, to, label: `${from} → ${to}`, date: '', legs: [], layovers: [], totalDuration: '' };
+      await TripStore.addBlock(position, block);
+      await TripStore.loadApi();
+      renderItinerary();
+      renderTripHeader();
+    }
+
+    // --- Confirm dialog ---
+    function showConfirm(message) {
+      return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'confirm-overlay';
+        overlay.innerHTML = `<div class="confirm-dialog">
+          <p>${message}</p>
+          <div class="btns">
+            <button class="btn-cancel">Cancel</button>
+            <button class="btn-danger">Remove</button>
+          </div>
+        </div>`;
+        document.body.appendChild(overlay);
+        overlay.querySelector('.btn-cancel').addEventListener('click', () => { overlay.remove(); resolve(false); });
+        overlay.querySelector('.btn-danger').addEventListener('click', () => { overlay.remove(); resolve(true); });
+      });
+    }
+
+    // --- Map markers ---
+    function refreshMarkers() {
+      clearMarkers();
+      if (!activeLocation) return;
+      const pois = TripStore.getLocationPois(activeLocation);
+      pois.forEach(poi => {
+        const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+        const el = document.createElement('div');
+        el.style.cssText = `width:12px;height:12px;border-radius:50%;background:${color};border:2px solid rgba(255,255,255,0.7);cursor:pointer;box-shadow:0 0 8px ${color}88;`;
+        el.addEventListener('click', (e) => { e.stopPropagation(); map.flyTo({ center: poi.coordinates, zoom: 16, duration: 800 }); map.once('moveend', () => showPopup(poi)); });
+        const marker = new mapboxgl.Marker({ element: el, anchor: 'center' }).setLngLat(poi.coordinates).addTo(map);
+        _planningMarkers.push(marker);
+      });
+    }
+
+    function clearMarkers() {
+      _planningMarkers.forEach(m => m.remove());
+      _planningMarkers = [];
+      if (activePopup) { activePopup.remove(); activePopup = null; }
+    }
+
+    function showPopup(poi) {
       if (activePopup) activePopup.remove();
       const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
-      const imgHtml = poi.image ? `<img src="${poi.image}" alt="${poi.name}" onerror="this.remove()" class="poi-popup-img">` : '';
-      const catHtml = `<span class="poi-popup-category" style="background:${color}20;color:${color}">${poi.category}</span>`;
-      const linkHtml = poi.url ? `<a href="${poi.url}" target="_blank" class="poi-popup-link">Visit website →</a>` : '';
-      const hoursHtml = poi.hours ? `<div class="poi-popup-meta">🕐 ${poi.hours}</div>` : '';
-      const costHtml = poi.cost ? `<div class="poi-popup-meta">💰 ${poi.cost}</div>` : '';
-
-      activePopup = new mapboxgl.Popup({ offset: [0, -45], anchor: 'bottom', maxWidth: '240px', closeButton: true })
+      const img = poi.image ? `<img src="${poi.image}" alt="${poi.name}" onerror="this.remove()" class="poi-popup-img">` : '';
+      const cat = `<span class="poi-popup-category" style="background:${color}20;color:${color}">${poi.category}</span>`;
+      const link = poi.url ? `<a href="${poi.url}" target="_blank" class="poi-popup-link">Website →</a>` : '';
+      const hours = poi.hours ? `<div class="poi-popup-meta">🕐 ${poi.hours}</div>` : '';
+      const cost = poi.cost ? `<div class="poi-popup-meta">💰 ${poi.cost}</div>` : '';
+      activePopup = new mapboxgl.Popup({ offset: [0, -15], anchor: 'bottom', maxWidth: '220px', closeButton: true })
         .setLngLat(poi.coordinates)
-        .setHTML(`${imgHtml}<div class="poi-popup-body"><div class="poi-popup-header">${catHtml}<strong>${poi.name}</strong></div><p class="poi-popup-desc">${poi.description}</p>${hoursHtml}${costHtml}${linkHtml}</div>`)
+        .setHTML(`${img}<div class="poi-popup-body"><div class="poi-popup-header">${cat}<strong>${poi.name}</strong></div><p class="poi-popup-desc">${poi.description || ''}</p>${hours}${cost}${link}</div>`)
         .addTo(map);
     }
 
-    function highlightPoiInList(id, active) {
-      document.querySelectorAll(`.poi-item[data-id="${id}"]`).forEach(el => el.classList.toggle('highlight', active));
-    }
-
-    // --- Tabs ---
-    function setupTabs() {
-      document.querySelectorAll('.tab').forEach(tab => {
+    // --- Bottom panel ---
+    function setupBottomTabs() {
+      document.querySelectorAll('.bottom-tab').forEach(tab => {
         tab.addEventListener('click', () => {
-          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-          document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+          document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.bottom-content').forEach(c => c.classList.remove('active'));
           tab.classList.add('active');
           document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
         });
       });
     }
 
-    function setupSidebar() {
-      document.getElementById('sidebar-toggle').addEventListener('click', () => {
-        document.getElementById('sidebar').classList.toggle('collapsed');
-      });
-    }
-
-    // --- POI List (scoped to active location) ---
+    // --- POI list ---
     function renderPois() {
       const list = document.getElementById('poi-list');
-      const loc = TripStore.locations[activeLocation];
-      if (!loc) { list.innerHTML = ''; return; }
-
-      const pois = loc.pois || [];
-      let html = `<div class="poi-count">${pois.length} places</div>`;
+      if (!activeLocation) { list.innerHTML = '<div class="poi-count">Select a stay to see POIs</div>'; return; }
+      const pois = TripStore.getLocationPois(activeLocation);
+      let html = `<div class="poi-count">${pois.length} places · ${TripStore.locations[activeLocation]?.name || activeLocation}</div>`;
       pois.forEach(poi => {
         const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
-        html += `
-          <div class="poi-item" data-id="${poi.id}"
-               onmouseenter="highlightPoiInList('${poi.id}',true)"
-               onmouseleave="highlightPoiInList('${poi.id}',false)"
-               onclick="flyAndShowPoi('${poi.id}')">
-            <div class="dot" style="background:${color}"></div>
-            <div class="info">
-              <div class="name">${poi.name}</div>
-              <div class="cat">${poi.category}</div>
-            </div>
-            <div class="actions">
-              <button onclick="event.stopPropagation();deletePoi('${poi.id}')" title="Delete">✕</button>
-            </div>
-          </div>`;
+        html += `<div class="poi-item" data-id="${poi.id}" onclick="flyAndShow('${poi.id}')">
+          <div class="dot" style="background:${color}"></div>
+          <div class="info"><div class="name">${poi.name}</div><div class="cat">${poi.category}</div></div>
+          <div class="actions"><button onclick="event.stopPropagation();delPoi('${poi.id}')" title="Delete">✕</button></div>
+        </div>`;
       });
       list.innerHTML = html;
     }
 
-    function flyAndShowPoi(id) {
+    function flyAndShow(id) {
       const poi = TripStore.allPois[id];
       if (!poi) return;
       map.flyTo({ center: poi.coordinates, zoom: 15, duration: 1000 });
-      map.once('moveend', () => showRichPopup(poi));
+      map.once('moveend', () => showPopup(poi));
     }
 
-    async function deletePoi(id) {
+    async function delPoi(id) {
+      if (!activeLocation) return;
       await TripStore.deletePoi(activeLocation, id);
       renderPois();
-      renderDays();
+      renderItinerary();
       refreshMarkers();
     }
 
-    async function addPoi(poi) {
-      await TripStore.addPoi(activeLocation, poi);
-      renderPois();
-      refreshMarkers();
-      map.flyTo({ center: poi.coordinates, zoom: 14, duration: 1000 });
-    }
-
-    // --- Chat (scoped to active location) ---
+    // --- Chat ---
     function setupChat() {
       const input = document.getElementById('chat-input');
       const send = document.getElementById('chat-send');
@@ -520,495 +705,138 @@
       const doSend = async (text) => {
         if (!text) text = input.value.trim();
         if (!text) return;
-        input.value = '';
-        input.style.height = 'auto';
-        send.disabled = true;
+        input.value = ''; input.style.height = 'auto'; send.disabled = true;
         hideChips();
 
-        const messages = getChatMessages();
+        const messages = chatHistories[activeLocation] || [];
         messages.push({ role: 'user', content: text });
-        addChatMessage('user', text);
-        addChatLoading();
+        addChatMsg('user', text);
+        addLoading();
 
-        const payload = encodeURIComponent(JSON.stringify({ messages, activeLocation }));
+        const payload = encodeURIComponent(JSON.stringify({ messages, activeLocation, activeStayId: selectedBlockId }));
         const es = new EventSource(`/api/ai/chat?payload=${payload}`);
         let done = false;
 
-        es.addEventListener('step', (e) => {
-          const { text: stepText } = JSON.parse(e.data);
-          updateLoadingText(stepText);
-        });
-
+        es.addEventListener('step', (e) => updateLoading(JSON.parse(e.data).text));
         es.addEventListener('done', async (e) => {
-          done = true;
-          es.close();
-          removeChatLoading();
+          done = true; es.close(); removeLoading();
           const data = JSON.parse(e.data);
-
-          if (data.proposal && data.proposal.pois?.length > 0) {
-            renderProposal(data.proposal, data.message);
-          } else if (data.message) {
-            addChatMessage('ai', data.message);
-          } else {
-            addChatMessage('ai', 'No results found. Try a different query.');
-          }
-
+          if (data.proposal?.pois?.length > 0) renderProposal(data.proposal, data.message);
+          else if (data.message) addChatMsg('ai', data.message);
+          else addChatMsg('ai', 'No results. Try different query.');
           if (data.message) messages.push({ role: 'assistant', content: data.message });
-
-          if (data.refresh) {
-            await TripStore.loadApi();
-            renderPois();
-            renderDays();
-            refreshMarkers();
-          }
+          if (data.refresh) { await TripStore.loadApi(); renderPois(); renderItinerary(); refreshMarkers(); }
         });
-
-        es.addEventListener('agent_error', (e) => {
-          done = true;
-          es.close();
-          removeChatLoading();
-          const data = JSON.parse(e.data);
-          addChatMessage('ai', `Error: ${data.error}`);
-        });
-
-        es.addEventListener('error', () => {
-          es.close();
-          if (done) return;
-          removeChatLoading();
-          addChatMessage('ai', 'Connection error. Check server logs.');
-        });
+        es.addEventListener('agent_error', (e) => { done = true; es.close(); removeLoading(); addChatMsg('ai', `Error: ${JSON.parse(e.data).error}`); });
+        es.addEventListener('error', () => { es.close(); if (!done) { removeLoading(); addChatMsg('ai', 'Connection error.'); } });
       };
 
       send.addEventListener('click', () => doSend());
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); }
-      });
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); } });
       input.addEventListener('input', () => {
         input.style.height = 'auto';
-        const h = Math.min(input.scrollHeight, 120);
-        input.style.height = h + 'px';
-        input.classList.toggle('scrollable', input.scrollHeight > 120);
+        input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+        input.classList.toggle('scrollable', input.scrollHeight > 100);
         send.disabled = !input.value.trim();
       });
-
-      document.querySelectorAll('.chat-chip').forEach(chip => {
-        chip.addEventListener('click', () => doSend(chip.dataset.prompt));
-      });
-
+      document.querySelectorAll('.chat-chip').forEach(c => c.addEventListener('click', () => doSend(c.dataset.prompt)));
       window._chatSend = doSend;
     }
 
-    function hideChips() {
-      const chips = document.getElementById('chat-chips');
-      if (chips) chips.remove();
-    }
-
-    function renderMarkdown(text) {
-      if (!text) return '';
-      return text
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.+?)\*/g, '<em>$1</em>')
-        .replace(/^[\*\-]\s+/gm, '• ')
-        .replace(/\n/g, '<br>');
-    }
-
-    function addChatMessage(role, content) {
+    function hideChips() { document.getElementById('chat-chips')?.remove(); }
+    function addChatMsg(role, content) {
       const el = document.getElementById('chat-messages');
-      const div = document.createElement('div');
-      div.className = `chat-msg ${role}`;
-      div.innerHTML = role === 'ai' ? renderMarkdown(content) : '';
-      if (role !== 'ai') div.textContent = content;
-      el.appendChild(div);
+      const div = document.createElement('div'); div.className = `chat-msg ${role}`;
+      if (role === 'ai') div.innerHTML = (content || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+      else div.textContent = content;
+      el.appendChild(div); el.scrollTop = el.scrollHeight;
+    }
+    function addLoading() {
+      const el = document.getElementById('chat-messages');
+      el.insertAdjacentHTML('beforeend', `<div class="chat-msg ai" id="chat-loading"><div class="agent-loading"><div class="agent-spinner"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span class="loading-text">Thinking...</span></div></div>`);
       el.scrollTop = el.scrollHeight;
     }
+    function updateLoading(text) { const el = document.querySelector('#chat-loading .loading-text'); if (el) el.textContent = text; }
+    function removeLoading() { document.getElementById('chat-loading')?.remove(); }
 
-    function addChatLoading() {
-      const el = document.getElementById('chat-messages');
-      el.insertAdjacentHTML('beforeend', `<div class="chat-msg ai" id="chat-loading">
-        <div class="agent-loading">
-          <div class="agent-spinner"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-          <span class="loading-text">Thinking...</span>
-        </div>
-      </div>`);
-      el.scrollTop = el.scrollHeight;
-    }
-
-    function updateLoadingText(text) {
-      const el = document.querySelector('#chat-loading .loading-text');
-      if (el) el.textContent = text;
-      const container = document.getElementById('chat-messages');
-      if (container) container.scrollTop = container.scrollHeight;
-    }
-
-    function removeChatLoading() {
-      document.getElementById('chat-loading')?.remove();
-    }
-
-    let _markersDimmed = false;
-    function dimMapMarkers(dim) {
-      _markersDimmed = dim;
-      applyDim();
-      if (dim) {
-        map.on('idle', applyDim);
-      } else {
-        map.off('idle', applyDim);
-      }
-    }
-
-    function applyDim() {
-      if (!map.getLayer('planning-poi-icons')) return;
-      map.setPaintProperty('planning-poi-icons', 'icon-opacity', _markersDimmed ? 0.15 : 1);
-      map.setPaintProperty('planning-poi-icons', 'text-opacity', _markersDimmed ? 0.1 : 1);
-    }
-
-    let _proposalPois = [];
-    let _proposalMarkers = [];
-
-    function showProposalPins(pois) {
-      dimMapMarkers(true);
-      clearProposalPins();
-      _proposalPois = pois;
-
-      pois.forEach((poi, i) => {
-        if (!poi.coordinates) return;
-        const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
-
-        const el = document.createElement('div');
-        el.className = 'proposal-marker';
-        if (poi.image) {
-          const img = document.createElement('img');
-          img.src = poi.image;
-          img.alt = poi.name;
-          img.onerror = () => { el.classList.add('no-img'); img.remove(); };
-          el.appendChild(img);
-        } else {
-          el.classList.add('no-img');
-        }
-        el.style.borderColor = color;
-        el.style.boxShadow = `0 0 12px ${color}88, 0 0 4px rgba(255,255,255,0.3)`;
-
-        el.addEventListener('click', (e) => { e.stopPropagation(); showProposalPopup(poi); });
-
-        const label = document.createElement('div');
-        label.className = 'proposal-marker-label';
-        label.textContent = poi.name;
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'proposal-marker-wrap';
-        wrapper.dataset.index = i;
-        wrapper.appendChild(el);
-        wrapper.appendChild(label);
-
-        const marker = new mapboxgl.Marker({ element: wrapper, anchor: 'center' })
-          .setLngLat(poi.coordinates)
-          .addTo(map);
-
-        _proposalMarkers.push(marker);
-      });
-
-      const withCoords = pois.filter(p => p.coordinates);
-      if (withCoords.length > 0) {
-        const bounds = new mapboxgl.LngLatBounds();
-        withCoords.forEach(p => bounds.extend(p.coordinates));
-        map.fitBounds(bounds, { padding: 80, maxZoom: 15, duration: 1000 });
-        map.once('idle', applyDim);
-      }
-    }
-
-    function showProposalPopup(poi) {
-      if (activePopup) activePopup.remove();
-      const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
-      const catHtml = `<span class="poi-popup-category" style="background:${color}20;color:${color}">${poi.category}</span>`;
-      const priceHtml = poi.price_range ? `<div class="poi-popup-meta">💰 ${poi.price_range}</div>` : '';
-      const ratingHtml = poi.rating ? `<div class="poi-popup-meta">★ ${poi.rating}/5</div>` : '';
-      const addBtnId = `popup-add-${Date.now()}`;
-      const isExisting = !!poi.existing;
-      const addHtml = isExisting
-        ? `<div style="margin-top:8px;font-size:0.7rem;color:var(--accent);font-weight:600;">Already saved</div>`
-        : `<button id="${addBtnId}" style="margin-top:8px;background:#4ecdc4;color:#0a0a0f;border:none;padding:6px 14px;border-radius:5px;font-size:0.7rem;font-weight:600;cursor:pointer;font-family:var(--font);">+ Add to trip</button>`;
-      const imgHtml = poi.image ? `<img src="${poi.image}" alt="${poi.name}" onerror="this.remove()" class="poi-popup-img">` : '';
-      activePopup = new mapboxgl.Popup({ offset: [0, -45], anchor: 'bottom', maxWidth: '240px', closeButton: true })
-        .setLngLat(poi.coordinates)
-        .setHTML(`${imgHtml}<div class="poi-popup-body"><div class="poi-popup-header">${catHtml}<strong>${poi.name}</strong></div><p class="poi-popup-desc">${poi.description || ''}</p>${priceHtml}${ratingHtml}${addHtml}</div>`)
-        .addTo(map);
-
-      if (!isExisting) {
-        setTimeout(() => {
-          const btn = document.getElementById(addBtnId);
-          if (btn) btn.addEventListener('click', () => {
-            btn.textContent = '✓ Added';
-            btn.disabled = true;
-            btn.style.opacity = '0.5';
-            const summary = `${poi.name} [${poi.coordinates}] (${poi.category}): ${poi.description || ''}`;
-            window._chatSend(`Add this POI to ${activeLocation}:\n${summary}`);
-          });
-        }, 50);
-      }
-    }
-
-    function clearProposalPins() {
-      _proposalMarkers.forEach(m => m.remove());
-      _proposalMarkers = [];
-    }
-
-    function highlightProposalPin(index, active) {
-      _proposalMarkers.forEach((m, i) => {
-        const el = m.getElement().querySelector('.proposal-marker');
-        if (el) el.classList.toggle('active', i === index && active);
-      });
-    }
-
-    function alignmentHtml(alignment) {
-      if (!alignment) return '';
-      return '<div class="poi-alignment">' + Object.entries(alignment).sort((a, b) => a[0].localeCompare(b[0])).map(([initial, pct]) => {
-        const color = TRAVELER_COLORS[initial] || '#888';
-        return `<div class="alignment-badge">
-          <div class="alignment-avatar" style="background:${color}">${initial}</div>
-          <span class="alignment-pct">${pct}%</span>
-        </div>`;
+    function alignmentHtml(a) {
+      if (!a) return '';
+      return '<div class="poi-alignment">' + Object.entries(a).sort((x,y) => x[0].localeCompare(y[0])).map(([k,v]) => {
+        const c = TRAVELER_COLORS[k] || '#888';
+        return `<div class="alignment-badge"><div class="alignment-avatar" style="background:${c}">${k}</div><span class="alignment-pct">${v}%</span></div>`;
       }).join('') + '</div>';
     }
 
     function renderProposal(proposal, message) {
       const el = document.getElementById('chat-messages');
+      if (message) addChatMsg('ai', message);
+      if (proposal.message) addChatMsg('ai', proposal.message);
 
       if (proposal.type === 'propose_pois') {
-        if (message) addChatMessage('ai', message);
-        addChatMessage('ai', proposal.message);
-        dimMapMarkers(true);
-
         const container = document.createElement('div');
-        container.className = 'proposal-container';
-        const pois = proposal.pois || [];
-
-        showProposalPins(pois);
-
-        let pendingCount = 0;
-
-        const checkAllDone = () => {
-          if (container.querySelectorAll('.poi-suggestion:not(.decided)').length === 0) {
-            dimMapMarkers(false);
-            clearProposalPins();
-          }
-        };
-
-        pois.forEach((poi, i) => {
+        (proposal.pois || []).forEach((poi, i) => {
           const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
           const isExisting = !!poi.existing;
           const div = document.createElement('div');
           div.className = 'poi-suggestion' + (isExisting ? ' existing' : '');
-          div.dataset.index = i;
           const badge = isExisting ? '<span class="existing-badge">saved</span>' : '';
-          const btns = isExisting
-            ? ''
-            : `<div class="poi-actions">
-                <button class="poi-add-btn">+ Add</button>
-                <button class="poi-dismiss-btn">✕</button>
-              </div>`;
-          const metaHtml = [
-            poi.category,
-            poi.price_range ? poi.price_range : '',
-            poi.rating ? `★ ${poi.rating}` : ''
-          ].filter(Boolean).join(' · ');
-          const imgHtml = poi.image ? `<img class="poi-suggestion-img" src="${poi.image}" alt="${poi.name}" onerror="this.remove()">` : '';
-          div.innerHTML = `
-            ${imgHtml}
-            <div class="name" style="color:${color}">${poi.name}${badge}</div>
-            <div class="desc">${poi.description || ''}</div>
-            <div class="cat">${metaHtml}</div>
-            ${alignmentHtml(poi.alignment)}
-            ${btns}
-          `;
-          div.addEventListener('mouseenter', () => highlightProposalPin(i, true));
-          div.addEventListener('mouseleave', () => highlightProposalPin(i, false));
-          div.addEventListener('click', (e) => {
-            if (e.target.closest('.poi-add-btn, .poi-dismiss-btn')) return;
-            if (poi.coordinates) {
-              map.flyTo({ center: poi.coordinates, zoom: 16, duration: 800 });
-              map.once('moveend', () => showProposalPopup(poi));
-            }
-          });
+          const btns = isExisting ? '' : `<div class="poi-actions"><button class="poi-add-btn">+ Add</button><button class="poi-dismiss-btn">✕</button></div>`;
+          const img = poi.image ? `<img class="poi-suggestion-img" src="${poi.image}" onerror="this.remove()">` : '';
+          const meta = [poi.category, poi.price_range, poi.rating ? `★${poi.rating}` : ''].filter(Boolean).join(' · ');
+          div.innerHTML = `${img}<div class="name" style="color:${color}">${poi.name}${badge}</div><div class="desc">${poi.description || ''}</div><div class="cat">${meta}</div>${alignmentHtml(poi.alignment)}${btns}`;
 
           if (!isExisting) {
-            pendingCount++;
-            div.querySelector('.poi-add-btn').addEventListener('click', (e) => {
-              e.stopPropagation();
-              div.classList.add('decided');
+            div.querySelector('.poi-add-btn')?.addEventListener('click', (e) => {
+              e.stopPropagation(); div.classList.add('decided');
               div.querySelector('.poi-actions').innerHTML = '<span class="poi-status added">✓ Added</span>';
-              const summary = `${poi.name} [${poi.coordinates}] (${poi.category}): ${poi.description || ''}`;
-              window._chatSend(`Add this POI to ${activeLocation}:\n${summary}`);
-              checkAllDone();
+              window._chatSend(`Add this POI to ${activeLocation}:\n${poi.name} [${poi.coordinates}] (${poi.category}): ${poi.description || ''}`);
             });
-            div.querySelector('.poi-dismiss-btn').addEventListener('click', (e) => {
-              e.stopPropagation();
-              div.classList.add('decided', 'existing');
+            div.querySelector('.poi-dismiss-btn')?.addEventListener('click', (e) => {
+              e.stopPropagation(); div.classList.add('decided', 'existing');
               div.querySelector('.poi-actions').innerHTML = '<span class="poi-status dismissed">Dismissed</span>';
-              checkAllDone();
             });
           }
-
           container.appendChild(div);
         });
-
         el.appendChild(container);
-        el.appendChild(actions);
-        el.scrollTop = el.scrollHeight;
-
       } else if (proposal.type === 'ask_choice') {
-        if (message) addChatMessage('ai', message);
-        addChatMessage('ai', proposal.question);
-
+        addChatMsg('ai', proposal.question);
         const container = document.createElement('div');
-        container.className = 'proposal-container';
         const multi = proposal.multi || false;
-        const inputType = multi ? 'checkbox' : 'radio';
-
         (proposal.options || []).forEach((opt, i) => {
-          const div = document.createElement('div');
-          div.className = 'choice-option';
-          div.innerHTML = `<input type="${inputType}" name="choice" value="${i}"> <span>${opt}</span>`;
+          const div = document.createElement('div'); div.className = 'choice-option';
+          div.innerHTML = `<input type="${multi ? 'checkbox' : 'radio'}" name="choice" value="${i}"> <span>${opt}</span>`;
           div.addEventListener('click', (e) => {
             if (e.target.tagName === 'INPUT') return;
-            const inp = div.querySelector('input');
-            inp.checked = multi ? !inp.checked : true;
+            const inp = div.querySelector('input'); inp.checked = multi ? !inp.checked : true;
             if (!multi) container.querySelectorAll('.choice-option').forEach(c => c.classList.remove('selected'));
             div.classList.toggle('selected', inp.checked);
           });
           container.appendChild(div);
         });
-
-        const actions = document.createElement('div');
-        actions.className = 'proposal-actions';
+        const actions = document.createElement('div'); actions.className = 'proposal-actions';
         actions.innerHTML = `<button class="confirm-btn">Confirm</button><button class="skip-btn">Skip</button>`;
-
         actions.querySelector('.confirm-btn').addEventListener('click', () => {
-          const selected = [];
-          container.querySelectorAll('input:checked').forEach(inp => {
-            selected.push(proposal.options[parseInt(inp.value)]);
-          });
-          actions.remove();
-          container.querySelectorAll('input').forEach(inp => { inp.disabled = true; });
-
-          if (selected.length > 0) {
-            window._chatSend(selected.join(', '));
-          }
+          const sel = []; container.querySelectorAll('input:checked').forEach(inp => sel.push(proposal.options[parseInt(inp.value)]));
+          actions.remove(); container.querySelectorAll('input').forEach(inp => inp.disabled = true);
+          if (sel.length) window._chatSend(sel.join(', '));
         });
-
-        actions.querySelector('.skip-btn').addEventListener('click', () => {
-          actions.remove();
-          container.querySelectorAll('input').forEach(inp => { inp.disabled = true; });
-          addChatMessage('ai', 'Skipped.');
-        });
-
-        el.appendChild(container);
-        el.appendChild(actions);
-        el.scrollTop = el.scrollHeight;
-
+        actions.querySelector('.skip-btn').addEventListener('click', () => { actions.remove(); container.querySelectorAll('input').forEach(inp => inp.disabled = true); addChatMsg('ai', 'Skipped.'); });
+        el.appendChild(container); el.appendChild(actions);
       } else if (proposal.type === 'propose_schedule') {
-        if (message) addChatMessage('ai', message);
-        addChatMessage('ai', proposal.message);
-
         const container = document.createElement('div');
-        container.className = 'proposal-container';
         (proposal.activities || []).forEach(act => {
-          const div = document.createElement('div');
-          div.className = 'choice-option';
+          const div = document.createElement('div'); div.className = 'choice-option';
           div.innerHTML = `<input type="checkbox" checked> <span><strong>${act.poi_name}</strong>${act.notes ? ' — ' + act.notes : ''}</span>`;
           container.appendChild(div);
         });
-
-        const actions = document.createElement('div');
-        actions.className = 'proposal-actions';
-        actions.innerHTML = `<button class="confirm-btn">Apply schedule</button><button class="skip-btn">Skip</button>`;
-
-        actions.querySelector('.confirm-btn').addEventListener('click', () => {
-          actions.remove();
-          container.querySelectorAll('input').forEach(inp => { inp.disabled = true; });
-          window._chatSend(`Apply the proposed schedule for ${proposal.date}`);
-        });
-
-        actions.querySelector('.skip-btn').addEventListener('click', () => {
-          actions.remove();
-          container.querySelectorAll('input').forEach(inp => { inp.disabled = true; });
-          addChatMessage('ai', 'Skipped.');
-        });
-
-        el.appendChild(container);
-        el.appendChild(actions);
-        el.scrollTop = el.scrollHeight;
+        const actions = document.createElement('div'); actions.className = 'proposal-actions';
+        actions.innerHTML = `<button class="confirm-btn">Apply</button><button class="skip-btn">Skip</button>`;
+        actions.querySelector('.confirm-btn').addEventListener('click', () => { actions.remove(); container.querySelectorAll('input').forEach(inp => inp.disabled = true); window._chatSend(`Apply the proposed schedule for day ${proposal.day_index} of ${proposal.stay_id}`); });
+        actions.querySelector('.skip-btn').addEventListener('click', () => { actions.remove(); container.querySelectorAll('input').forEach(inp => inp.disabled = true); addChatMsg('ai', 'Skipped.'); });
+        el.appendChild(container); el.appendChild(actions);
       }
-    }
-
-    // --- Days (scoped to active location) ---
-    function renderDays() {
-      const container = document.getElementById('days-list');
-      const loc = TripStore.locations[activeLocation];
-      if (!loc) { container.innerHTML = ''; return; }
-
-      const assignedIds = new Set();
-      (loc.days || []).forEach(day => {
-        (day.activities || []).forEach(a => assignedIds.add(a.poi));
-      });
-
-      const unassigned = (loc.pois || []).filter(p => !assignedIds.has(p.id));
-
-      let html = `<div class="unassigned-section" ondrop="dropPoi(event,'')" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">
-        <div class="unassigned-header">Unassigned (${unassigned.length})</div>`;
-      unassigned.forEach(p => { html += draggablePoiHtml(p); });
-      html += `</div>`;
-
-      (loc.days || []).forEach(day => {
-        const dateStr = String(day.date);
-        html += `<div class="day-slot" ondrop="dropPoi(event,'${dateStr}')" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')">
-          <div class="day-slot-header">
-            <span>${day.title || dateStr}</span>
-            <span class="day-date">${dateStr}</span>
-          </div>`;
-        (day.activities || []).forEach(a => {
-          const p = TripStore.allPois[a.poi];
-          if (p) html += draggablePoiHtml(p);
-        });
-        html += `</div>`;
-      });
-
-      container.innerHTML = html;
-    }
-
-    function draggablePoiHtml(p) {
-      const color = CATEGORY_COLORS[p.category] || '#4ecdc4';
-      return `<div class="draggable-poi" draggable="true" ondragstart="dragPoi(event,'${p.id}')" data-poi="${p.id}">
-        <div class="dot" style="background:${color}"></div>${p.name}</div>`;
-    }
-
-    function dragPoi(e, id) {
-      e.dataTransfer.setData('text/plain', id);
-    }
-
-    async function dropPoi(e, targetDate) {
-      e.preventDefault();
-      e.currentTarget.classList.remove('drag-over');
-      const poiId = e.dataTransfer.getData('text/plain');
-      const loc = TripStore.locations[activeLocation];
-      if (!loc) return;
-
-      for (const day of (loc.days || [])) {
-        const idx = (day.activities || []).findIndex(a => a.poi === poiId);
-        if (idx !== -1) {
-          day.activities.splice(idx, 1);
-          await fetch(`/api/locations/${activeLocation}/days/${String(day.date)}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ activities: day.activities })
-          });
-        }
-      }
-
-      if (targetDate) {
-        await TripStore.assignPoiToDay(activeLocation, targetDate, poiId, '');
-      }
-
-      renderDays();
+      el.scrollTop = el.scrollHeight;
     }
 
     init();

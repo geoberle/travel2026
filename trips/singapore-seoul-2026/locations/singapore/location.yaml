@@ -2,20 +2,6 @@ name: Singapore
 coordinates:
   - 103.8636
   - 1.2816
-dates:
-  from: "2026-07-11"
-  to: "2026-07-13"
-accommodations:
-  - id: singapore
-    neighborhood: Robertson Quay
-    type: Serviced Apartment
-    config: 2-Bedroom
-    coordinates:
-      - 103.8365
-      - 1.2906
-    checkIn: "2026-07-11"
-    checkOut: "2026-07-14"
-    status: planned
 pois:
   - id: robertson-quay
     name: Robertson Quay
@@ -160,52 +146,3 @@ pois:
     image: https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=800
     description: Massive Japanese bookstore with huge manga section in English and Japanese.
     category: shopping
-days:
-  - date: "2026-07-11"
-    title: Arrival in Singapore
-    status: planned
-    activities:
-      - poi: changi-airport
-        notes: Arrive ~11:10, Jewel waterfall
-      - poi: robertson-quay
-        notes: Check into apartment, settle in
-      - poi: chinatown
-        notes: Temples, shophouses, street markets
-      - poi: sentosa-island
-        notes: ""
-    notes: Walk along Singapore River paths. Riverside dinner. Early night for jet lag.
-  - date: "2026-07-12"
-    title: Gardens & Marina Bay
-    status: planned
-    activities:
-      - poi: gardens-by-the-bay
-        notes: Cloud Forest & Flower Dome
-      - poi: supertree-grove
-        notes: Skyway walkway
-      - poi: marina-bay-sands
-        notes: Observation deck
-      - poi: artscience-museum
-        notes: If kids are interested
-      - poi: maxwell-food-centre
-        notes: Hawker dinner option
-      - poi: lau-pa-sat
-        notes: Hawker dinner option
-      - poi: supertree-grove
-        notes: Garden Rhapsody light show (19:45 or 20:45)
-  - date: "2026-07-13"
-    title: Shopping & Chill
-    status: planned
-    activities:
-      - poi: bugis-plus
-        notes: Manga, anime, figures
-      - poi: bugis-street-market
-        notes: Cheap clothes, accessories, souvenirs
-      - poi: haji-lane
-        notes: Indie boutiques, vintage, street art
-      - poi: botanic-gardens
-        notes: Shaded walk, orchid garden
-      - poi: kinokuniya
-        notes: Manga hunting at Ngee Ann City
-      - poi: orchard-road
-        notes: Browse malls
-    notes: Last dinner in Singapore. Pack for Seoul (early departure).

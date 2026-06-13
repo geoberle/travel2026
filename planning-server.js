@@ -2,11 +2,11 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
-const { VertexAI, HarmCategory, HarmBlockThreshold } = require('@google-cloud/vertexai');
+const { VertexAI } = require('@google-cloud/vertexai');
 
 const app = express();
 const PORT = 3001;
-const TRIP_DIR = path.join(__dirname, 'trips', 'singapore-seoul-2026');
+const TRIP_DIR = path.join(__dirname, 'trips', 'seoul-2026');
 
 app.use(express.json());
 app.use(express.static(__dirname));
@@ -22,8 +22,16 @@ if (!VERTEX_PROJECT) {
 
 const vertexAI = new VertexAI({ project: VERTEX_PROJECT, location: VERTEX_REGION });
 
+const YAML_OPTS = { lineWidth: -1, noRefs: true, quotingType: '"' };
+
+// --- YAML I/O ---
+
 function readTripYaml() {
   return yaml.load(fs.readFileSync(path.join(TRIP_DIR, 'trip.yaml'), 'utf8'));
+}
+
+function writeTripYaml(data) {
+  fs.writeFileSync(path.join(TRIP_DIR, 'trip.yaml'), yaml.dump(data, YAML_OPTS));
 }
 
 function readLocationYaml(name) {
@@ -32,19 +40,32 @@ function readLocationYaml(name) {
   return yaml.load(fs.readFileSync(file, 'utf8'));
 }
 
-function getAllPois() {
-  const trip = readTripYaml();
-  const ids = new Set();
-  (trip.locations || []).forEach(name => {
-    const loc = readLocationYaml(name);
-    if (loc) (loc.pois || []).forEach(p => ids.add(p.id));
-  });
-  return ids;
+function writeLocationYaml(name, data) {
+  const dir = path.join(TRIP_DIR, 'locations', name);
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'location.yaml'), yaml.dump(data, YAML_OPTS));
 }
 
-function writeLocationYaml(name, data) {
-  const file = path.join(TRIP_DIR, 'locations', name, 'location.yaml');
-  fs.writeFileSync(file, yaml.dump(data, { lineWidth: -1, noRefs: true, quotingType: '"' }));
+function findBlock(trip, blockId) {
+  return (trip.itinerary || []).find(b => b.id === blockId);
+}
+
+function uniqueLocationNames(trip) {
+  return [...new Set(
+    (trip.itinerary || []).filter(b => b.type === 'stay').map(b => b.location)
+  )];
+}
+
+function addOneDay(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().split('T')[0];
+}
+
+function subtractOneDay(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().split('T')[0];
 }
 
 // --- Trip endpoint ---
@@ -53,12 +74,12 @@ app.get('/api/trip', (req, res) => {
   res.json(readTripYaml());
 });
 
-// --- Locations endpoints ---
+// --- Locations endpoints (POI libraries) ---
 
 app.get('/api/locations', (req, res) => {
   const trip = readTripYaml();
   const locations = {};
-  (trip.locations || []).forEach(name => {
+  uniqueLocationNames(trip).forEach(name => {
     const data = readLocationYaml(name);
     if (data) locations[name] = data;
   });
@@ -70,8 +91,6 @@ app.get('/api/locations/:name', (req, res) => {
   if (!data) return res.status(404).json({ error: 'Location not found' });
   res.json(data);
 });
-
-// --- POI endpoints ---
 
 app.get('/api/locations/:name/pois', (req, res) => {
   const loc = readLocationYaml(req.params.name);
@@ -101,35 +120,177 @@ app.delete('/api/locations/:name/pois/:poiId', (req, res) => {
   if (!loc) return res.status(404).json({ error: 'Location not found' });
 
   loc.pois = (loc.pois || []).filter(p => p.id !== req.params.poiId);
-  (loc.days || []).forEach(day => {
-    day.activities = (day.activities || []).filter(a => a.poi !== req.params.poiId);
-  });
-
   writeLocationYaml(req.params.name, loc);
+
+  const trip = readTripYaml();
+  let tripChanged = false;
+  (trip.itinerary || [])
+    .filter(b => b.type === 'stay' && b.location === req.params.name)
+    .forEach(stay => {
+      (stay.days || []).forEach(day => {
+        const before = (day.activities || []).length;
+        day.activities = (day.activities || []).filter(a => a.poi !== req.params.poiId);
+        if (day.activities.length !== before) tripChanged = true;
+      });
+    });
+  if (tripChanged) writeTripYaml(trip);
+
   res.json({ ok: true });
 });
 
-// --- Day endpoints ---
+// --- Itinerary endpoints ---
 
-app.get('/api/locations/:name/days', (req, res) => {
-  const loc = readLocationYaml(req.params.name);
-  if (!loc) return res.status(404).json({ error: 'Location not found' });
-  res.json(loc.days || []);
+app.get('/api/itinerary', (req, res) => {
+  const trip = readTripYaml();
+  res.json(trip.itinerary || []);
 });
 
-app.put('/api/locations/:name/days/:date', (req, res) => {
-  const loc = readLocationYaml(req.params.name);
-  if (!loc) return res.status(404).json({ error: 'Location not found' });
+app.get('/api/itinerary/:blockId', (req, res) => {
+  const trip = readTripYaml();
+  const block = findBlock(trip, req.params.blockId);
+  if (!block) return res.status(404).json({ error: 'Block not found' });
+  res.json(block);
+});
 
-  const day = (loc.days || []).find(d => String(d.date) === req.params.date);
-  if (!day) return res.status(404).json({ error: 'Day not found' });
+app.post('/api/itinerary', (req, res) => {
+  const trip = readTripYaml();
+  const { block, position } = req.body;
 
+  if (!block || !block.type) return res.status(400).json({ error: 'block.type required' });
+  if (!block.id) block.id = `${block.type}-${Date.now()}`;
+
+  if (block.type === 'stay') {
+    const checkIn = block.accommodation?.checkIn;
+    const checkOut = block.accommodation?.checkOut;
+    if (checkIn && checkOut && (!block.days || block.days.length === 0)) {
+      const days = [];
+      const start = new Date(checkIn + 'T00:00:00');
+      const end = new Date(checkOut + 'T00:00:00');
+      const count = Math.round((end - start) / 86400000);
+      for (let i = 0; i < count; i++) {
+        days.push({ title: '', status: 'open', activities: [] });
+      }
+      block.days = days;
+    }
+
+    if (block.location) {
+      const loc = readLocationYaml(block.location);
+      if (!loc) {
+        writeLocationYaml(block.location, {
+          name: block.location.charAt(0).toUpperCase() + block.location.slice(1),
+          coordinates: block.accommodation?.coordinates || [0, 0],
+          pois: []
+        });
+      }
+    }
+  }
+
+  const idx = typeof position === 'number' ? position : trip.itinerary.length;
+  trip.itinerary.splice(idx, 0, block);
+  writeTripYaml(trip);
+  res.json({ ok: true, block });
+});
+
+app.put('/api/itinerary/:blockId', (req, res) => {
+  const trip = readTripYaml();
+  const block = findBlock(trip, req.params.blockId);
+  if (!block) return res.status(404).json({ error: 'Block not found' });
+
+  Object.assign(block, req.body);
+  writeTripYaml(trip);
+  res.json({ ok: true });
+});
+
+app.delete('/api/itinerary/:blockId', (req, res) => {
+  const trip = readTripYaml();
+  const idx = (trip.itinerary || []).findIndex(b => b.id === req.params.blockId);
+  if (idx === -1) return res.status(404).json({ error: 'Block not found' });
+
+  trip.itinerary.splice(idx, 1);
+  writeTripYaml(trip);
+  res.json({ ok: true });
+});
+
+// --- Day endpoints (within stay blocks) ---
+
+app.post('/api/itinerary/:stayId/days', (req, res) => {
+  const trip = readTripYaml();
+  const stay = findBlock(trip, req.params.stayId);
+  if (!stay || stay.type !== 'stay') return res.status(404).json({ error: 'Stay not found' });
+
+  if (!stay.days) stay.days = [];
+  stay.days.push({ title: req.body.title || '', status: 'open', activities: [] });
+  stay.accommodation.checkOut = addOneDay(stay.accommodation.checkOut);
+
+  writeTripYaml(trip);
+  res.json({ ok: true, checkOut: stay.accommodation.checkOut });
+});
+
+app.delete('/api/itinerary/:stayId/days/:dayIndex', (req, res) => {
+  const trip = readTripYaml();
+  const stay = findBlock(trip, req.params.stayId);
+  if (!stay || stay.type !== 'stay') return res.status(404).json({ error: 'Stay not found' });
+
+  const idx = parseInt(req.params.dayIndex);
+  if (!stay.days || idx < 0 || idx >= stay.days.length) {
+    return res.status(404).json({ error: 'Day not found' });
+  }
+
+  stay.days.splice(idx, 1);
+  stay.accommodation.checkOut = subtractOneDay(stay.accommodation.checkOut);
+
+  writeTripYaml(trip);
+  res.json({ ok: true, checkOut: stay.accommodation.checkOut });
+});
+
+app.put('/api/itinerary/:stayId/days/:dayIndex', (req, res) => {
+  const trip = readTripYaml();
+  const stay = findBlock(trip, req.params.stayId);
+  if (!stay || stay.type !== 'stay') return res.status(404).json({ error: 'Stay not found' });
+
+  const idx = parseInt(req.params.dayIndex);
+  if (!stay.days || idx < 0 || idx >= stay.days.length) {
+    return res.status(404).json({ error: 'Day not found' });
+  }
+
+  const day = stay.days[idx];
   if (req.body.activities !== undefined) day.activities = req.body.activities;
   if (req.body.notes !== undefined) day.notes = req.body.notes;
   if (req.body.title !== undefined) day.title = req.body.title;
   if (req.body.status !== undefined) day.status = req.body.status;
+  if (req.body.pinnedDate !== undefined) day.pinnedDate = req.body.pinnedDate;
 
-  writeLocationYaml(req.params.name, loc);
+  writeTripYaml(trip);
+  res.json({ ok: true });
+});
+
+app.put('/api/itinerary/:stayId/days/reorder', (req, res) => {
+  const trip = readTripYaml();
+  const stay = findBlock(trip, req.params.stayId);
+  if (!stay || stay.type !== 'stay') return res.status(404).json({ error: 'Stay not found' });
+
+  const { order } = req.body;
+  if (!Array.isArray(order) || order.length !== (stay.days || []).length) {
+    return res.status(400).json({ error: 'order must be array of all day indexes' });
+  }
+
+  const checkIn = new Date(stay.accommodation.checkIn + 'T00:00:00');
+  for (const newIdx of order) {
+    const day = stay.days[newIdx];
+    if (day?.pinnedDate) {
+      const expectedIdx = order.indexOf(newIdx);
+      const expectedDate = new Date(checkIn.getTime() + expectedIdx * 86400000);
+      const expectedStr = expectedDate.toISOString().split('T')[0];
+      if (day.pinnedDate !== expectedStr) {
+        return res.status(400).json({
+          error: `Pinned day "${day.title}" must stay at ${day.pinnedDate}`
+        });
+      }
+    }
+  }
+
+  stay.days = order.map(i => stay.days[i]);
+  writeTripYaml(trip);
   res.json({ ok: true });
 });
 
@@ -138,16 +299,30 @@ app.put('/api/locations/:name/days/:date', (req, res) => {
 const TOOL_DECLARATIONS = [
   {
     name: 'get_trip',
-    description: 'Get trip metadata including origin, destinations, transport/flights',
+    description: 'Get trip metadata including origin and travelers',
     parameters: { type: 'object', properties: {} }
   },
   {
-    name: 'get_location',
-    description: 'Get location details: dates, accommodations, summary',
+    name: 'get_itinerary',
+    description: 'Get the full trip itinerary as ordered blocks (flights and stays)',
+    parameters: { type: 'object', properties: {} }
+  },
+  {
+    name: 'get_stay',
+    description: 'Get a stay block with accommodation details and day count',
     parameters: {
       type: 'object',
-      properties: { location: { type: 'string', description: 'Location name (singapore, seoul)' } },
-      required: ['location']
+      properties: { stay_id: { type: 'string', description: 'Stay block ID (e.g. seoul-stay)' } },
+      required: ['stay_id']
+    }
+  },
+  {
+    name: 'get_stay_days',
+    description: 'Get all days for a stay with their activities',
+    parameters: {
+      type: 'object',
+      properties: { stay_id: { type: 'string' } },
+      required: ['stay_id']
     }
   },
   {
@@ -155,16 +330,7 @@ const TOOL_DECLARATIONS = [
     description: 'Get all saved POIs for a location',
     parameters: {
       type: 'object',
-      properties: { location: { type: 'string' } },
-      required: ['location']
-    }
-  },
-  {
-    name: 'get_days',
-    description: 'Get itinerary/schedule for a location (days with activities)',
-    parameters: {
-      type: 'object',
-      properties: { location: { type: 'string' } },
+      properties: { location: { type: 'string', description: 'Location name (e.g. seoul)' } },
       required: ['location']
     }
   },
@@ -175,7 +341,7 @@ const TOOL_DECLARATIONS = [
   },
   {
     name: 'add_poi',
-    description: 'Add a POI to a location. Only call after user confirmed via propose_pois.',
+    description: 'Add a POI to a location. Only call after user confirmed via search_and_propose.',
     parameters: {
       type: 'object',
       properties: {
@@ -200,16 +366,16 @@ const TOOL_DECLARATIONS = [
   },
   {
     name: 'assign_poi_to_day',
-    description: 'Schedule a POI into a specific day',
+    description: 'Schedule a POI into a specific day of a stay',
     parameters: {
       type: 'object',
       properties: {
-        location: { type: 'string' },
-        date: { type: 'string', description: 'YYYY-MM-DD' },
+        stay_id: { type: 'string' },
+        day_index: { type: 'integer', description: '0-based day index within the stay' },
         poi_id: { type: 'string' },
         notes: { type: 'string' }
       },
-      required: ['location', 'date', 'poi_id']
+      required: ['stay_id', 'day_index', 'poi_id']
     }
   },
   {
@@ -218,11 +384,11 @@ const TOOL_DECLARATIONS = [
     parameters: {
       type: 'object',
       properties: {
-        location: { type: 'string' },
-        date: { type: 'string' },
+        stay_id: { type: 'string' },
+        day_index: { type: 'integer' },
         poi_id: { type: 'string' }
       },
-      required: ['location', 'date', 'poi_id']
+      required: ['stay_id', 'day_index', 'poi_id']
     }
   },
   {
@@ -231,22 +397,46 @@ const TOOL_DECLARATIONS = [
     parameters: {
       type: 'object',
       properties: {
-        location: { type: 'string' },
-        date: { type: 'string' },
+        stay_id: { type: 'string' },
+        day_index: { type: 'integer' },
         title: { type: 'string' },
         notes: { type: 'string' },
-        status: { type: 'string', enum: ['open', 'planned', 'booked'] }
+        status: { type: 'string', enum: ['open', 'planned', 'confirmed'] }
       },
-      required: ['location', 'date']
+      required: ['stay_id', 'day_index']
+    }
+  },
+  {
+    name: 'add_day_to_stay',
+    description: 'Add a new day to a stay (extends checkout by 1 day)',
+    parameters: {
+      type: 'object',
+      properties: {
+        stay_id: { type: 'string' },
+        title: { type: 'string', description: 'Optional day title' }
+      },
+      required: ['stay_id']
+    }
+  },
+  {
+    name: 'remove_day_from_stay',
+    description: 'Remove a day from a stay (contracts checkout by 1 day)',
+    parameters: {
+      type: 'object',
+      properties: {
+        stay_id: { type: 'string' },
+        day_index: { type: 'integer' }
+      },
+      required: ['stay_id', 'day_index']
     }
   },
   {
     name: 'search_and_propose',
-    description: 'Search the web for places and show results as interactive POI cards. Use this whenever the user asks about restaurants, shops, activities, attractions, or any location-related query. This is your PRIMARY tool.',
+    description: 'Search the web for places and show results as interactive POI cards. Use this whenever the user asks about restaurants, shops, activities, attractions, or any location-related query.',
     parameters: {
       type: 'object',
       properties: {
-        query: { type: 'string', description: 'Web search query (e.g. "best ramen restaurants Myeongdong Seoul")' },
+        query: { type: 'string', description: 'Web search query' },
         message: { type: 'string', description: 'Short message to show above the results' }
       },
       required: ['query', 'message']
@@ -254,7 +444,7 @@ const TOOL_DECLARATIONS = [
   },
   {
     name: 'extract_and_propose',
-    description: 'Extract POIs from a URL or YouTube video and show as interactive cards. Use when user pastes a link.',
+    description: 'Extract POIs from a URL or YouTube video and show as interactive cards.',
     parameters: {
       type: 'object',
       properties: {
@@ -266,13 +456,13 @@ const TOOL_DECLARATIONS = [
   },
   {
     name: 'propose_schedule',
-    description: 'Propose a day schedule for user confirmation. Pauses for user input.',
+    description: 'Propose a day schedule for user confirmation.',
     parameters: {
       type: 'object',
       properties: {
         message: { type: 'string' },
-        location: { type: 'string' },
-        date: { type: 'string' },
+        stay_id: { type: 'string' },
+        day_index: { type: 'integer' },
         activities: {
           type: 'array',
           items: {
@@ -286,12 +476,12 @@ const TOOL_DECLARATIONS = [
           }
         }
       },
-      required: ['message', 'location', 'date', 'activities']
+      required: ['message', 'stay_id', 'day_index', 'activities']
     }
   },
   {
     name: 'ask_choice',
-    description: 'Ask the user to choose from options. Pauses for user input.',
+    description: 'Ask the user to choose from options.',
     parameters: {
       type: 'object',
       properties: {
@@ -332,15 +522,11 @@ async function extractPoisFromText(text, context) {
                 coordinates: { type: 'array', items: { type: 'number' } },
                 description: { type: 'string' },
                 category: { type: 'string', enum: ['attraction', 'food', 'culture', 'shopping', 'nature', 'transport'] },
-                price_range: { type: 'string', description: 'Price level: $, $$, $$$, or $$$$. Only for food/shopping.' },
-                rating: { type: 'number', description: 'Rating out of 5 (e.g. 4.3). Only if available from search results.' },
+                price_range: { type: 'string' },
+                rating: { type: 'number' },
                 alignment: {
                   type: 'object',
-                  properties: {
-                    G: { type: 'number' },
-                    C: { type: 'number' },
-                    L: { type: 'number' }
-                  }
+                  properties: { G: { type: 'number' }, C: { type: 'number' }, L: { type: 'number' } }
                 }
               },
               required: ['name', 'coordinates', 'description', 'category', 'alignment']
@@ -396,9 +582,17 @@ async function fillPoiImage(poi, context) {
     if (photo) {
       poi.image = `${photo.urls?.raw || photo.urls?.regular}&w=800&h=400&fit=crop`;
     }
-  } catch {
-    // no image is fine
-  }
+  } catch {}
+}
+
+function getAllPoiIds() {
+  const trip = readTripYaml();
+  const ids = new Set();
+  uniqueLocationNames(trip).forEach(name => {
+    const loc = readLocationYaml(name);
+    if (loc) (loc.pois || []).forEach(p => ids.add(p.id));
+  });
+  return ids;
 }
 
 // --- Agent: tool execution ---
@@ -407,26 +601,46 @@ async function executeTool(name, args) {
   switch (name) {
     case 'get_trip': {
       const trip = readTripYaml();
-      const { transport, ...meta } = trip;
+      const { itinerary, ...meta } = trip;
       return JSON.stringify(meta);
     }
-    case 'get_location': {
-      const loc = readLocationYaml(args.location);
-      if (!loc) return JSON.stringify({ error: `Location '${args.location}' not found` });
-      const { pois, days, ...summary } = loc;
-      summary.poi_count = (pois || []).length;
+    case 'get_itinerary': {
+      const trip = readTripYaml();
+      const summary = (trip.itinerary || []).map(b => {
+        if (b.type === 'flight') {
+          return { type: 'flight', id: b.id, label: b.label, date: b.date };
+        }
+        return {
+          type: 'stay', id: b.id, location: b.location,
+          checkIn: b.accommodation?.checkIn, checkOut: b.accommodation?.checkOut,
+          dayCount: (b.days || []).length
+        };
+      });
+      return JSON.stringify(summary);
+    }
+    case 'get_stay': {
+      const trip = readTripYaml();
+      const stay = findBlock(trip, args.stay_id);
+      if (!stay || stay.type !== 'stay') return JSON.stringify({ error: `Stay '${args.stay_id}' not found` });
+      const { days, ...summary } = stay;
       summary.day_count = (days || []).length;
       return JSON.stringify(summary);
+    }
+    case 'get_stay_days': {
+      const trip = readTripYaml();
+      const stay = findBlock(trip, args.stay_id);
+      if (!stay || stay.type !== 'stay') return JSON.stringify({ error: `Stay '${args.stay_id}' not found` });
+      const checkIn = new Date(stay.accommodation.checkIn + 'T00:00:00');
+      const daysWithDates = (stay.days || []).map((day, idx) => {
+        const d = new Date(checkIn.getTime() + idx * 86400000);
+        return { ...day, derivedDate: d.toISOString().split('T')[0], index: idx };
+      });
+      return JSON.stringify(daysWithDates);
     }
     case 'get_pois': {
       const loc = readLocationYaml(args.location);
       if (!loc) return JSON.stringify({ error: `Location '${args.location}' not found` });
       return JSON.stringify(loc.pois || []);
-    }
-    case 'get_days': {
-      const loc = readLocationYaml(args.location);
-      if (!loc) return JSON.stringify({ error: `Location '${args.location}' not found` });
-      return JSON.stringify(loc.days || []);
     }
     case 'get_travelers': {
       const file = path.join(TRIP_DIR, 'travelers.md');
@@ -454,41 +668,76 @@ async function executeTool(name, args) {
       const loc = readLocationYaml(args.location);
       if (!loc) return JSON.stringify({ error: `Location '${args.location}' not found` });
       loc.pois = (loc.pois || []).filter(p => p.id !== args.poi_id);
-      (loc.days || []).forEach(day => {
-        day.activities = (day.activities || []).filter(a => a.poi !== args.poi_id);
-      });
       writeLocationYaml(args.location, loc);
+
+      const trip = readTripYaml();
+      let changed = false;
+      (trip.itinerary || [])
+        .filter(b => b.type === 'stay' && b.location === args.location)
+        .forEach(stay => {
+          (stay.days || []).forEach(day => {
+            const before = (day.activities || []).length;
+            day.activities = (day.activities || []).filter(a => a.poi !== args.poi_id);
+            if (day.activities.length !== before) changed = true;
+          });
+        });
+      if (changed) writeTripYaml(trip);
       return JSON.stringify({ ok: true });
     }
     case 'assign_poi_to_day': {
-      const loc = readLocationYaml(args.location);
-      if (!loc) return JSON.stringify({ error: `Location '${args.location}' not found` });
-      const day = (loc.days || []).find(d => String(d.date) === args.date);
-      if (!day) return JSON.stringify({ error: `Day '${args.date}' not found` });
+      const trip = readTripYaml();
+      const stay = findBlock(trip, args.stay_id);
+      if (!stay || stay.type !== 'stay') return JSON.stringify({ error: `Stay '${args.stay_id}' not found` });
+      const day = (stay.days || [])[args.day_index];
+      if (!day) return JSON.stringify({ error: `Day index ${args.day_index} not found` });
       if (!day.activities) day.activities = [];
       day.activities.push({ poi: args.poi_id, notes: args.notes || '' });
-      writeLocationYaml(args.location, loc);
+      writeTripYaml(trip);
       return JSON.stringify({ ok: true });
     }
     case 'unassign_poi_from_day': {
-      const loc = readLocationYaml(args.location);
-      if (!loc) return JSON.stringify({ error: `Location '${args.location}' not found` });
-      const day = (loc.days || []).find(d => String(d.date) === args.date);
-      if (!day) return JSON.stringify({ error: `Day '${args.date}' not found` });
+      const trip = readTripYaml();
+      const stay = findBlock(trip, args.stay_id);
+      if (!stay || stay.type !== 'stay') return JSON.stringify({ error: `Stay '${args.stay_id}' not found` });
+      const day = (stay.days || [])[args.day_index];
+      if (!day) return JSON.stringify({ error: `Day index ${args.day_index} not found` });
       day.activities = (day.activities || []).filter(a => a.poi !== args.poi_id);
-      writeLocationYaml(args.location, loc);
+      writeTripYaml(trip);
       return JSON.stringify({ ok: true });
     }
     case 'update_day': {
-      const loc = readLocationYaml(args.location);
-      if (!loc) return JSON.stringify({ error: `Location '${args.location}' not found` });
-      const day = (loc.days || []).find(d => String(d.date) === args.date);
-      if (!day) return JSON.stringify({ error: `Day '${args.date}' not found` });
+      const trip = readTripYaml();
+      const stay = findBlock(trip, args.stay_id);
+      if (!stay || stay.type !== 'stay') return JSON.stringify({ error: `Stay '${args.stay_id}' not found` });
+      const day = (stay.days || [])[args.day_index];
+      if (!day) return JSON.stringify({ error: `Day index ${args.day_index} not found` });
       if (args.title !== undefined) day.title = args.title;
       if (args.notes !== undefined) day.notes = args.notes;
       if (args.status !== undefined) day.status = args.status;
-      writeLocationYaml(args.location, loc);
+      writeTripYaml(trip);
       return JSON.stringify({ ok: true });
+    }
+    case 'add_day_to_stay': {
+      const trip = readTripYaml();
+      const stay = findBlock(trip, args.stay_id);
+      if (!stay || stay.type !== 'stay') return JSON.stringify({ error: `Stay '${args.stay_id}' not found` });
+      if (!stay.days) stay.days = [];
+      stay.days.push({ title: args.title || '', status: 'open', activities: [] });
+      stay.accommodation.checkOut = addOneDay(stay.accommodation.checkOut);
+      writeTripYaml(trip);
+      return JSON.stringify({ ok: true, checkOut: stay.accommodation.checkOut });
+    }
+    case 'remove_day_from_stay': {
+      const trip = readTripYaml();
+      const stay = findBlock(trip, args.stay_id);
+      if (!stay || stay.type !== 'stay') return JSON.stringify({ error: `Stay '${args.stay_id}' not found` });
+      if (!stay.days || args.day_index < 0 || args.day_index >= stay.days.length) {
+        return JSON.stringify({ error: `Day index ${args.day_index} not found` });
+      }
+      stay.days.splice(args.day_index, 1);
+      stay.accommodation.checkOut = subtractOneDay(stay.accommodation.checkOut);
+      writeTripYaml(trip);
+      return JSON.stringify({ ok: true, checkOut: stay.accommodation.checkOut });
     }
     case 'search_and_propose': {
       try {
@@ -546,18 +795,24 @@ async function executeTool(name, args) {
   }
 }
 
-const WRITE_TOOLS = new Set(['add_poi', 'delete_poi', 'assign_poi_to_day', 'unassign_poi_from_day', 'update_day']);
+const WRITE_TOOLS = new Set([
+  'add_poi', 'delete_poi', 'assign_poi_to_day', 'unassign_poi_from_day',
+  'update_day', 'add_day_to_stay', 'remove_day_from_stay'
+]);
 
 // --- Agent: system prompt ---
 
-function buildSystemPrompt(activeLocation) {
+function buildSystemPrompt(activeStayId) {
   const trip = readTripYaml();
-  const locationNames = trip.locations || [];
-  const locationSummaries = locationNames.map(name => {
-    const loc = readLocationYaml(name);
-    if (!loc) return '';
-    const accDesc = (loc.accommodations || []).map(a => `${a.neighborhood} (${a.type})`).join(', ');
-    return `${loc.name}: ${loc.dates.from} to ${loc.dates.to}, staying at ${accDesc}`;
+
+  const itinerarySummary = (trip.itinerary || []).map((b, i) => {
+    if (b.type === 'flight') {
+      return `${i + 1}. Flight: ${b.label || `${b.from} → ${b.to}`} (${b.date || 'date TBD'})`;
+    }
+    const loc = readLocationYaml(b.location);
+    const locName = loc?.name || b.location;
+    const accDesc = b.accommodation?.neighborhood ? `, ${b.accommodation.neighborhood}` : '';
+    return `${i + 1}. Stay: ${locName}${accDesc} (${b.accommodation?.checkIn} to ${b.accommodation?.checkOut}, ${(b.days || []).length} days)`;
   }).join('\n');
 
   let travelersProfile = '';
@@ -567,32 +822,39 @@ function buildSystemPrompt(activeLocation) {
   }
 
   const template = fs.readFileSync(path.join(__dirname, 'data', 'system-prompt.md'), 'utf8');
+  const locationNames = uniqueLocationNames(trip);
   const base = template
     .replace('{{origin}}', `${trip.origin.city}, ${trip.origin.country}`)
     .replace('{{destinations}}', locationNames.join(' → '))
-    .replace('{{locationSummaries}}', locationSummaries)
+    .replace('{{locationSummaries}}', itinerarySummary)
     .replace('{{travelersProfile}}', travelersProfile);
 
-  return base + `\n\nThe user is currently viewing: ${activeLocation || locationNames[0] || 'unknown'}.
-Available locations: ${locationNames.join(', ')}.
+  const activeStay = activeStayId ? findBlock(trip, activeStayId) : null;
+  const activeLocation = activeStay?.location || locationNames[0] || 'unknown';
+
+  return base + `\n\nThe user is currently viewing stay: ${activeStayId || 'none'} (location: ${activeLocation}).
+Available stay blocks: ${(trip.itinerary || []).filter(b => b.type === 'stay').map(b => b.id).join(', ')}.
+
+Itinerary:
+${itinerarySummary}
 
 ## How you MUST behave
 
 You are a tool-using agent. You MUST call tools to fulfill requests. NEVER just describe what you would do — do it.
 
 When the user asks about places, food, shops, activities, or anything location-related:
-→ Call search_and_propose with a good search query. This tool searches the web AND returns interactive POI cards automatically. One call does everything.
+→ Call search_and_propose with a good search query. This tool searches the web AND returns interactive POI cards automatically.
 
 When the user pastes a URL or YouTube link:
 → Call extract_and_propose with the URL. This extracts content and returns POI cards automatically.
 
 ## Rules
-- NEVER list places as plain text. ALWAYS use search_and_propose or extract_and_propose.
+- NEVER list places as plain text or markup. ALWAYS call search_and_propose.
 - NEVER modify data without user confirmation. Use ask_choice first.
 - After user confirms adding POIs, call add_poi for each one.
 - Keep text responses concise. 1-2 sentences max.
-- You can read any location's data, not just the active one.
-- ALWAYS respond in the same language the user used in their last message.`;
+- ALWAYS respond in the same language the user used in their last message.
+- Days are addressed by stay_id + day_index (0-based). Use get_stay_days to see indexes.`;
 }
 
 // --- Agent: SSE loop ---
@@ -604,7 +866,7 @@ app.get('/api/ai/chat', async (req, res) => {
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
 
-  const { messages, activeLocation } = JSON.parse(req.query.payload);
+  const { messages, activeLocation, activeStayId } = JSON.parse(req.query.payload);
 
   const send = (event, data) => {
     res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
@@ -618,7 +880,7 @@ app.get('/api/ai/chat', async (req, res) => {
       model: AI_MODEL,
       tools: [{ functionDeclarations: TOOL_DECLARATIONS }],
       toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
-      systemInstruction: { parts: [{ text: buildSystemPrompt(activeLocation) }] },
+      systemInstruction: { parts: [{ text: buildSystemPrompt(activeStayId || activeLocation) }] },
       generationConfig: { temperature: 0.7 }
     });
 
@@ -630,7 +892,7 @@ app.get('/api/ai/chat', async (req, res) => {
     const lastMessage = messages[messages.length - 1];
     const chat = model.startChat({ history });
 
-    console.log(`[agent] user: "${lastMessage.content}" (location: ${activeLocation})`);
+    console.log(`[agent] user: "${lastMessage.content}" (stay: ${activeStayId || activeLocation})`);
 
     let response = await chat.sendMessage([{ text: lastMessage.content }]);
     let candidate = response.response.candidates?.[0];
@@ -668,7 +930,7 @@ app.get('/api/ai/chat', async (req, res) => {
               continue;
             }
 
-            const existingPois = getAllPois();
+            const existingPois = getAllPoiIds();
             pois.forEach(poi => {
               const id = poi.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
               if (existingPois.has(id)) poi.existing = true;
@@ -691,18 +953,19 @@ app.get('/api/ai/chat', async (req, res) => {
         }
 
         const stepText = {
-          search_and_propose: `Searching: ${args.query || ''}`,
-          get_pois: `Reading POIs for ${args.location}`,
-          get_days: `Reading schedule for ${args.location}`,
-          get_location: `Reading ${args.location} details`,
+          get_pois: `Reading POIs for ${args.location || ''}`,
+          get_stay_days: `Reading schedule for ${args.stay_id || ''}`,
+          get_stay: `Reading ${args.stay_id || ''} details`,
+          get_itinerary: 'Reading itinerary',
           get_trip: 'Reading trip info',
           get_travelers: 'Reading traveler profiles',
-          extract_url_content: `Extracting content from URL...`,
           add_poi: `Adding: ${args.name || ''}`,
           delete_poi: `Removing: ${args.poi_id || ''}`,
-          assign_poi_to_day: `Scheduling ${args.poi_id} on ${args.date}`,
-          unassign_poi_from_day: `Unscheduling ${args.poi_id} from ${args.date}`,
-          update_day: `Updating ${args.date}`,
+          assign_poi_to_day: `Scheduling ${args.poi_id} on day ${args.day_index}`,
+          unassign_poi_from_day: `Unscheduling ${args.poi_id} from day ${args.day_index}`,
+          update_day: `Updating day ${args.day_index}`,
+          add_day_to_stay: `Adding day to ${args.stay_id}`,
+          remove_day_from_stay: `Removing day ${args.day_index} from ${args.stay_id}`,
         }[name] || name;
 
         send('step', { text: stepText });

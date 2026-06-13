@@ -1,4 +1,4 @@
-const TRIP_DIR = 'trips/singapore-seoul-2026';
+const TRIP_DIR = 'trips/seoul-2026';
 
 const TripStore = {
   _trip: null,
@@ -14,7 +14,7 @@ const TripStore = {
     const tripYaml = await fetch(`${TRIP_DIR}/trip.yaml?v=${bust}`).then(r => r.text());
     this._trip = jsyaml.load(tripYaml);
 
-    const locationNames = this._trip.locations || [];
+    const locationNames = this._uniqueLocationNames();
     const locationResults = await Promise.all(
       locationNames.map(name =>
         fetch(`${TRIP_DIR}/locations/${name}/location.yaml?v=${bust}`)
@@ -50,39 +50,55 @@ const TripStore = {
     });
   },
 
+  _uniqueLocationNames() {
+    return [...new Set(
+      (this._trip.itinerary || [])
+        .filter(b => b.type === 'stay')
+        .map(b => b.location)
+    )];
+  },
+
   getChapters() {
     const chapters = [];
 
-    (this._trip.transport || []).forEach(j => {
-      chapters.push({
-        type: 'flight',
-        date: String(j.date),
-        journey: j,
-        id: `flight-${j.id}`
-      });
-    });
-
-    Object.entries(this._locations).forEach(([locName, loc]) => {
-      (loc.days || []).forEach(day => {
-        const poiIds = (day.activities || []).map(a => a.poi);
-        const uniquePoiIds = [...new Set(poiIds)];
+    (this._trip.itinerary || []).forEach(block => {
+      if (block.type === 'flight') {
         chapters.push({
-          type: 'day',
-          date: String(day.date),
-          day: {
-            meta: {
-              date: String(day.date),
-              city: locName,
-              title: day.title,
-              status: day.status || 'open',
-              pois: uniquePoiIds
-            },
-            activities: day.activities || [],
-            notes: day.notes || ''
-          },
-          id: `day-${day.date}`
+          type: 'flight',
+          date: String(block.date),
+          journey: block,
+          id: `flight-${block.id}`
         });
-      });
+      } else if (block.type === 'stay') {
+        const checkIn = new Date(block.accommodation.checkIn + 'T00:00:00');
+        const accCoords = block.accommodation?.coordinates;
+
+        (block.days || []).forEach((day, idx) => {
+          const dayDate = new Date(checkIn.getTime() + idx * 86400000);
+          const dateStr = dayDate.toISOString().split('T')[0];
+
+          const poiIds = (day.activities || []).map(a => a.poi);
+          const uniquePoiIds = [...new Set(poiIds)];
+
+          chapters.push({
+            type: 'day',
+            date: dateStr,
+            day: {
+              meta: {
+                date: dateStr,
+                city: block.location,
+                title: day.title,
+                status: day.status || 'open',
+                pois: uniquePoiIds,
+                coordinates: accCoords
+              },
+              activities: day.activities || [],
+              notes: day.notes || ''
+            },
+            id: `day-${dateStr}`
+          });
+        });
+      }
     });
 
     chapters.sort((a, b) => {
@@ -94,17 +110,24 @@ const TripStore = {
   },
 
   getAccommodations() {
-    const all = [];
-    Object.entries(this._locations).forEach(([locName, loc]) => {
-      (loc.accommodations || []).forEach(acc => {
-        all.push({ ...acc, city: loc.name || locName });
-      });
-    });
-    return all;
+    return (this._trip.itinerary || [])
+      .filter(b => b.type === 'stay')
+      .map(b => ({
+        ...b.accommodation,
+        city: this._locations[b.location]?.name || b.location
+      }));
   },
 
   getTransport() {
-    return this._trip.transport || [];
+    return (this._trip.itinerary || []).filter(b => b.type === 'flight');
+  },
+
+  getDates() {
+    const flights = this.getTransport();
+    return {
+      start: String(flights[0]?.date),
+      end: String(flights[flights.length - 1]?.date)
+    };
   },
 
   resolvePois(poiIds) {
@@ -112,21 +135,22 @@ const TripStore = {
     return poiIds.map(id => this._allPois[id]).filter(Boolean);
   },
 
-  getDates() {
-    const start = this._trip.transport?.[0]?.date;
-    const last = this._trip.transport?.[this._trip.transport.length - 1];
-    const end = last?.date;
-    return { start: String(start), end: String(end) };
+  getItinerary() {
+    return this._trip.itinerary || [];
+  },
+
+  getStay(stayId) {
+    return (this._trip.itinerary || []).find(b => b.type === 'stay' && b.id === stayId);
+  },
+
+  getLocationForStay(stayId) {
+    const stay = this.getStay(stayId);
+    return stay ? stay.location : null;
   },
 
   getLocationPois(locationName) {
     const loc = this._locations[locationName];
     return loc ? (loc.pois || []) : [];
-  },
-
-  getLocationDays(locationName) {
-    const loc = this._locations[locationName];
-    return loc ? (loc.days || []) : [];
   },
 
   async addPoi(locationName, poi) {
@@ -136,6 +160,7 @@ const TripStore = {
     const loc = this._locations[locationName];
     if (!loc) return;
 
+    if (!loc.pois) loc.pois = [];
     loc.pois.push(poi);
     this._allPois[poi.id] = { ...poi, _location: locationName };
 
@@ -150,62 +175,131 @@ const TripStore = {
     const loc = this._locations[locationName];
     if (!loc) return;
 
-    loc.pois = loc.pois.filter(p => p.id !== poiId);
-    loc.days.forEach(day => {
-      day.activities = (day.activities || []).filter(a => a.poi !== poiId);
-    });
+    loc.pois = (loc.pois || []).filter(p => p.id !== poiId);
     delete this._allPois[poiId];
+
+    (this._trip.itinerary || [])
+      .filter(b => b.type === 'stay' && b.location === locationName)
+      .forEach(stay => {
+        (stay.days || []).forEach(day => {
+          day.activities = (day.activities || []).filter(a => a.poi !== poiId);
+        });
+      });
 
     await fetch(`/api/locations/${locationName}/pois/${poiId}`, { method: 'DELETE' });
   },
 
-  async updateDayActivities(locationName, date, activities) {
-    const loc = this._locations[locationName];
-    if (!loc) return;
+  async assignPoiToDay(stayId, dayIndex, poiId, notes) {
+    const stay = this.getStay(stayId);
+    if (!stay || !stay.days[dayIndex]) return;
 
-    const day = loc.days.find(d => String(d.date) === String(date));
-    if (!day) return;
-
-    day.activities = activities;
-
-    await fetch(`/api/locations/${locationName}/days/${date}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ activities })
-    });
-  },
-
-  async assignPoiToDay(locationName, date, poiId, notes) {
-    const loc = this._locations[locationName];
-    if (!loc) return;
-
-    const day = loc.days.find(d => String(d.date) === String(date));
-    if (!day) return;
-
+    const day = stay.days[dayIndex];
     if (!day.activities) day.activities = [];
     day.activities.push({ poi: poiId, notes: notes || '' });
 
-    await fetch(`/api/locations/${locationName}/days/${date}`, {
+    await fetch(`/api/itinerary/${stayId}/days/${dayIndex}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ activities: day.activities })
     });
   },
 
-  async unassignPoiFromDay(locationName, date, poiId) {
-    const loc = this._locations[locationName];
-    if (!loc) return;
+  async unassignPoiFromDay(stayId, dayIndex, poiId) {
+    const stay = this.getStay(stayId);
+    if (!stay || !stay.days[dayIndex]) return;
 
-    const day = loc.days.find(d => String(d.date) === String(date));
-    if (!day || !day.activities) return;
+    const day = stay.days[dayIndex];
+    day.activities = (day.activities || []).filter(a => a.poi !== poiId);
 
-    day.activities = day.activities.filter(a => a.poi !== poiId);
-
-    await fetch(`/api/locations/${locationName}/days/${date}`, {
+    await fetch(`/api/itinerary/${stayId}/days/${dayIndex}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ activities: day.activities })
     });
+  },
+
+  async updateDay(stayId, dayIndex, patch) {
+    const stay = this.getStay(stayId);
+    if (!stay || !stay.days[dayIndex]) return;
+
+    Object.assign(stay.days[dayIndex], patch);
+
+    await fetch(`/api/itinerary/${stayId}/days/${dayIndex}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch)
+    });
+  },
+
+  async addDayToStay(stayId) {
+    const stay = this.getStay(stayId);
+    if (!stay) return;
+
+    const resp = await fetch(`/api/itinerary/${stayId}/days`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    const result = await resp.json();
+    if (result.ok) {
+      stay.days.push({ title: '', status: 'open', activities: [] });
+      stay.accommodation.checkOut = result.checkOut;
+    }
+  },
+
+  async removeDayFromStay(stayId, dayIndex) {
+    const stay = this.getStay(stayId);
+    if (!stay || !stay.days[dayIndex]) return;
+
+    const resp = await fetch(`/api/itinerary/${stayId}/days/${dayIndex}`, {
+      method: 'DELETE'
+    });
+    const result = await resp.json();
+    if (result.ok) {
+      stay.days.splice(dayIndex, 1);
+      stay.accommodation.checkOut = result.checkOut;
+    }
+  },
+
+  async reorderDays(stayId, newOrder) {
+    const stay = this.getStay(stayId);
+    if (!stay) return;
+
+    await fetch(`/api/itinerary/${stayId}/days/reorder`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order: newOrder })
+    });
+
+    const reordered = newOrder.map(i => stay.days[i]);
+    stay.days = reordered;
+  },
+
+  async addBlock(position, block) {
+    const resp = await fetch('/api/itinerary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ block, position })
+    });
+    const result = await resp.json();
+    if (result.ok) {
+      this._trip.itinerary.splice(position, 0, result.block);
+    }
+  },
+
+  async updateBlock(blockId, patch) {
+    await fetch(`/api/itinerary/${blockId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch)
+    });
+    const block = (this._trip.itinerary || []).find(b => b.id === blockId);
+    if (block) Object.assign(block, patch);
+  },
+
+  async deleteBlock(blockId) {
+    await fetch(`/api/itinerary/${blockId}`, { method: 'DELETE' });
+    this._trip.itinerary = (this._trip.itinerary || []).filter(b => b.id !== blockId);
   },
 
   findLocationForPoi(poiId) {

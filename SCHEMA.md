@@ -1,0 +1,203 @@
+# Trip Data Model
+
+## Overview
+
+A trip is an ordered sequence of **itinerary blocks** — flights and stays — stored in `trip.yaml`. Points of interest (POIs) live in separate **location files** that stays reference.
+
+```
+trips/singapore-seoul-2026/
+├── trip.yaml                      # Trip metadata + itinerary (flights, stays, days)
+├── travelers.md                   # Traveler profiles & preferences
+└── locations/
+    ├── singapore/location.yaml    # POI library for Singapore
+    └── seoul/location.yaml        # POI library for Seoul
+```
+
+## trip.yaml
+
+### Top-level fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Trip title |
+| `subtitle` | string | Subtitle (date range, theme) |
+| `travelers` | number | Headcount |
+| `origin` | object | Home city: `{city, country, coordinates}` |
+| `itinerary` | array | Ordered sequence of flight and stay blocks |
+
+### Itinerary blocks
+
+Every block has `type` (`flight` or `stay`) and a unique `id`.
+
+#### Flight block
+
+```yaml
+- type: flight
+  id: outbound
+  label: "Klagenfurt → Singapore"
+  from: Klagenfurt
+  to: Singapore
+  date: "2026-07-10"
+  image: "https://..."              # optional header image
+  mapView:                          # optional camera position
+    center: [21, 44]
+    zoom: 4
+    pitch: 20
+  legs:                             # optional — filled when booking details known
+    - flightNumber: TK1052
+      airline: Turkish Airlines
+      aircraft: Boeing 737-800
+      departure:
+        airport: LJU
+        city: Ljubljana
+        coordinates: [14.4576, 46.2237]
+        time: "2026-07-10T13:50:00"
+      arrival:
+        airport: IST
+        city: Istanbul
+        coordinates: [28.7519, 41.2753]
+        time: "2026-07-10T17:15:00"
+      duration: "2h 25m"
+      route: [[14.46, 46.22], ...]  # coordinate waypoints for map arc
+    - mode: drive                   # non-flight leg (car, train, etc.)
+      departure: { city: Klagenfurt, coordinates: [...], time: "..." }
+      arrival: { airport: LJU, city: Ljubljana, coordinates: [...], time: "..." }
+      duration: "1h 0m"
+  layovers:
+    - airport: IST
+      city: Istanbul
+      duration: "1h 55m"
+  totalDuration: "15h 20m"
+```
+
+A flight block can start as a **minimal stub** (just `from` + `to`) with legs/layovers/times filled later from booking confirmations.
+
+#### Stay block
+
+```yaml
+- type: stay
+  id: singapore-stay
+  location: singapore              # references locations/singapore/location.yaml
+  accommodation:
+    neighborhood: Robertson Quay
+    type: Serviced Apartment
+    config: 2-Bedroom
+    coordinates: [103.8365, 1.2906]
+    checkIn: "2026-07-11"
+    checkOut: "2026-07-14"
+    status: planned
+  days:
+    - title: Arrival in Singapore
+      status: planned
+      activities:
+        - poi: changi-airport
+          notes: Arrive ~11:10
+        - poi: robertson-quay
+          notes: Check in, settle in
+      notes: Walk along Singapore River. Early night for jet lag.
+    - title: Gardens & Marina Bay
+      pinnedDate: "2026-07-12"     # optional — locks this day to a specific date
+      status: planned
+      activities:
+        - poi: gardens-by-the-bay
+          notes: Cloud Forest & Flower Dome
+```
+
+### Days
+
+Days are **topical slots**, not calendar dates. Their actual date is derived from position:
+
+```
+day[0].date = accommodation.checkIn
+day[1].date = accommodation.checkIn + 1 day
+day[2].date = accommodation.checkIn + 2 days
+...
+```
+
+This means days can be **reordered** (drag-and-drop) to rearrange the itinerary without editing dates.
+
+#### Pinned dates
+
+A day with `pinnedDate` is locked to that specific calendar date (e.g., a reservation, timed ticket). Pinned days:
+- Cannot be reordered
+- Show a lock indicator in the UI
+- Must be at the position consistent with their pin (`pinnedDate - checkIn` = day index)
+- Other (free) days flow around them
+
+#### Day fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `title` | string | yes | Topic/theme of the day |
+| `status` | string | no | `open`, `planned`, or `confirmed` (default: `open`) |
+| `pinnedDate` | string | no | ISO date that locks this day's position |
+| `activities` | array | no | List of `{poi, notes}` referencing POIs from the location |
+| `notes` | string | no | Free-text day notes |
+
+### Duration rules
+
+- **Accommodation drives duration**: `checkIn`/`checkOut` determines how many day slots exist
+- **Adding a day** extends `checkOut` by 1 and appends an empty day slot
+- **Removing a day** contracts `checkOut` by 1. If the day has activities, they return to the unassigned pool
+
+## location.yaml (POI library)
+
+Each location file is a POI collection. Stays reference locations by name to resolve POI data.
+
+```yaml
+name: Singapore
+coordinates: [103.8636, 1.2816]
+pois:
+  - id: gardens-by-the-bay
+    name: Gardens by the Bay
+    coordinates: [103.8636, 1.2816]
+    description: Futuristic nature park with Cloud Forest and Supertree Grove.
+    category: attraction
+    image: https://images.unsplash.com/photo-1506351421178-63b52a2d2562?w=800
+    url: https://www.gardensbythebay.com.sg
+    hours: "05:00–02:00 (outdoor), 09:00–21:00 (conservatories)"
+    cost: "SGD 32/adult, SGD 18/child"
+```
+
+### POI fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | string | yes | Kebab-case unique identifier |
+| `name` | string | yes | Display name |
+| `coordinates` | [lon, lat] | yes | Map position |
+| `description` | string | yes | Short description |
+| `category` | string | yes | One of: `attraction`, `food`, `culture`, `shopping`, `nature`, `transport` |
+| `image` | string | no | Image URL |
+| `url` | string | no | Website |
+| `hours` | string | no | Opening hours |
+| `cost` | string | no | Pricing info |
+
+### Category colors
+
+| Category | Color |
+|----------|-------|
+| attraction | `#4ecdc4` |
+| food | `#ff9f43` |
+| culture | `#a55eea` |
+| shopping | `#fd79a8` |
+| nature | `#00b894` |
+| transport | `#636e72` |
+
+## travelers.md
+
+Markdown file with traveler profiles. Used by the AI planning agent to score POI alignment per traveler.
+
+## Relationships
+
+```
+trip.yaml
+  itinerary[].type=stay
+    .location ──references──> locations/{name}/location.yaml (for POIs)
+    .days[].activities[].poi ──references──> location.yaml.pois[].id
+```
+
+- A stay's `location` field must match a directory under `locations/`
+- Activity `poi` IDs must exist in the referenced location's POI list
+- Deleting a POI cascades: removes it from all stay days that reference it
+- Days are scoped to their stay — no cross-stay day moves

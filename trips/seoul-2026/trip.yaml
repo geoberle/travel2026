@@ -1,0 +1,365 @@
+title: South Korea
+subtitle: July 2026 · Family Adventure
+origin:
+  city: Klagenfurt
+  country: Austria
+  coordinates:
+    - 14.3053
+    - 46.6247
+travelers: 3
+itinerary:
+  - type: flight
+    id: outbound
+    label: Klagenfurt → Seoul
+    from: Klagenfurt
+    to: Seoul
+    date: "2026-07-18"
+    image: https://images.unsplash.com/photo-1546874177-9e664107314e?w=800
+    mapView:
+      center:
+        - 65
+        - 45
+      zoom: 2.2
+      pitch: 15
+    legs:
+      - mode: drive
+        departure:
+          city: Klagenfurt
+          coordinates:
+            - 14.3053
+            - 46.6247
+          time: "2026-07-18T07:45:00"
+        arrival:
+          airport: LJU
+          city: Ljubljana
+          coordinates:
+            - 14.4576
+            - 46.2237
+          time: "2026-07-18T08:45:00"
+        duration: 1h 0m
+      - flightNumber: AY1202
+        airline: Finnair
+        aircraft: Airbus A321
+        departure:
+          airport: LJU
+          city: Ljubljana
+          coordinates:
+            - 14.4576
+            - 46.2237
+          time: "2026-07-18T09:30:00"
+        arrival:
+          airport: HEL
+          city: Helsinki
+          coordinates:
+            - 24.9633
+            - 60.3172
+          time: "2026-07-18T13:05:00"
+        duration: 2h 35m
+        route:
+          - - 14.46
+            - 46.22
+          - - 15.5
+            - 47.8
+          - - 17
+            - 49.5
+          - - 18.5
+            - 51.5
+          - - 20
+            - 53.5
+          - - 21.5
+            - 55.5
+          - - 23
+            - 57.5
+          - - 24
+            - 59
+          - - 24.96
+            - 60.32
+      - flightNumber: AY0041
+        airline: Finnair
+        aircraft: Airbus A350-900
+        departure:
+          airport: HEL
+          city: Helsinki
+          coordinates:
+            - 24.9633
+            - 60.3172
+          time: "2026-07-18T17:30:00"
+        arrival:
+          airport: ICN
+          city: Seoul
+          coordinates:
+            - 126.4407
+            - 37.4602
+          time: "2026-07-19T11:20:00"
+        duration: 11h 50m
+        route:
+          - - 24.96
+            - 60.32
+          - - 25.5
+            - 57
+          - - 27
+            - 53
+          - - 29
+            - 49
+          - - 32
+            - 45
+          - - 35
+            - 41
+          - - 40
+            - 37.5
+          - - 46
+            - 35
+          - - 52
+            - 33.5
+          - - 58
+            - 33
+          - - 64
+            - 33.5
+          - - 72
+            - 34.5
+          - - 80
+            - 35.5
+          - - 88
+            - 36.5
+          - - 96
+            - 37
+          - - 104
+            - 37.5
+          - - 112
+            - 38
+          - - 118
+            - 38
+          - - 122
+            - 37.8
+          - - 126.44
+            - 37.46
+    layovers:
+      - airport: HEL
+        city: Helsinki
+        duration: 4h 25m
+    totalDuration: 18h 50m
+  - type: stay
+    id: seoul-stay-1
+    location: seoul
+    accommodation:
+      neighborhood: ""
+      type: ""
+      config: ""
+      coordinates:
+        - 126.9857
+        - 37.5636
+      checkIn: "2026-07-19"
+      checkOut: "2026-07-25"
+      status: open
+    days:
+      - title: Arrival
+        status: open
+        notes: Arrive ICN ~11:20. Check in, recover.
+      - title: K-Pop & Gangnam
+        status: open
+        notes: HYBE Insight area, K-Star Road, Gangnam district.
+      - title: Anime & Gaming
+        status: open
+        notes: Animate Hongdae, AK Plaza, Yongsan I'Park Mall (anime, figures, Pokemon, Gundam).
+      - title: Korean Skincare & Myeongdong
+        status: open
+        notes: Olive Young Gangnam Town, flagship stores, Myeongdong skincare shopping.
+      - title: Lotte World & Fun
+        status: open
+        notes: Lotte World, COEX Mall, Starfield Library.
+      - title: Nami Island Day Trip
+        status: open
+        notes: Namiseom + Garden of Morning Calm. Fotospots, nature, low stress.
+  - type: stay
+    id: busan-stay
+    location: busan
+    accommodation:
+      neighborhood: ""
+      type: ""
+      config: ""
+      coordinates:
+        - 129.0756
+        - 35.1796
+      checkIn: "2026-07-25"
+      checkOut: "2026-07-28"
+      status: open
+    days:
+      - title: Beach & Arrival
+        status: open
+        notes: Travel Seoul to Busan (KTX ~2.5h). Haeundae Beach.
+      - title: Culture & Temple
+        status: open
+        notes: Gamcheon Culture Village, Haedong Yonggungsa Temple.
+      - title: Seafood & Markets
+        status: open
+        notes: Jagalchi Fish Market. Fresh sashimi (hoe), grilled eel.
+  - type: stay
+    id: sokcho-stay
+    location: sokcho
+    accommodation:
+      neighborhood: ""
+      type: ""
+      config: ""
+      coordinates:
+        - 128.5918
+        - 38.2070
+      checkIn: "2026-07-28"
+      checkOut: "2026-07-30"
+      status: open
+    days:
+      - title: Seoraksan Hiking
+        status: open
+        notes: Seoraksan National Park. Cable car, waterfalls, temples. Family-friendly trails.
+      - title: Sokcho Coast
+        status: open
+        notes: Sokcho waterfront, seafood, coastal walks.
+  - type: stay
+    id: seoul-stay-2
+    location: seoul
+    accommodation:
+      neighborhood: ""
+      type: ""
+      config: ""
+      coordinates:
+        - 126.9857
+        - 37.5636
+      checkIn: "2026-07-30"
+      checkOut: "2026-07-31"
+      status: open
+    days:
+      - title: Shopping & K-Pop
+        status: open
+        notes: K-Pop stores in Hongdae, dance cover groups in evening. Han River picnic.
+      - title: Departure
+        status: open
+        notes: Last-minute shopping. Flight AY0042 departs ICN 21:50. Full day available.
+  - type: flight
+    id: return
+    label: Seoul → Klagenfurt
+    from: Seoul
+    to: Klagenfurt
+    date: "2026-07-31"
+    image: https://images.unsplash.com/photo-1617469955236-f60e2a4c2f0d?w=800
+    mapView:
+      center:
+        - 65
+        - 45
+      zoom: 2.2
+      pitch: 15
+    legs:
+      - flightNumber: AY0042
+        airline: Finnair
+        aircraft: Airbus A350-900
+        departure:
+          airport: ICN
+          city: Seoul
+          coordinates:
+            - 126.4407
+            - 37.4602
+          time: "2026-07-31T21:50:00"
+        arrival:
+          airport: HEL
+          city: Helsinki
+          coordinates:
+            - 24.9633
+            - 60.3172
+          time: "2026-08-01T05:30:00"
+        duration: 13h 40m
+        route:
+          - - 126.44
+            - 37.46
+          - - 122
+            - 37.8
+          - - 118
+            - 38
+          - - 112
+            - 38
+          - - 104
+            - 37.5
+          - - 96
+            - 37
+          - - 88
+            - 36.5
+          - - 80
+            - 35.5
+          - - 72
+            - 34.5
+          - - 64
+            - 33.5
+          - - 58
+            - 33
+          - - 52
+            - 33.5
+          - - 46
+            - 35
+          - - 40
+            - 37.5
+          - - 35
+            - 41
+          - - 32
+            - 45
+          - - 29
+            - 49
+          - - 27
+            - 53
+          - - 25.5
+            - 57
+          - - 24.96
+            - 60.32
+      - flightNumber: AY1201
+        airline: Finnair
+        aircraft: Airbus A321
+        departure:
+          airport: HEL
+          city: Helsinki
+          coordinates:
+            - 24.9633
+            - 60.3172
+          time: "2026-08-01T07:05:00"
+        arrival:
+          airport: LJU
+          city: Ljubljana
+          coordinates:
+            - 14.4576
+            - 46.2237
+          time: "2026-08-01T08:45:00"
+        duration: 2h 40m
+        route:
+          - - 24.96
+            - 60.32
+          - - 24
+            - 59
+          - - 23
+            - 57.5
+          - - 21.5
+            - 55.5
+          - - 20
+            - 53.5
+          - - 18.5
+            - 51.5
+          - - 17
+            - 49.5
+          - - 15.5
+            - 47.8
+          - - 14.46
+            - 46.22
+      - mode: drive
+        departure:
+          airport: LJU
+          city: Ljubljana
+          coordinates:
+            - 14.4576
+            - 46.2237
+          time: "2026-08-01T09:15:00"
+        arrival:
+          city: Klagenfurt
+          coordinates:
+            - 14.3053
+            - 46.6247
+          time: "2026-08-01T10:15:00"
+        duration: 1h 0m
+    layovers:
+      - airport: HEL
+        city: Helsinki
+        duration: 1h 35m
+    totalDuration: 19h 25m
