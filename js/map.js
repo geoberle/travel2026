@@ -434,7 +434,17 @@ function _initFlightLayers(map, chapter) {
 
   const sectionEl = document.getElementById(chapter.id);
 
-  const depView = journey.mapView || { center: [(departure[0] + arrival[0]) / 2, (departure[1] + arrival[1]) / 2], zoom: 3, pitch: 25 };
+  let depView;
+  if (journey.mapView) {
+    depView = journey.mapView;
+  } else {
+    const fitBounds = new mapboxgl.LngLatBounds();
+    journey.legs.forEach(leg => { fitBounds.extend(leg.departure.coordinates); fitBounds.extend(leg.arrival.coordinates); });
+    const center = fitBounds.getCenter().toArray();
+    const dist = Math.sqrt(Math.pow(departure[0] - arrival[0], 2) + Math.pow(departure[1] - arrival[1], 2));
+    const zoom = dist > 80 ? 2.5 : dist > 40 ? 3.5 : dist > 15 ? 5 : dist > 5 ? 6.5 : 8;
+    depView = { center, zoom, pitch: 25 };
+  }
 
   map.setBearing(0);
   let scrollReady = false;
