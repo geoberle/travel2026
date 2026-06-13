@@ -261,20 +261,18 @@ function flyToTransit(map, journey) {
     return;
   }
 
-  const first = journey.legs[0].departure.coordinates;
-  const last = journey.legs[journey.legs.length - 1].arrival.coordinates;
-  const center = [(first[0] + last[0]) / 2, (first[1] + last[1]) / 2];
-  const dist = Math.sqrt(
-    Math.pow(first[0] - last[0], 2) + Math.pow(first[1] - last[1], 2)
-  );
-  const zoom = dist > 80 ? 2.2 : dist > 40 ? 3 : 4;
+  const bounds = new mapboxgl.LngLatBounds();
+  journey.legs.forEach(leg => {
+    bounds.extend(leg.departure.coordinates);
+    bounds.extend(leg.arrival.coordinates);
+  });
 
-  map.flyTo({
-    center,
-    zoom,
+  map.fitBounds(bounds, {
+    padding: { top: 80, bottom: 80, left: 80, right: 80 },
     bearing: 0,
     pitch: 25,
-    duration: 2500
+    duration: 2500,
+    maxZoom: 10
   });
 }
 
