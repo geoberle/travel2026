@@ -423,9 +423,11 @@ function _initFlightLayers(map, chapter) {
     paint: { 'line-color': '#4ecdc4', 'line-width': 3.5, 'line-opacity': 1 }
   });
 
-  addPulseMarker(map, departure);
-
   const mode = getTransitMode(journey);
+
+  if (mode === 'flight') {
+    addPulseMarker(map, departure);
+  }
   const markerEl = document.createElement('div');
   markerEl.className = 'plane-marker';
   if (mode === 'flight') {
@@ -502,7 +504,7 @@ function _initFlightLayers(map, chapter) {
       map.jumpTo({ center: pos, zoom: depView.zoom, bearing: 0, pitch: depView.pitch || 25 });
     }
 
-    if (progress >= 0.99 && !_scrollFlightState.arrivalPulsed) {
+    if (mode === 'flight' && progress >= 0.99 && !_scrollFlightState.arrivalPulsed) {
       addPulseMarker(map, arrival);
       _scrollFlightState.arrivalPulsed = true;
     }
