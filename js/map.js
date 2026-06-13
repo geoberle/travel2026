@@ -438,17 +438,22 @@ function _initFlightLayers(map, chapter) {
   if (journey.mapView) {
     depView = journey.mapView;
   } else {
-    const fitBounds = new mapboxgl.LngLatBounds();
-    journey.legs.forEach(leg => { fitBounds.extend(leg.departure.coordinates); fitBounds.extend(leg.arrival.coordinates); });
-    const center = fitBounds.getCenter().toArray();
-    const dist = Math.sqrt(Math.pow(departure[0] - arrival[0], 2) + Math.pow(departure[1] - arrival[1], 2));
-    const zoom = dist > 80 ? 2.5 : dist > 40 ? 3.5 : dist > 15 ? 5 : dist > 5 ? 6.5 : 8;
-    depView = { center, zoom, pitch: 25 };
+    const routeBounds = new mapboxgl.LngLatBounds();
+    journey.legs.forEach(leg => { routeBounds.extend(leg.departure.coordinates); routeBounds.extend(leg.arrival.coordinates); });
+    const center = routeBounds.getCenter().toArray();
+    depView = { center, pitch: 25 };
   }
 
   map.setBearing(0);
   let scrollReady = false;
-  map.flyTo({ center: depView.center, zoom: depView.zoom, pitch: depView.pitch || 25, bearing: 0, duration: 2000 });
+
+  if (depView.zoom) {
+    map.flyTo({ center: depView.center, zoom: depView.zoom, pitch: depView.pitch || 25, bearing: 0, duration: 2000 });
+  } else {
+    const routeBounds = new mapboxgl.LngLatBounds();
+    journey.legs.forEach(leg => { routeBounds.extend(leg.departure.coordinates); routeBounds.extend(leg.arrival.coordinates); });
+    map.fitBounds(routeBounds, { padding: { top: 100, bottom: 100, left: 100, right: 100 }, pitch: depView.pitch || 25, bearing: 0, duration: 2000, maxZoom: 10 });
+  }
   map.once('moveend', () => { scrollReady = true; });
 
   let lastProgress = -1;
@@ -488,7 +493,7 @@ function _initFlightLayers(map, chapter) {
       }
     }
 
-    if (depView.zoom < 5) {
+    if (depView.zoom && depView.zoom < 5) {
       map.jumpTo({ center: pos, zoom: depView.zoom, bearing: 0, pitch: depView.pitch || 25 });
     }
 
