@@ -235,7 +235,7 @@ function renderTransitCard(journey) {
     : '';
 
   return `
-    <div class="card flight-card" data-airline="${airlineCode}">
+    <div class="card transit-card" data-mode="${primaryMode}" data-airline="${airlineCode}">
       ${transitImage}
       <div class="card-label">${modeIcon} ${modeLabel} · ${formatDate(String(journey.date))}</div>
       <h2>${journey.label}</h2>

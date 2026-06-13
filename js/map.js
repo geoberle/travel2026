@@ -139,15 +139,17 @@ function addTransitRoutes(map, journeys) {
 }
 
 function addAirportMarkers(map, journeys) {
-  const airports = new Map();
+  const stops = new Map();
   journeys.forEach(j => {
     j.legs.forEach(leg => {
-      airports.set(leg.departure.airport, leg.departure);
-      airports.set(leg.arrival.airport, leg.arrival);
+      const depKey = leg.departure.airport || leg.departure.city;
+      const arrKey = leg.arrival.airport || leg.arrival.city;
+      if (depKey && leg.departure.coordinates) stops.set(depKey, leg.departure);
+      if (arrKey && leg.arrival.coordinates) stops.set(arrKey, leg.arrival);
     });
   });
 
-  airports.forEach((info, code) => {
+  stops.forEach((info, code) => {
     const el = document.createElement('div');
     el.className = 'airport-marker';
     el.textContent = code;

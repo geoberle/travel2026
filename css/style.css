@@ -146,8 +146,8 @@ body {
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Flight card */
-.flight-card {
+/* Transit card (flights, trains, buses) */
+.transit-card {
   background: rgba(12, 12, 24, 0.85);
   color: var(--text-dark);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -162,15 +162,22 @@ body {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
-/* ───────── Airline accents ───────── */
+/* ───────── Transit mode accents ───────── */
 
-.flight-card[data-airline="tk"] { border-left: 3px solid var(--airline-tk); }
-.flight-card[data-airline="sq"] { border-left: 3px solid var(--airline-sq); }
-.flight-card[data-airline="lh"] { border-left: 3px solid var(--airline-lh); }
+.transit-card[data-mode="flight"] { border-left: 3px solid #4ecdc4; }
+.transit-card[data-mode="train"] { border-left: 3px solid #f39c12; }
+.transit-card[data-mode="bus"] { border-left: 3px solid #e74c3c; }
+.transit-card[data-mode="drive"] { border-left: 3px solid #95a5a6; }
 
-.flight-card[data-airline="tk"] .duration { background: rgba(227, 24, 55, 0.12); color: #e31837; }
-.flight-card[data-airline="sq"] .duration { background: rgba(26, 60, 110, 0.15); color: #6b8ec4; }
-.flight-card[data-airline="lh"] .duration { background: rgba(218, 173, 0, 0.15); color: #daad00; }
+.transit-card[data-mode="flight"] .duration { background: rgba(78, 205, 196, 0.12); color: #4ecdc4; }
+.transit-card[data-mode="train"] .duration { background: rgba(243, 156, 18, 0.12); color: #f39c12; }
+.transit-card[data-mode="bus"] .duration { background: rgba(231, 76, 60, 0.12); color: #e74c3c; }
+.transit-card[data-mode="drive"] .duration { background: rgba(149, 165, 166, 0.12); color: #95a5a6; }
+
+/* Legacy airline accents (singapore-seoul trip) */
+.transit-card[data-airline="tk"] { border-left: 3px solid var(--airline-tk); }
+.transit-card[data-airline="sq"] { border-left: 3px solid var(--airline-sq); }
+.transit-card[data-airline="lh"] { border-left: 3px solid var(--airline-lh); }
 
 /* ───────── City accents ───────── */
 
