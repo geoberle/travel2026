@@ -784,7 +784,7 @@ body {
 
 /* Circular image POI markers */
 .poi-marker-wrap { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-.poi-circle-marker { width: 48px; height: 48px; border-radius: 50%; border: 3px solid #4ecdc4; outline: 2.5px solid rgba(255,255,255,0.7); overflow: hidden; background: var(--bg-card, #0f3460); transition: transform 0.2s, box-shadow 0.2s; }
+.poi-circle-marker { width: 48px; height: 48px; border-radius: 50%; border: 3px solid #4ecdc4; outline: 2.5px solid rgba(255,255,255,0.7); overflow: hidden; background-color: var(--bg-card, #0f3460); background-size: cover; background-position: center; transition: transform 0.2s, box-shadow 0.2s; }
 .poi-circle-marker img { width: 100%; height: 100%; object-fit: cover; }
 .poi-circle-marker.no-img { display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; color: #4ecdc4; }
 .poi-circle-marker.active, .poi-circle-marker:hover { transform: scale(1.25); z-index: 10; }

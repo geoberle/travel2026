@@ -1,0 +1,19 @@
+name: Sokcho
+coordinates:
+  - 128.5918
+  - 38.2070
+pois:
+  - id: seoraksan-national-park
+    name: Seoraksan National Park
+    coordinates:
+      - 128.4656
+      - 38.1197
+    description: Dramatic granite peaks, waterfalls, and temples. Cable car to Gwongeumseong fortress.
+    category: nature
+  - id: sokcho-waterfront
+    name: Sokcho Waterfront
+    coordinates:
+      - 128.5943
+      - 38.2072
+    description: Coastal town with fresh seafood restaurants, lighthouse park, and beach walks.
+    category: nature

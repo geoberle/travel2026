@@ -1,0 +1,33 @@
+name: Busan
+coordinates:
+  - 129.0756
+  - 35.1796
+pois:
+  - id: haeundae-beach
+    name: Haeundae Beach
+    coordinates:
+      - 129.1604
+      - 35.1587
+    description: Busan's most famous beach with golden sand, bustling boardwalk, and summer festivals.
+    category: nature
+  - id: haedong-yonggungsa
+    name: Haedong Yonggungsa Temple
+    coordinates:
+      - 129.2231
+      - 35.1884
+    description: Cliffside Buddhist temple perched on the ocean's edge with stunning coastal views.
+    category: culture
+  - id: gamcheon-culture-village
+    name: Gamcheon Culture Village
+    coordinates:
+      - 129.0105
+      - 35.0975
+    description: Colorful hillside village with murals, sculptures, and art installations.
+    category: culture
+  - id: jagalchi-market
+    name: Jagalchi Fish Market
+    coordinates:
+      - 129.0306
+      - 35.0968
+    description: Korea's largest seafood market. Fresh sashimi (hoe), grilled eel, and live seafood.
+    category: food
