@@ -488,7 +488,9 @@ function _initFlightLayers(map, chapter) {
       }
     }
 
-    map.jumpTo({ center: pos, zoom: depView.zoom, bearing: 0, pitch: depView.pitch || 25 });
+    if (depView.zoom < 5) {
+      map.jumpTo({ center: pos, zoom: depView.zoom, bearing: 0, pitch: depView.pitch || 25 });
+    }
 
     if (progress >= 0.99 && !_scrollFlightState.arrivalPulsed) {
       addPulseMarker(map, arrival);
