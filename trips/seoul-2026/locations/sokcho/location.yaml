@@ -10,6 +10,7 @@ pois:
       - 38.1197
     description: Dramatic granite peaks, waterfalls, and temples. Cable car to Gwongeumseong fortress.
     category: nature
+    image: "https://images.unsplash.com/photo-1580137189272-c9379f8864fd?w=800"
   - id: sokcho-waterfront
     name: Sokcho Waterfront
     coordinates:
@@ -17,3 +18,4 @@ pois:
       - 38.2072
     description: Coastal town with fresh seafood restaurants, lighthouse park, and beach walks.
     category: nature
+    image: "https://images.unsplash.com/photo-1597668354427-8558ff7a8f6b?w=800"

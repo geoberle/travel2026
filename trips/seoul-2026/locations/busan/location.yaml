@@ -10,6 +10,7 @@ pois:
       - 35.1587
     description: Busan's most famous beach with golden sand, bustling boardwalk, and summer festivals.
     category: nature
+    image: "https://images.unsplash.com/photo-1596587984190-19e37c67a54d?w=800"
   - id: haedong-yonggungsa
     name: Haedong Yonggungsa Temple
     coordinates:
@@ -17,6 +18,7 @@ pois:
       - 35.1884
     description: Cliffside Buddhist temple perched on the ocean's edge with stunning coastal views.
     category: culture
+    image: "https://images.unsplash.com/photo-1590559899731-a382839e5549?w=800"
   - id: gamcheon-culture-village
     name: Gamcheon Culture Village
     coordinates:
@@ -24,6 +26,7 @@ pois:
       - 35.0975
     description: Colorful hillside village with murals, sculptures, and art installations.
     category: culture
+    image: "https://images.unsplash.com/photo-1573832035811-f90e5aad4e28?w=800"
   - id: jagalchi-market
     name: Jagalchi Fish Market
     coordinates:
@@ -31,3 +34,4 @@ pois:
       - 35.0968
     description: Korea's largest seafood market. Fresh sashimi (hoe), grilled eel, and live seafood.
     category: food
+    image: "https://images.unsplash.com/photo-1590650516275-0943b2a62f0e?w=800"
