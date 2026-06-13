@@ -164,6 +164,13 @@
     @keyframes pulse { 0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1.2); } }
     .agent-loading .loading-text { font-size: 0.7rem; color: var(--accent); opacity: 0.8; }
 
+    /* POI map markers */
+    .poi-marker-wrap { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+    .poi-circle-marker { width: 44px; height: 44px; border-radius: 50%; border: 3px solid #4ecdc4; outline: 2px solid rgba(255,255,255,0.6); overflow: hidden; background-color: var(--bg-card); background-size: cover; background-position: center; transition: transform 0.2s, box-shadow 0.2s; }
+    .poi-circle-marker.no-img { display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: #4ecdc4; }
+    .poi-circle-marker.active, .poi-circle-marker:hover { transform: scale(1.25); z-index: 10; }
+    .poi-marker-label { font-size: 0.6rem; font-weight: 600; color: rgba(255,255,255,0.95); text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.6); margin-top: 3px; white-space: nowrap; max-width: 110px; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+
     /* Mapbox popup */
     .mapboxgl-popup-content { background: rgba(15,15,25,0.95); color: #e8e8f0; border-radius: 8px; padding: 0; font-family: var(--font); overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
     .mapboxgl-popup-tip { border-top-color: rgba(15,15,25,0.95); }
@@ -625,10 +632,47 @@
       const pois = TripStore.getLocationPois(activeLocation);
       pois.forEach(poi => {
         const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+
         const el = document.createElement('div');
-        el.style.cssText = `width:12px;height:12px;border-radius:50%;background:${color};border:2px solid rgba(255,255,255,0.7);cursor:pointer;box-shadow:0 0 8px ${color}88;`;
-        el.addEventListener('click', (e) => { e.stopPropagation(); map.flyTo({ center: poi.coordinates, zoom: 16, duration: 800 }); map.once('moveend', () => showPopup(poi)); });
-        const marker = new mapboxgl.Marker({ element: el, anchor: 'center' }).setLngLat(poi.coordinates).addTo(map);
+        el.className = 'poi-circle-marker';
+        if (poi.image) {
+          el.style.backgroundImage = `url(${poi.image})`;
+          el.style.backgroundSize = 'cover';
+          el.style.backgroundPosition = 'center';
+        } else {
+          el.classList.add('no-img');
+          el.textContent = poi.name.charAt(0);
+        }
+        el.style.borderColor = color;
+        el.style.boxShadow = `0 0 12px ${color}88, 0 0 4px rgba(255,255,255,0.3)`;
+        el.dataset.poiId = poi.id;
+
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          map.flyTo({ center: poi.coordinates, zoom: 16, duration: 800 });
+          map.once('moveend', () => showPopup(poi));
+        });
+        el.addEventListener('mouseenter', () => {
+          el.classList.add('active');
+          highlightPoiInList(poi.id, true);
+        });
+        el.addEventListener('mouseleave', () => {
+          el.classList.remove('active');
+          highlightPoiInList(poi.id, false);
+        });
+
+        const label = document.createElement('div');
+        label.className = 'poi-marker-label';
+        label.textContent = poi.name;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'poi-marker-wrap';
+        wrapper.appendChild(el);
+        wrapper.appendChild(label);
+
+        const marker = new mapboxgl.Marker({ element: wrapper, anchor: 'center' })
+          .setLngLat(poi.coordinates)
+          .addTo(map);
         _planningMarkers.push(marker);
       });
     }
@@ -637,6 +681,10 @@
       _planningMarkers.forEach(m => m.remove());
       _planningMarkers = [];
       if (activePopup) { activePopup.remove(); activePopup = null; }
+    }
+
+    function highlightPoiInList(id, active) {
+      document.querySelectorAll(`.poi-item[data-id="${id}"]`).forEach(el => el.classList.toggle('highlight', active));
     }
 
     function showPopup(poi) {
