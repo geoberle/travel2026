@@ -482,6 +482,7 @@
 
       if (block.type === 'stay') {
         activeLocation = block.location;
+        clearTransitRoute();
         renderPois();
         refreshMarkers();
         const acc = block.accommodation;
@@ -492,6 +493,7 @@
         activeLocation = null;
         clearMarkers();
         renderPois();
+        showTransitRoute(block);
         if (block.legs?.length > 0) {
           const bounds = new mapboxgl.LngLatBounds();
           block.legs.forEach(l => { bounds.extend(l.departure.coordinates); bounds.extend(l.arrival.coordinates); });
@@ -644,6 +646,50 @@
         overlay.querySelector('.btn-cancel').addEventListener('click', () => { overlay.remove(); resolve(false); });
         overlay.querySelector('.btn-danger').addEventListener('click', () => { overlay.remove(); resolve(true); });
       });
+    }
+
+    // --- Transit route ---
+    let _transitRouteId = null;
+
+    function showTransitRoute(block) {
+      clearTransitRoute();
+      const coords = [];
+      (block.legs || []).forEach(leg => {
+        if (leg.route) {
+          if (coords.length === 0 || coords[coords.length - 1].toString() !== leg.route[0].toString()) {
+            coords.push(...leg.route);
+          } else {
+            coords.push(...leg.route.slice(1));
+          }
+        } else {
+          if (coords.length === 0) coords.push(leg.departure.coordinates);
+          coords.push(leg.arrival.coordinates);
+        }
+      });
+      if (coords.length < 2) return;
+
+      const srcId = `planning-route-${block.id}`;
+      const lineId = `planning-route-line-${block.id}`;
+      _transitRouteId = block.id;
+
+      map.addSource(srcId, {
+        type: 'geojson',
+        data: { type: 'Feature', geometry: { type: 'LineString', coordinates: coords } }
+      });
+      map.addLayer({
+        id: lineId, type: 'line', source: srcId,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': '#4ecdc4', 'line-width': 3, 'line-opacity': 0.8 }
+      });
+    }
+
+    function clearTransitRoute() {
+      if (!_transitRouteId) return;
+      const lineId = `planning-route-line-${_transitRouteId}`;
+      const srcId = `planning-route-${_transitRouteId}`;
+      if (map.getLayer(lineId)) map.removeLayer(lineId);
+      if (map.getSource(srcId)) map.removeSource(srcId);
+      _transitRouteId = null;
     }
 
     // --- Map markers ---
