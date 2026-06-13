@@ -147,7 +147,8 @@ body {
 }
 
 /* Transit card (flights, trains, buses) */
-.transit-card {
+.transit-card,
+.flight-card {
   background: rgba(12, 12, 24, 0.85);
   color: var(--text-dark);
   border: 1px solid rgba(255, 255, 255, 0.1);
