@@ -292,10 +292,16 @@ itinerary:
     days:
       - title: ""
         status: open
-        activities: []
+        activities:
+          - poi: yanagibashi-rengo-market
+            notes: ""
+          - poi: teamlab-forest-fukuoka
+            notes: ""
       - title: ""
         status: open
-        activities: []
+        activities:
+          - poi: pok-mon-center-fukuoka
+            notes: ""
   - type: transit
     id: fukuoka-busan
     label: Fukuoka → Busan

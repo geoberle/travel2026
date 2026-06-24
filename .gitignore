@@ -3,3 +3,4 @@
 node_modules/
 .mcp.json
 *.png
+trips/*/locations/locations.yaml

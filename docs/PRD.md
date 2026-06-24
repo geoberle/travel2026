@@ -30,7 +30,7 @@ travel/
 └── trips/
     └── singapore-seoul-2026/
         ├── trip.yaml         # Trip meta, origin, transport/flights
-        ├── travelers.md      # Traveler profiles & preferences
+        ├── travelers.yaml      # Traveler profiles & preferences
         └── locations/
             ├── singapore/
             │   └── location.yaml  # Accommodations, POIs, days

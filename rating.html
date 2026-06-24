@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Rate POIs — South Korea 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/mapbox-gl@3/dist/mapbox-gl.css" rel="stylesheet">
+  <style>
+    :root {
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --bg-dark: rgba(10, 10, 20, 0.88);
+      --text-dark: #e8e8f0;
+      --text-light: #1a1a2e;
+      --accent: #4ecdc4;
+      --card-radius: 16px;
+      --blur: 20px;
+      --must-go: #00b894;
+      --sure: #fdcb6e;
+      --skip: #b2bec3;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font);
+      background: #0a0a0f;
+      color: white;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ───────── Layout ───────── */
+
+    #app { display: none; flex: 1; overflow: hidden; }
+    #login-screen { display: flex; align-items: center; justify-content: center; height: 100dvh; }
+    #error-screen { display: none; align-items: center; justify-content: center; height: 100dvh; }
+
+    .app-layout {
+      display: flex;
+      height: 100%;
+      width: 100%;
+    }
+
+    #map {
+      flex: 1;
+      min-width: 0;
+    }
+
+    #panel {
+      width: 33.33vw;
+      min-width: 320px;
+      display: flex;
+      flex-direction: column;
+      background: rgba(10, 10, 20, 0.95);
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      z-index: 2;
+    }
+
+    /* ───────── Tabs ───────── */
+
+    .tabs {
+      display: flex;
+      flex-shrink: 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 0.85rem;
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .tab:hover { color: rgba(255, 255, 255, 0.7); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .tab .badge {
+      display: inline-block;
+      background: rgba(78, 205, 196, 0.2);
+      color: var(--accent);
+      font-size: 0.6rem;
+      padding: 1px 5px;
+      border-radius: 8px;
+      margin-left: 4px;
+    }
+
+    /* ───────── Tab content ───────── */
+
+    .tab-content { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+    .tab-content.active { display: flex; }
+
+    /* ───────── Card deck ───────── */
+
+    #deck {
+      flex: 1;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #deck-empty {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .location-divider {
+      padding: 1rem 1.5rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      border-bottom: 1px solid rgba(78, 205, 196, 0.15);
+      background: rgba(78, 205, 196, 0.05);
+      flex-shrink: 0;
+    }
+
+    .poi-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: cardIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .poi-card-image {
+      height: 200px;
+      position: relative;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .poi-card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .poi-card-image::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 80px;
+      background: linear-gradient(to top, rgba(10, 10, 20, 0.95), transparent);
+    }
+
+    .poi-card-category {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 0.55rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 3px 8px;
+      border-radius: 4px;
+      z-index: 1;
+    }
+
+    .poi-card-body {
+      flex: 1;
+      padding: 1.25rem 1.5rem;
+      overflow-y: auto;
+    }
+
+    .poi-card-body h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.5rem;
+    }
+
+    .poi-card-body .description {
+      font-size: 0.85rem;
+      line-height: 1.55;
+      opacity: 0.7;
+      margin-bottom: 1rem;
+    }
+
+    .poi-card-meta {
+      font-size: 0.75rem;
+      opacity: 0.5;
+      line-height: 1.6;
+    }
+
+    .poi-card-meta span { display: block; }
+
+    /* ───────── Rating buttons ───────── */
+
+    .rating-buttons {
+      display: flex;
+      gap: 8px;
+      padding: 1rem 1.5rem;
+      flex-shrink: 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .rate-btn {
+      flex: 1;
+      padding: 0.9rem;
+      border: none;
+      border-radius: 12px;
+      font-family: var(--font);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      min-height: 52px;
+    }
+
+    .rate-btn:active { transform: scale(0.96); }
+
+    .rate-btn.must-go {
+      background: var(--must-go);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0, 184, 148, 0.3);
+    }
+
+    .rate-btn.sure {
+      background: var(--sure);
+      color: #2d3436;
+      box-shadow: 0 4px 12px rgba(253, 203, 110, 0.3);
+    }
+
+    .rate-btn.skip {
+      background: var(--skip);
+      color: #2d3436;
+      box-shadow: 0 4px 12px rgba(178, 190, 195, 0.2);
+    }
+
+    /* ───────── Summary ───────── */
+
+    #summary {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem 0;
+    }
+
+    .summary-location-header {
+      padding: 0.75rem 1.5rem 0.5rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      opacity: 0.7;
+    }
+
+    .summary-item {
+      display: grid;
+      grid-template-columns: 1fr 78px 70px;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.5rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .summary-item:hover { background: rgba(255, 255, 255, 0.04); }
+
+    .summary-item-name {
+      flex: 1;
+      font-size: 0.82rem;
+      font-weight: 500;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .summary-votes {
+      display: flex;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+
+    .vote-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.55rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .vote-dot.must_go { background: var(--must-go); }
+    .vote-dot.sure { background: var(--sure); color: #2d3436; }
+    .vote-dot.skip { background: var(--skip); color: #2d3436; }
+    .vote-dot.unrated { background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.3); }
+    .vote-dot.hidden { background: rgba(255, 255, 255, 0.06); color: rgba(255, 255, 255, 0.15); }
+
+    .summary-my-rating {
+      justify-self: end;
+      white-space: nowrap;
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .summary-my-rating.must_go { background: rgba(0, 184, 148, 0.15); color: var(--must-go); }
+    .summary-my-rating.sure { background: rgba(253, 203, 110, 0.15); color: var(--sure); }
+    .summary-my-rating.skip { background: rgba(178, 190, 195, 0.15); color: var(--skip); }
+
+    /* ───────── Change rating popover ───────── */
+
+    .change-popover {
+      position: fixed;
+      z-index: 100;
+      background: rgba(20, 20, 35, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 6px;
+      display: flex;
+      gap: 4px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(12px);
+    }
+
+    .change-popover .rate-btn {
+      padding: 0.5rem 0.8rem;
+      font-size: 0.65rem;
+      min-height: 36px;
+      border-radius: 8px;
+    }
+
+    /* ───────── Consensus badge ───────── */
+
+    .consensus-badge {
+      font-size: 0.55rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .consensus-badge.unanimous { background: rgba(0, 184, 148, 0.2); color: var(--must-go); }
+    .consensus-badge.mixed { background: rgba(253, 203, 110, 0.15); color: var(--sure); }
+
+    /* ───────── Progress bar ───────── */
+
+
+    /* ───────── Login ───────── */
+
+    .login-card {
+      background: var(--bg-dark);
+      backdrop-filter: blur(var(--blur));
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--card-radius);
+      padding: 3rem 3.5rem;
+      text-align: center;
+      max-width: 400px;
+    }
+
+    .login-card h1 {
+      font-size: 1.8rem;
+      font-weight: 200;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+    }
+
+    .login-card .subtitle {
+      font-size: 0.9rem;
+      opacity: 0.5;
+      margin-bottom: 2rem;
+    }
+
+    .google-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 2rem;
+      background: #fff;
+      color: #333;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font);
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: box-shadow 0.2s, transform 0.15s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .google-btn:hover { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); }
+    .google-btn:active { transform: scale(0.97); }
+
+    .google-btn svg { width: 20px; height: 20px; }
+
+    .error-card {
+      background: var(--bg-dark);
+      backdrop-filter: blur(var(--blur));
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      border-radius: var(--card-radius);
+      padding: 2.5rem 3rem;
+      text-align: center;
+      max-width: 400px;
+    }
+
+    .error-card h2 { font-size: 1.2rem; font-weight: 500; margin-bottom: 0.75rem; }
+    .error-card p { font-size: 0.85rem; opacity: 0.6; line-height: 1.5; margin-bottom: 1.5rem; }
+
+    .error-card button {
+      padding: 0.6rem 1.5rem;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      font-family: var(--font);
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    /* ───────── User bar ───────── */
+
+    .user-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      flex-shrink: 0;
+    }
+
+    .user-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+    }
+
+    .user-name {
+      flex: 1;
+      font-size: 0.75rem;
+      font-weight: 500;
+      opacity: 0.6;
+    }
+
+    .sign-out-btn {
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.3);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font);
+    }
+
+    .sign-out-btn:hover { color: rgba(255, 255, 255, 0.6); }
+
+    /* ───────── Responsive: portrait ───────── */
+
+    @media (max-width: 768px), (orientation: portrait) {
+      .app-layout {
+        flex-direction: column;
+      }
+
+      #map { height: 35dvh; flex: none; }
+
+      #panel {
+        width: 100%;
+        max-width: 100%;
+        flex: 1;
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+    }
+
+    /* ───────── Category colors ───────── */
+
+    .current-location {
+      padding: 0.5rem 1.5rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      background: rgba(78, 205, 196, 0.05);
+      flex-shrink: 0;
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+
+    .current-location::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #ff6b6b, #fdcb6e);
+      width: var(--progress, 0%);
+      transition: width 0.3s ease;
+      border-radius: 0 3px 3px 0;
+    }
+
+    .current-location-progress {
+      font-weight: 500;
+      font-size: 0.6rem;
+      opacity: 0.6;
+      color: var(--text-dark);
+      letter-spacing: 0.02em;
+    }
+
+    .poi-card-detail {
+      font-size: 0.8rem;
+      opacity: 0.6;
+      line-height: 1.7;
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+    }
+
+    .detail-icon { font-size: 0.7rem; flex-shrink: 0; }
+
+    .poi-card-link {
+      display: inline-block;
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .poi-card-link:hover { text-decoration: underline; }
+
+    /* ───────── Circular POI map marker ───────── */
+
+    .poi-circle-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .poi-circle-marker {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 3px solid #4ecdc4;
+      outline: 2.5px solid rgba(255, 255, 255, 0.7);
+      overflow: hidden;
+      background-color: #0f3460;
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .poi-circle-marker img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .poi-circle-label {
+      color: rgba(255, 255, 255, 0.95);
+      font-size: 0.6rem;
+      font-weight: 600;
+      font-family: var(--font);
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.6);
+      margin-top: 3px;
+      text-align: center;
+      max-width: 130px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cat-attraction { background: rgba(78, 205, 196, 0.85); color: #fff; }
+    .cat-food { background: rgba(255, 159, 67, 0.85); color: #fff; }
+    .cat-culture { background: rgba(165, 94, 234, 0.85); color: #fff; }
+    .cat-shopping { background: rgba(253, 121, 168, 0.85); color: #fff; }
+    .cat-nature { background: rgba(0, 184, 148, 0.85); color: #fff; }
+    .cat-transport { background: rgba(99, 110, 114, 0.85); color: #fff; }
+  </style>
+</head>
+<body>
+  <!-- Login screen -->
+  <div id="login-screen">
+    <div class="login-card">
+      <h1>Rate POIs</h1>
+      <p class="subtitle">South Korea 2026</p>
+      <button class="google-btn" id="login-btn">
+        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Sign in with Google
+      </button>
+    </div>
+  </div>
+
+  <!-- Error screen -->
+  <div id="error-screen">
+    <div class="error-card">
+      <h2>Not Authorized</h2>
+      <p id="error-msg">This account is not on the travelers list.</p>
+      <button onclick="signOut()">Try another account</button>
+    </div>
+  </div>
+
+  <!-- Main app -->
+  <div id="app">
+    <div class="app-layout">
+      <div id="map"></div>
+      <div id="panel">
+        <div class="user-bar">
+          <img class="user-avatar" id="user-avatar" src="" alt="">
+          <span class="user-name" id="user-name"></span>
+          <button class="sign-out-btn" onclick="signOut()">Sign out</button>
+        </div>
+        <div class="tabs">
+          <div class="tab active" data-tab="rate" onclick="switchTab('rate')">
+            Rate <span class="badge" id="unrated-badge">0</span>
+          </div>
+          <div class="tab" data-tab="summary" onclick="switchTab('summary')">Summary</div>
+        </div>
+        <div class="current-location" id="current-location">
+          <span class="current-location-name" id="current-location-name"></span>
+          <span class="current-location-progress" id="current-location-progress"></span>
+        </div>
+
+        <div class="tab-content active" data-tab="rate" id="deck"></div>
+        <div class="tab-content" data-tab="summary" id="summary"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/mapbox-gl@3/dist/mapbox-gl.js"></script>
+  <script src="https://unpkg.com/js-yaml@4/dist/js-yaml.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore-compat.js"></script>
+  <script>
+'use strict';
+
+// ───────── Config ─────────
+
+const MAPBOX_TOKEN = 'pk.eyJ1IjoiZ2VyZG9iZXJsZWNobmVyIiwiYSI6ImNtcHpwNjdzYjA2d3EycnBnZWJkZ2p5ODUifQ.vl5h0bVgSuSaW_ZPIH0CKA';
+const TRIP_DIR = 'trips/seoul-2026';
+const TRIP_ID = 'seoul-2026';
+
+const CATEGORY_COLORS = {
+  attraction: '#4ecdc4',
+  food: '#ff9f43',
+  culture: '#a55eea',
+  shopping: '#fd79a8',
+  nature: '#00b894',
+  transport: '#636e72'
+};
+
+firebase.initializeApp({
+  apiKey: "AIzaSyC-0yRauuc_1P8R-cae9wWpfOdeiHAennQ",
+  authDomain: "travel-f2af9.firebaseapp.com",
+  projectId: "travel-f2af9",
+  storageBucket: "travel-f2af9.firebasestorage.app",
+  messagingSenderId: "249018451249",
+  appId: "1:249018451249:web:166fe318cf4b7460dadc10"
+});
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+const RATING_LABELS = { must_go: 'Love it', sure: 'Okay', skip: 'Pass' };
+
+// ───────── State ─────────
+
+let currentUser = null;
+let travelers = [];
+let locations = {};
+let allPois = [];
+let ratings = {};
+let deckQueue = [];
+let deckIndex = 0;
+let currentLocationName = null;
+let map = null;
+let currentMarker = null;
+let accommodationMarkers = [];
+
+// ───────── Auth ─────────
+
+document.getElementById('login-btn').addEventListener('click', () => {
+  auth.signInWithPopup(googleProvider).catch(err => {
+    console.error('Auth error:', err);
+  });
+});
+
+auth.onAuthStateChanged(async user => {
+  if (!user) {
+    show('login-screen');
+    hide('app');
+    hide('error-screen');
+    return;
+  }
+
+  await loadTravelers();
+  const traveler = travelers.find(t => t.google_account === user.email);
+
+  if (!traveler) {
+    document.getElementById('error-msg').textContent =
+      `${user.email} is not on the travelers list.`;
+    show('error-screen');
+    hide('login-screen');
+    hide('app');
+    return;
+  }
+
+  currentUser = { ...traveler, email: user.email, photo: user.photoURL };
+  document.getElementById('user-avatar').src = user.photoURL || '';
+  document.getElementById('user-name').textContent = traveler.name;
+
+  hide('login-screen');
+  hide('error-screen');
+  show('app');
+
+  await init();
+});
+
+function signOut() {
+  auth.signOut();
+  currentUser = null;
+}
+
+// ───────── Init ─────────
+
+async function init() {
+  try {
+    await loadLocations();
+    console.log('Locations loaded:', Object.keys(locations));
+    buildPoiList();
+    console.log('POIs built:', allPois.length, allPois.map(p => p.id));
+    initMap();
+    await loadRatings();
+    console.log('Ratings loaded:', Object.keys(ratings));
+    buildDeck();
+    console.log('Deck built:', deckQueue.length);
+    renderSummary();
+  } catch (err) {
+    console.error('Init error:', err);
+  }
+}
+
+// ───────── Data loading ─────────
+
+async function loadTravelers() {
+  const bust = Date.now();
+  const text = await fetch(`${TRIP_DIR}/travelers.yaml?v=${bust}`).then(r => r.text());
+  const data = jsyaml.load(text);
+  travelers = data.travelers || [];
+}
+
+async function loadLocations() {
+  const bust = Date.now();
+  const indexText = await fetch(`${TRIP_DIR}/locations/locations.yaml?v=${bust}`).then(r => r.text());
+  const locationNames = jsyaml.load(indexText) || [];
+
+  const results = await Promise.all(
+    locationNames.map(name =>
+      fetch(`${TRIP_DIR}/locations/${name}/location.yaml?v=${bust}`)
+        .then(r => r.ok ? r.text() : null)
+        .then(text => text ? { name, data: jsyaml.load(text) } : null)
+        .catch(() => null)
+    )
+  );
+
+  locations = {};
+  results.filter(Boolean).forEach(({ name, data }) => { locations[name] = data; });
+}
+
+function buildPoiList() {
+  allPois = [];
+  for (const [locName, locData] of Object.entries(locations)) {
+    for (const poi of (locData.pois || [])) {
+      allPois.push({ ...poi, _location: locName, _locationName: locData.name });
+    }
+  }
+}
+
+// ───────── Firestore ─────────
+
+async function loadRatings() {
+  const snapshot = await db.collection('ratings').doc(TRIP_ID)
+    .collection('pois').get();
+
+  ratings = {};
+  snapshot.forEach(doc => {
+    ratings[doc.id] = doc.data();
+  });
+
+  listenForChanges();
+}
+
+let unsubscribe = null;
+
+function listenForChanges() {
+  if (unsubscribe) unsubscribe();
+
+  unsubscribe = db.collection('ratings').doc(TRIP_ID)
+    .collection('pois').onSnapshot(snapshot => {
+      snapshot.docChanges().forEach(change => {
+        if (change.type === 'removed') {
+          delete ratings[change.doc.id];
+        } else {
+          ratings[change.doc.id] = change.doc.data();
+        }
+      });
+      updateBadges();
+      renderSummary();
+    });
+}
+
+async function submitRating(poiId, locationName, rating) {
+  const docRef = db.collection('ratings').doc(TRIP_ID)
+    .collection('pois').doc(poiId);
+
+  await docRef.set({
+    location: locationName,
+    votes: { [currentUser.email]: rating },
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+
+  if (!ratings[poiId]) ratings[poiId] = { location: locationName, votes: {} };
+  ratings[poiId].votes[currentUser.email] = rating;
+}
+
+// ───────── Map ─────────
+
+function initMap() {
+  mapboxgl.accessToken = MAPBOX_TOKEN;
+
+  map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/dark-v11',
+    center: [127.0, 37.55],
+    zoom: 10,
+    projection: 'mercator',
+    interactive: true
+  });
+
+  map.addControl(new mapboxgl.NavigationControl(), 'top-left');
+}
+
+function flyToPoi(poi) {
+  if (!map) return;
+  const coords = Array.isArray(poi.coordinates) ? poi.coordinates : [0, 0];
+
+  if (currentMarker) currentMarker.remove();
+
+  const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+  const el = document.createElement('div');
+  el.className = 'poi-circle-wrap';
+
+  const circle = document.createElement('div');
+  circle.className = 'poi-circle-marker';
+  circle.style.borderColor = color;
+
+  if (poi.image) {
+    const img = document.createElement('img');
+    img.src = poi.image;
+    img.alt = poi.name;
+    circle.appendChild(img);
+  }
+
+  const label = document.createElement('div');
+  label.className = 'poi-circle-label';
+  label.textContent = poi.name;
+
+  el.appendChild(circle);
+  el.appendChild(label);
+
+  currentMarker = new mapboxgl.Marker(el)
+    .setLngLat(coords)
+    .addTo(map);
+
+  map.flyTo({ center: coords, zoom: 14, duration: 800 });
+}
+
+function flyToLocation(locData) {
+  if (!map || !locData) return;
+  const coords = locData.coordinates || [127, 37.55];
+  map.flyTo({ center: coords, zoom: 11, duration: 1000 });
+}
+
+function showSummaryMarkers() {
+  clearMarkers();
+
+  for (const poi of allPois) {
+    const myVote = getMyVote(poi.id);
+    if (!myVote) continue;
+
+    const color = myVote === 'must_go' ? 'var(--must-go)' :
+                  myVote === 'sure' ? 'var(--sure)' : 'var(--skip)';
+
+    const el = document.createElement('div');
+    el.className = 'poi-circle-wrap';
+
+    const circle = document.createElement('div');
+    circle.className = 'poi-circle-marker';
+    circle.style.borderColor = color;
+    circle.style.width = '36px';
+    circle.style.height = '36px';
+
+    if (poi.image) {
+      const img = document.createElement('img');
+      img.src = poi.image;
+      img.alt = poi.name;
+      circle.appendChild(img);
+    }
+
+    el.appendChild(circle);
+    el.title = poi.name;
+
+    const marker = new mapboxgl.Marker(el)
+      .setLngLat(poi.coordinates)
+      .addTo(map);
+
+    accommodationMarkers.push(marker);
+  }
+
+  if (allPois.length > 0) {
+    const bounds = new mapboxgl.LngLatBounds();
+    allPois.forEach(p => {
+      if (getMyVote(p.id)) bounds.extend(p.coordinates);
+    });
+    if (!bounds.isEmpty()) {
+      map.fitBounds(bounds, { padding: 60, duration: 800 });
+    }
+  }
+}
+
+function clearMarkers() {
+  if (currentMarker) { currentMarker.remove(); currentMarker = null; }
+  accommodationMarkers.forEach(m => m.remove());
+  accommodationMarkers = [];
+}
+
+// ───────── Card deck ─────────
+
+function buildDeck() {
+  deckQueue = allPois.filter(poi => !getMyVote(poi.id));
+  deckIndex = 0;
+  currentLocationName = null;
+  showCurrentCard();
+  updateBadges();
+}
+
+function getMyVote(poiId) {
+  return ratings[poiId]?.votes?.[currentUser.email] || null;
+}
+
+function showCurrentCard() {
+  const deck = document.getElementById('deck');
+
+  if (deckIndex >= deckQueue.length) {
+    deck.innerHTML = `<div id="deck-empty">All POIs rated!<br>Check the Summary tab.</div>`;
+    return;
+  }
+
+  const poi = deckQueue[deckIndex];
+  const catClass = `cat-${poi.category}`;
+  const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+
+  const locBar = document.getElementById('current-location');
+  locBar.style.display = 'flex';
+
+  if (poi._locationName !== currentLocationName) {
+    currentLocationName = poi._locationName;
+    document.getElementById('current-location-name').textContent = poi._locationName;
+    flyToLocation(locations[poi._location]);
+    setTimeout(() => flyToPoi(poi), 600);
+  } else {
+    flyToPoi(poi);
+  }
+
+  let html = '';
+
+  html += `
+    <div class="poi-card">
+      ${poi.image ? `<div class="poi-card-image">
+        <img src="${poi.image}" alt="${poi.name}" onerror="this.parentElement.style.display='none'">
+        <span class="poi-card-category ${catClass}">${poi.category}</span>
+      </div>` : `<div style="padding:1rem 1.5rem 0"><span class="poi-card-category ${catClass}" style="position:static;display:inline-block">${poi.category}</span></div>`}
+      <div class="poi-card-body">
+        <h2>${poi.name}</h2>
+        <p class="description">${poi.description || ''}</p>
+        ${poi.hours ? `<div class="poi-card-detail"><span class="detail-icon">🕐</span> ${poi.hours}</div>` : ''}
+        ${poi.cost ? `<div class="poi-card-detail"><span class="detail-icon">💰</span> ${poi.cost}</div>` : ''}
+        ${poi.url ? `<a class="poi-card-link" href="${poi.url}" target="_blank" rel="noopener">Visit website →</a>` : ''}
+      </div>
+      <div class="rating-buttons">
+        <button class="rate-btn must-go" onclick="rate('must_go')">Love it</button>
+        <button class="rate-btn sure" onclick="rate('sure')">Okay</button>
+        <button class="rate-btn skip" onclick="rate('skip')">Pass</button>
+      </div>
+    </div>`;
+
+  deck.innerHTML = html;
+}
+
+async function rate(value) {
+  const poi = deckQueue[deckIndex];
+  if (!poi) return;
+
+  const buttons = document.querySelectorAll('.rate-btn');
+  buttons.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
+
+  await submitRating(poi.id, poi._location, value);
+
+  deckIndex++;
+  updateBadges();
+  showCurrentCard();
+}
+
+function updateBadges() {
+  const unrated = allPois.filter(p => !getMyVote(p.id)).length;
+  const total = allPois.length;
+  const rated = total - unrated;
+
+  document.getElementById('unrated-badge').textContent = unrated;
+  document.getElementById('current-location-progress').textContent = `${rated} / ${total} rated`;
+
+  const pct = total > 0 ? (rated / total) * 100 : 0;
+  document.getElementById('current-location').style.setProperty('--progress', `${pct}%`);
+}
+
+// ───────── Summary ─────────
+
+function renderSummary() {
+  const container = document.getElementById('summary');
+  let html = '';
+
+  for (const [locName, locData] of Object.entries(locations)) {
+    const pois = (locData.pois || []);
+    if (pois.length === 0) continue;
+
+    html += `<div class="summary-location-header">${locData.name}</div>`;
+
+    for (const poi of pois) {
+      const myVote = getMyVote(poi.id);
+      const poiRatings = ratings[poi.id]?.votes || {};
+
+      html += `<div class="summary-item" onclick="flyToPoi(${JSON.stringify(poi).replace(/"/g, '&quot;')})">`;
+
+      let consensusHtml = '';
+      if (myVote) {
+        const voterCount = travelers.length;
+        const votes = Object.values(poiRatings);
+        if (votes.length === voterCount && votes.every(v => v === votes[0])) {
+          consensusHtml = ` <span class="consensus-badge unanimous">Unanimous</span>`;
+        } else if (votes.length === voterCount) {
+          consensusHtml = ` <span class="consensus-badge mixed">Mixed</span>`;
+        }
+      }
+      html += `<span class="summary-item-name">${poi.name}${consensusHtml}</span>`;
+
+      // Vote dots for each traveler
+      html += `<div class="summary-votes">`;
+      for (const t of travelers) {
+        const vote = poiRatings[t.google_account];
+        const isSelf = t.google_account === currentUser.email;
+        const canSee = isSelf || myVote;
+
+        if (!canSee) {
+          html += `<div class="vote-dot hidden" title="${t.name}: hidden">${t.initial}</div>`;
+        } else if (!vote) {
+          html += `<div class="vote-dot unrated" title="${t.name}: not rated">${t.initial}</div>`;
+        } else {
+          html += `<div class="vote-dot ${vote}" title="${t.name}: ${RATING_LABELS[vote]}">${t.initial}</div>`;
+        }
+      }
+      html += `</div>`;
+
+      // My rating (clickable to change)
+      if (myVote) {
+        html += `<span class="summary-my-rating ${myVote}" onclick="event.stopPropagation(); showChangePopover(event, '${poi.id}', '${locName}')">${RATING_LABELS[myVote]}</span>`;
+      }
+
+      html += `</div>`;
+    }
+  }
+
+  container.innerHTML = html;
+}
+
+// ───────── Change rating popover ─────────
+
+let activePopover = null;
+
+function showChangePopover(event, poiId, locationName) {
+  closePopover();
+
+  const rect = event.target.getBoundingClientRect();
+  const pop = document.createElement('div');
+  pop.className = 'change-popover';
+  pop.style.top = `${rect.bottom + 4}px`;
+  pop.style.right = `${window.innerWidth - rect.right}px`;
+
+  pop.innerHTML = `
+    <button class="rate-btn must-go" onclick="changeRating('${poiId}', '${locationName}', 'must_go')">Love it</button>
+    <button class="rate-btn sure" onclick="changeRating('${poiId}', '${locationName}', 'sure')">Okay</button>
+    <button class="rate-btn skip" onclick="changeRating('${poiId}', '${locationName}', 'skip')">Pass</button>
+  `;
+
+  document.body.appendChild(pop);
+  activePopover = pop;
+
+  setTimeout(() => {
+    document.addEventListener('click', closePopover, { once: true });
+  }, 0);
+}
+
+function closePopover() {
+  if (activePopover) {
+    activePopover.remove();
+    activePopover = null;
+  }
+}
+
+async function changeRating(poiId, locationName, value) {
+  closePopover();
+  await submitRating(poiId, locationName, value);
+  renderSummary();
+}
+
+// ───────── Tabs ─────────
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+
+  const locBar = document.getElementById('current-location');
+  locBar.style.display = name === 'rate' && currentLocationName ? 'flex' : 'none';
+
+  clearMarkers();
+  if (name === 'summary') {
+    showSummaryMarkers();
+  } else if (deckIndex < deckQueue.length) {
+    const poi = deckQueue[deckIndex];
+    flyToPoi(poi);
+  }
+}
+
+// ───────── Helpers ─────────
+
+function show(id) { document.getElementById(id).style.display = 'flex'; }
+function hide(id) { document.getElementById(id).style.display = 'none'; }
+  </script>
+</body>
+</html>

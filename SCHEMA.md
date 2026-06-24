@@ -7,7 +7,7 @@ A trip is an ordered sequence of **itinerary blocks** — flights and stays — 
 ```
 trips/singapore-seoul-2026/
 ├── trip.yaml                      # Trip metadata + itinerary (flights, stays, days)
-├── travelers.md                   # Traveler profiles & preferences
+├── travelers.yaml                   # Traveler profiles & preferences
 └── locations/
     ├── singapore/location.yaml    # POI library for Singapore
     └── seoul/location.yaml        # POI library for Seoul
@@ -214,9 +214,43 @@ pois:
 | nature | `#00b894` |
 | transport | `#636e72` |
 
-## travelers.md
+## travelers.yaml
 
-Markdown file with traveler profiles. Used by the AI planning agent to score POI alignment per traveler.
+Structured traveler profiles. Used by the AI planning agent to score POI alignment and by the rating view for voter identity.
+
+```yaml
+travelers:
+  - name: Gerd
+    initial: G
+    color: "#4ecdc4"
+    age: 45
+    google_account: gerd@gmail.com
+    interests: [tech, science, museums]
+    notes: optional freeform notes
+```
+
+### Traveler fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | yes | Display name |
+| `initial` | string | yes | Single letter for UI badges |
+| `color` | string | yes | Hex color for UI |
+| `age` | number | yes | Age at time of trip |
+| `google_account` | string | yes | Google account email for Firebase Auth |
+| `interests` | array | yes | List of interest keywords |
+| `notes` | string | no | Freeform notes |
+
+### Group fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `size` | number | Headcount |
+| `composition` | string | Group makeup |
+| `shared_passions` | array | Common interests |
+| `travel_style` | string | Travel preferences |
+| `pace` | string | Activity density preference |
+| `food` | string | Food preferences |
 
 ## Relationships
 

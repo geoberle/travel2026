@@ -507,7 +507,7 @@ const PROPOSAL_TOOLS = new Set(['search_and_propose', 'extract_and_propose', 'pr
 
 async function extractPoisFromText(text, context) {
   let travelersProfile = '';
-  const travelersFile = path.join(TRIP_DIR, 'travelers.md');
+  const travelersFile = path.join(TRIP_DIR, 'travelers.yaml');
   if (fs.existsSync(travelersFile)) {
     travelersProfile = fs.readFileSync(travelersFile, 'utf8');
   }
@@ -657,7 +657,7 @@ async function executeTool(name, args) {
       return JSON.stringify(loc.pois || []);
     }
     case 'get_travelers': {
-      const file = path.join(TRIP_DIR, 'travelers.md');
+      const file = path.join(TRIP_DIR, 'travelers.yaml');
       if (!fs.existsSync(file)) return 'No traveler profiles found.';
       return fs.readFileSync(file, 'utf8');
     }
@@ -837,7 +837,7 @@ function buildSystemPrompt(activeStayId) {
   }).join('\n');
 
   let travelersProfile = '';
-  const travelersFile = path.join(TRIP_DIR, 'travelers.md');
+  const travelersFile = path.join(TRIP_DIR, 'travelers.yaml');
   if (fs.existsSync(travelersFile)) {
     travelersProfile = fs.readFileSync(travelersFile, 'utf8');
   }

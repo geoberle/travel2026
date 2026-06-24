@@ -10,7 +10,7 @@ pois:
       - 33.584
     description: A bustling market where you can find fresh seafood and local produce.
     category: food
-    image: "https://images.unsplash.com/photo-1665844237472-043c0a164434?w=800"
+    image: https://images.unsplash.com/photo-1665844237472-043c0a164434?w=800
   - id: teamlab-forest-fukuoka
     name: teamLab Forest Fukuoka
     coordinates:
@@ -18,4 +18,12 @@ pois:
       - 33.592
     description: An immersive digital art museum offering a unique sensory experience.
     category: attraction
-    image: "https://images.unsplash.com/photo-1627890352182-844e8d0355f2?w=800"
+    image: https://images.unsplash.com/photo-1627890352182-844e8d0355f2?w=800
+  - id: pok-mon-center-fukuoka
+    name: Pokémon Center Fukuoka
+    coordinates:
+      - 130.4187
+      - 33.5902
+    description: The only official Pokémon shop in Kyushu, offering over 2,500 types of merchandise and hosting Pokémon card game tournaments. It is located at Amu Plaza Hakata.
+    category: shopping
+    image: "https://images.unsplash.com/photo-1775410633369-a17e0079920c?w=800"

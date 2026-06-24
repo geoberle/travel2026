@@ -1,0 +1,30 @@
+travelers:
+  - name: Gerd
+    initial: G
+    color: "#4ecdc4"
+    age: 45
+    google_account: gerd.oberlechner@gmail.com
+    interests: [tech, science, museums, gaming, good food, chilling]
+    notes: plans the trip, happiest when the family is happy
+
+  - name: Christine
+    initial: C
+    color: "#ff9f43"
+    age: 50
+    google_account: impulse.ck@gmail.com
+    interests: [tennis, tech, manga, anime, gaming, parks, gardens, shopping, asian fashion trends, good food, chilling]
+
+  - name: Luna
+    initial: L
+    color: "#a55eea"
+    age: 11
+    google_account: lunakeim14@gmail.com
+    interests: [manga, anime, gaming, good food, science, art, chilling]
+
+group:
+  size: 3
+  composition: 2 adults, 1 child
+  shared_passions: [manga, anime, gaming, good food, relaxing]
+  travel_style: premium comfort, family-friendly
+  pace: not too packed, downtime between activities
+  food: adventurous eaters

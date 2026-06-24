@@ -10,7 +10,7 @@ pois:
       - 35.1587
     description: Busan's most famous beach with golden sand, bustling boardwalk, and summer festivals.
     category: nature
-    image: "https://images.unsplash.com/photo-1596587984190-19e37c67a54d?w=800"
+    image: "https://images.unsplash.com/photo-1559494007-9f5847c49d94?w=800"
   - id: haedong-yonggungsa
     name: Haedong Yonggungsa Temple
     coordinates:
