@@ -143,7 +143,7 @@ itinerary:
         duration: 4h 25m
     totalDuration: 18h 50m
   - type: stay
-    id: seoul-stay-1
+    id: seoul-arrival
     location: seoul
     accommodation:
       neighborhood: ""
@@ -153,33 +153,18 @@ itinerary:
         - 126.9857
         - 37.5636
       checkIn: "2026-07-19"
-      checkOut: "2026-07-25"
+      checkOut: "2026-07-20"
       status: open
     days:
       - title: Arrival
         status: open
-        notes: Arrive ICN ~11:20. Check in, recover.
-      - title: K-Pop & Gangnam
-        status: open
-        notes: HYBE Insight area, K-Star Road, Gangnam district.
-      - title: Anime & Gaming
-        status: open
-        notes: Animate Hongdae, AK Plaza, Yongsan I'Park Mall (anime, figures, Pokemon, Gundam).
-      - title: Korean Skincare & Myeongdong
-        status: open
-        notes: Olive Young Gangnam Town, flagship stores, Myeongdong skincare shopping.
-      - title: Lotte World & Fun
-        status: open
-        notes: Lotte World, COEX Mall, Starfield Library.
-      - title: Nami Island Day Trip
-        status: open
-        notes: Namiseom + Garden of Morning Calm. Fotospots, nature, low stress.
+        notes: Arrive ICN ~11:20. Check in, recover from 18h travel. Light evening walk.
   - type: transit
     id: seoul-busan
     label: Seoul → Busan
     from: Seoul
     to: Busan
-    date: "2026-07-25"
+    date: "2026-07-20"
     legs:
       - mode: train
         train:
@@ -237,8 +222,8 @@ itinerary:
       coordinates:
         - 129.0756
         - 35.1796
-      checkIn: "2026-07-25"
-      checkOut: "2026-07-28"
+      checkIn: "2026-07-20"
+      checkOut: "2026-07-23"
       status: open
     days:
       - title: Beach & Arrival
@@ -249,130 +234,70 @@ itinerary:
             notes: ""
       - title: Culture & Temple
         status: open
+        activities:
+          - poi: gamcheon-culture-village
+            notes: Colorful hillside murals, art installations
+          - poi: haedong-yonggungsa
+            notes: Cliffside ocean temple
         notes: Gamcheon Culture Village, Haedong Yonggungsa Temple.
       - title: Seafood & Markets
         status: open
         notes: Jagalchi Fish Market. Fresh sashimi (hoe), grilled eel.
   - type: transit
-    id: busan-sokcho
-    label: Busan → Sokcho
+    id: busan-seoul
+    label: Busan → Seoul
     from: Busan
-    to: Sokcho
-    date: "2026-07-28"
+    to: Seoul
+    date: "2026-07-23"
     legs:
-      - mode: bus
-        bus:
-          operator: Express Bus
+      - mode: train
+        train:
+          operator: Korail
+          number: KTX
         departure:
           city: Busan
           coordinates:
-            - 129.0596
-            - 35.1407
-        arrival:
-          city: Sokcho
-          coordinates:
-            - 128.5918
-            - 38.207
-        duration: 5h 20m
-        route:
-          - - 129.06
-            - 35.14
-          - - 129.08
-            - 35.18
-          - - 129.11
-            - 35.26
-          - - 129.17
-            - 35.53
-          - - 129.21
-            - 35.85
-          - - 129.3
-            - 36.03
-          - - 129.37
-            - 36.35
-          - - 129.35
-            - 36.63
-          - - 129.36
-            - 36.99
-          - - 129.3
-            - 37.25
-          - - 129.2
-            - 37.45
-          - - 129.05
-            - 37.7
-          - - 128.9
-            - 37.88
-          - - 128.75
-            - 38.05
-          - - 128.59
-            - 38.21
-    layovers: []
-    totalDuration: 5h 20m
-  - type: stay
-    id: sokcho-stay
-    location: sokcho
-    accommodation:
-      neighborhood: ""
-      type: ""
-      config: ""
-      coordinates:
-        - 128.5918
-        - 38.207
-      checkIn: "2026-07-28"
-      checkOut: "2026-07-30"
-      status: open
-    days:
-      - title: Seoraksan Hiking
-        status: open
-        notes: Seoraksan National Park. Cable car, waterfalls, temples. Family-friendly trails.
-      - title: Sokcho Coast
-        status: open
-        notes: Sokcho waterfront, seafood, coastal walks.
-  - type: transit
-    id: sokcho-seoul
-    label: Sokcho → Seoul
-    from: Sokcho
-    to: Seoul
-    date: "2026-07-30"
-    legs:
-      - mode: bus
-        bus:
-          operator: Express Bus
-        departure:
-          city: Sokcho
-          coordinates:
-            - 128.5918
-            - 38.207
+            - 129.0413
+            - 35.1152
         arrival:
           city: Seoul
           coordinates:
-            - 127.0045
-            - 37.5081
+            - 126.9706
+            - 37.5547
         duration: 2h 30m
         route:
-          - - 128.59
-            - 38.21
-          - - 128.35
-            - 38.1
-          - - 128.15
-            - 37.95
-          - - 127.95
-            - 37.88
-          - - 127.77
-            - 37.87
-          - - 127.6
-            - 37.82
-          - - 127.45
-            - 37.75
-          - - 127.3
-            - 37.68
+          - - 129.04
+            - 35.12
+          - - 128.85
+            - 35.3
+          - - 128.7
+            - 35.55
+          - - 128.62
+            - 35.8
+          - - 128.6
+            - 35.87
+          - - 128.2
+            - 35.85
+          - - 127.9
+            - 36
+          - - 127.4
+            - 36.35
+          - - 127.38
+            - 36.63
           - - 127.15
-            - 37.6
+            - 36.95
+          - - 127.1
+            - 37.15
+          - - 127.05
+            - 37.35
           - - 127
-            - 37.51
+            - 37.48
+          - - 126.97
+            - 37.55
     layovers: []
     totalDuration: 2h 30m
   - type: stay
-    id: seoul-stay-2
+    id: seoul-stay
     location: seoul
     accommodation:
       neighborhood: ""
@@ -381,10 +306,40 @@ itinerary:
       coordinates:
         - 126.9857
         - 37.5636
-      checkIn: "2026-07-30"
+      checkIn: "2026-07-23"
       checkOut: "2026-07-31"
       status: open
     days:
+      - title: Arrival from Busan
+        status: open
+        notes: Settle into Seoul accommodation. Evening street food exploration.
+      - title: K-Pop & Gangnam
+        status: open
+        notes: HYBE Insight area, K-Star Road, Gangnam district.
+      - title: KM Chart Awards
+        pinnedDate: "2026-07-25"
+        status: open
+        activities:
+          - poi: km-chart-awards
+            notes: Red carpet 14:30, main show 18:00. Korea University Hwajeong Gymnasium.
+        notes: Awards ceremony day. Morning free, head to venue early afternoon.
+      - title: Anime & Gaming
+        status: open
+        notes: Animate Hongdae, AK Plaza, Yongsan I'Park Mall (anime, figures, Pokemon, Gundam).
+      - title: Korean Skincare & Myeongdong
+        status: open
+        notes: Olive Young Gangnam Town, flagship stores, Myeongdong skincare shopping.
+      - title: Lotte World & Fun
+        status: open
+        activities:
+          - poi: lotte-world
+            notes: Book discounted tickets via Klook/Agoda (~37,000 KRW vs 61,000 gate price)
+          - poi: coex-starfield-library
+            notes: ""
+        notes: Lotte World, COEX Mall, Starfield Library.
+      - title: Nami Island Day Trip
+        status: open
+        notes: Namiseom + Garden of Morning Calm. Fotospots, nature, low stress.
       - title: Shopping & K-Pop
         status: open
         notes: K-Pop stores in Hongdae, dance cover groups in evening. Han River picnic.

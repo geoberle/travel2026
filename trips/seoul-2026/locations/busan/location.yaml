@@ -27,6 +27,17 @@ pois:
     description: Colorful hillside village with murals, sculptures, and art installations.
     category: culture
     image: "https://images.unsplash.com/photo-1573832035811-f90e5aad4e28?w=800"
+  - id: arte-museum-busan
+    name: ARTE MUSEUM Busan
+    coordinates:
+      - 129.0658
+      - 35.0762
+    description: World's largest immersive media art center by d'strict. 5,600sqm, 19 exhibitions themed "Eternal Nature". 16 pieces unique to Busan.
+    category: attraction
+    image: "https://images.unsplash.com/photo-1637578035851-c5b169722de1?w=800"
+    url: https://artemuseum.com/BUSAN
+    hours: "10:00–20:00 daily, last admission 19:00"
+    cost: "19,000 KRW weekday, 22,000 KRW weekend. Free with Visit Busan Pass. 2h free parking."
   - id: jagalchi-market
     name: Jagalchi Fish Market
     coordinates:

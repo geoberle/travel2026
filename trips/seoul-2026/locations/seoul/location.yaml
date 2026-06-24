@@ -2,4 +2,175 @@ name: Seoul
 coordinates:
   - 126.9857
   - 37.5636
-pois: []
+pois:
+  - id: km-chart-awards
+    name: 2026 KM Chart Awards
+    coordinates:
+      - 127.0322
+      - 37.5895
+    description: Annual K-pop awards ceremony at Korea University Hwajeong Gymnasium. Red carpet 14:30, show 18:00. Lineup includes TXT, ZEROBASEONE, P1Harmony, and more.
+    category: attraction
+    image: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=800"
+    url: https://www.koreatraveleasy.com/post/2026-km-charts-awards-k-pop-concert/
+    hours: "Red Carpet 14:30, Main Show 18:00"
+    cost: "Ticket packages via KoreaTravelEasy, Klook, Trazy"
+  - id: gyeongbokgung
+    name: Gyeongbokgung Palace
+    coordinates:
+      - 126.9771
+      - 37.5782
+    description: Grand Joseon dynasty royal palace with changing of the guard ceremony. Free entry in hanbok.
+    category: culture
+    image: "https://images.unsplash.com/photo-1566800890932-e89159daf3dc?w=800"
+    url: https://english.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=87740
+    hours: "09:00–18:30 (Jun–Aug), closed Tuesdays"
+    cost: "3,000 KRW adult, free in hanbok or under 7"
+  - id: changdeokgung
+    name: Changdeokgung Palace & Secret Garden
+    coordinates:
+      - 126.9910
+      - 37.5794
+    description: UNESCO World Heritage palace with guided Secret Garden tours through centuries-old royal gardens.
+    category: culture
+    image: "https://images.unsplash.com/photo-1677697087635-bc9771a28c98?w=800"
+    url: https://english.cha.go.kr/html/HtmlPage.do?pg=%2Froyal%2FRoyalPalaces_infomation_1.jsp&mn=EN_02_03_02
+    hours: "09:00–18:30 (Jun–Aug), closed Mondays. Secret Garden tours 10:30/11:30/14:30/15:30"
+    cost: "3,000 KRW palace + 5,000 KRW Secret Garden tour"
+  - id: banpo-rainbow-fountain
+    name: Banpo Bridge Rainbow Fountain
+    coordinates:
+      - 126.9957
+      - 37.5126
+    description: World's longest bridge fountain with rainbow LED light shows over the Han River. Free.
+    category: attraction
+    image: "https://images.unsplash.com/photo-1590287480190-7cac0ac013f4?w=800"
+    url: https://english.visitseoul.net/area/Banpodaegyo-Bridge-Moonlight-Rainbow-Fountain/ENP002220
+    hours: "Jul–Aug shows: 12:00, 19:30, 20:00, 20:30, 21:00, 21:30 (20 min each)"
+    cost: "Free"
+  - id: myeongdong-market
+    name: Myeongdong Night Market
+    coordinates:
+      - 126.9834
+      - 37.5637
+    description: Seoul's biggest street food market with 200+ vendors. Giant ice creams, tteokbokki, grilled squid, lobster.
+    category: food
+    image: "https://images.unsplash.com/photo-1552912470-ee2e96439539?w=800"
+    hours: "15:00–22:00 daily, fewer stalls Mon–Thu"
+    cost: "Street food 3,000–15,000 KRW per item, bring cash"
+  - id: gwangjang-market
+    name: Gwangjang Market
+    coordinates:
+      - 126.9996
+      - 37.5700
+    description: Seoul's oldest market (1905). Famous for bindaetteok, mayak gimbap, and bibimbap. Netflix noodle stall inside.
+    category: food
+    image: "https://images.unsplash.com/photo-1742734703262-13ce8c74c743?w=800"
+    url: https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=106358
+    hours: "Food vendors 09:00–23:00 daily, shops 10:00–19:00 (closed Sun)"
+    cost: "Bindaetteok 5,000 KRW, kalguksu 6,000–7,000 KRW"
+  - id: namdaemun-market
+    name: Namdaemun Market
+    coordinates:
+      - 126.9775
+      - 37.5592
+    description: Korea's largest traditional market with 10,000+ stores. Kalguksu Alley and Galchi Jorim Alley are must-visits.
+    category: shopping
+    image: "https://images.unsplash.com/photo-1748696147482-413d1e29ed8f?w=800"
+    url: https://english.visitseoul.net/shopping/Namdaemun-Market/ENP000085
+    hours: "09:00–17:00 shops, food alleys 05:00–21:00, closed Sundays"
+    cost: "Prices 10–20% below retail, bargaining welcome"
+  - id: namsangol-hanok
+    name: Namsangol Hanok Village
+    coordinates:
+      - 126.9942
+      - 37.5590
+    description: Quieter alternative to Bukchon. Five relocated Joseon-era hanok at Namsan's foot. Free guided tours, traditional tea ceremony, hanbok experience.
+    category: culture
+    image: "https://images.unsplash.com/photo-1670735411734-c9725326de3f?w=800"
+    url: https://www.hanokmaeul.or.kr/en/guide
+    hours: "09:00–21:00 (Apr–Oct), 09:00–20:00 (Nov–Mar), closed Mondays. Garden 24h."
+    cost: "Free admission. Some craft programs have fees."
+  - id: bukchon-hanok
+    name: Bukchon Hanok Village
+    coordinates:
+      - 126.9831
+      - 37.5826
+    description: 900+ traditional Joseon-era houses between two palaces. Iconic rooftop views toward N Seoul Tower.
+    category: culture
+    image: "https://images.unsplash.com/photo-1512059555341-6a121e7d4d86?w=800"
+    hours: "Tourist access 10:00–17:00 only (100,000 KRW fine outside hours), closed Sundays"
+    cost: "Free"
+  - id: bukchon-observatory
+    name: Bukchon Observatory
+    coordinates:
+      - 126.9853
+      - 37.5828
+    description: Rooftop viewing platform in a villa above Bukchon Hanok Village. Panoramic views of hanok rooftops, N Seoul Tower, and Gyeongbokgung. Includes one drink.
+    category: attraction
+    image: "https://images.unsplash.com/photo-1523760957528-55d1d540360d?w=800"
+    hours: "09:00–20:00 daily, closed Lunar New Year & Chuseok"
+    cost: "3,000 KRW adult (incl. 1 drink), 2,000 KRW student/child"
+  - id: seoul-forest
+    name: Seoul Forest
+    coordinates:
+      - 127.0374
+      - 37.5444
+    description: Vast urban park with deer enclosure, butterfly garden, and cherry blossom paths. Free entry, open 24h.
+    category: nature
+    image: "https://images.unsplash.com/photo-1597891387547-99bb301e98ef?w=800"
+    url: https://english.visitseoul.net/nature/Seoul-Forest/ENP001838
+    hours: "Park 24h. Insect Garden 10:00–17:00 (closed Mon). Butterfly Garden May–Oct."
+    cost: "Free"
+  - id: coex-starfield-library
+    name: COEX Starfield Library
+    coordinates:
+      - 127.0590
+      - 37.5121
+    description: Stunning 13m-tall bookshelves in a 2,800sqm atrium inside COEX Mall. 70,000 books, great photo spot.
+    category: attraction
+    image: "https://images.unsplash.com/photo-1523180003485-e6e7d62c938b?w=800"
+    url: https://english.seoul.go.kr/starfield-library-coex/
+    hours: "10:30–22:00 daily"
+    cost: "Free"
+  - id: seongsu-dong
+    name: Seongsu-dong
+    coordinates:
+      - 127.0557
+      - 37.5445
+    description: Seoul's coolest neighborhood (Time Out #4 worldwide). Converted factory cafes, K-beauty flagships, rotating popup stores.
+    category: shopping
+    image: "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800"
+    hours: "Most shops/popups 11:00–21:00. Check #성수팝업 on Instagram for current popups."
+    cost: "Free entry to most popups. Olive Young N Seongsu is the largest in Korea."
+  - id: naksan-park
+    name: Naksan Park & Seoul City Wall
+    coordinates:
+      - 127.0070
+      - 37.5802
+    description: Easy hilltop walk along the 1396 Joseon fortress wall. Best city panorama at sunset/night, Ihwa Mural Village en route.
+    category: nature
+    image: "https://images.unsplash.com/photo-1570191913384-7b4ff11716e7?w=800"
+    hours: "24h (bring bug spray for evening walks)"
+    cost: "Free"
+  - id: lotte-cinema
+    name: Lotte Cinema World Tower
+    coordinates:
+      - 127.1025
+      - 37.5126
+    description: Asia's largest cinema inside Lotte World Tower (555m). 21 screens, Guinness-record Super Plex G screen. Movies play in original language with Korean subs.
+    category: attraction
+    image: "https://images.unsplash.com/photo-1636595497638-336f8e0fa9cf?w=800"
+    url: https://www.lwt.co.kr/en/entertainment/cinema.do
+    hours: "First screening ~09:00, last ~midnight. Check lottecinema.co.kr for showtimes."
+    cost: "~15,000 KRW standard, IMAX/Super Plex premium"
+  - id: lotte-world
+    name: Lotte World
+    coordinates:
+      - 127.0981
+      - 37.5112
+    description: World's largest indoor theme park plus outdoor Magic Island. MapleStory festival in 2026.
+    category: attraction
+    image: "https://images.unsplash.com/photo-1640927023021-fda655832937?w=800"
+    url: https://adventure.lotteworld.com
+    hours: "Sun–Thu 10:00–21:00, Fri–Sat 10:00–22:00"
+    cost: "61,000 KRW adult (discounted ~37,000–41,000 via Klook/Agoda)"
