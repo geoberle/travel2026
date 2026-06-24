@@ -1,0 +1,16 @@
+name: Gapyeong
+coordinates:
+  - 127.5106
+  - 37.8315
+pois:
+  - id: garden-of-morning-calm
+    name: The Garden of Morning Calm
+    coordinates:
+      - 127.3503
+      - 37.7433
+    description: 330,000sqm botanical garden with 5,000+ plant species across 27 themed zones. Cloud Bridge, Sunken Garden, Road to Heaven.
+    category: nature
+    image: "https://images.unsplash.com/photo-1627261529491-1f3ac3c30903?w=800"
+    url: https://www.morningcalm.co.kr/eng/
+    hours: "08:30–19:00 (last entry 18:00), hours vary by season"
+    cost: "11,000 KRW adult, 8,500 KRW youth, 7,500 KRW child"
