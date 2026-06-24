@@ -14,6 +14,8 @@ function initScroll(chapters, onChapterChange) {
           onChapterChange({ type: 'hero' });
         } else if (activeId === 'overview') {
           onChapterChange({ type: 'overview' });
+        } else if (activeId.startsWith('research-')) {
+          onChapterChange({ type: 'research', locationKey: activeId.replace('research-', ''), id: activeId });
         } else {
           const chapter = chapters.find(c => c.id === activeId);
           if (chapter) onChapterChange(chapter);

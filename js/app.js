@@ -49,6 +49,20 @@ async function init() {
         pendingRotationStart = () => { startGlobeRotation(map); pendingRotationStart = null; };
         map.once('moveend', pendingRotationStart);
         stopScrollDrivenFlight();
+      } else if (chapter.type === 'research') {
+        map.dragPan.enable();
+        stopScrollDrivenFlight();
+        switchStyle(map, 'standard');
+        const pois = TripStore.getLocationPois(chapter.locationKey);
+        if (pois.length > 0) {
+          showPoiMarkers(map, pois, true);
+          fitToPoiBounds(map, pois);
+        } else {
+          const loc = TripStore.locations[chapter.locationKey];
+          if (loc?.coordinates) {
+            map.flyTo({ center: loc.coordinates, zoom: 12, pitch: 50, bearing: -15, duration: 2000 });
+          }
+        }
       } else {
         if (chapter.type === 'transit') {
           map.dragPan.disable();
@@ -130,6 +144,13 @@ function renderStory(chapters, trip) {
       ? renderTransitCard(ch.journey)
       : renderDayCard(ch, dates.start);
     html += `<section class="chapter ${ch.type}" id="${ch.id}">${inner}</section>`;
+  });
+
+  const research = TripStore.researchLocations();
+  research.forEach(loc => {
+    html += `<section class="chapter research" id="research-${loc._key}">
+      ${renderResearchCard(loc)}
+    </section>`;
   });
 
   html += `
@@ -285,6 +306,43 @@ function renderDayCard(chapter, tripStart) {
         </div>
       </div>
       <h2>${day.meta.title || day.meta.date}</h2>
+      <div class="day-content">${contentHtml}</div>
+    </div>
+  `;
+}
+
+function renderResearchCard(loc) {
+  const pois = loc.pois || [];
+  const images = pois.filter(p => p.image).slice(0, 4);
+  const imageStrip = images.length > 0
+    ? `<div class="day-images">${images.map(p =>
+        `<img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.remove()">`
+      ).join('')}</div>`
+    : '';
+
+  let contentHtml = '';
+  if (pois.length > 0) {
+    contentHtml = '<ul>';
+    pois.forEach(poi => {
+      const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+      const poiLink = `<span class="poi-link" data-poi="${poi.id}"><span class="poi-inline-pin"><span class="poi-inline-pin-body" style="background:${color}"></span><span class="poi-inline-pin-tail" style="border-top-color:${color}"></span><span class="poi-inline-pin-inner"></span></span>${poi.name}</span>`;
+      const desc = poi.description ? ` — ${poi.description}` : '';
+      contentHtml += `<li>${poiLink}${desc}</li>`;
+    });
+    contentHtml += '</ul>';
+  } else {
+    contentHtml = '<p class="day-notes">No places saved yet</p>';
+  }
+
+  return `
+    <div class="card research-card" data-location="${loc._key}">
+      ${imageStrip}
+      <div class="day-header">
+        <div class="card-label">
+          <span class="status research-status">research</span>
+        </div>
+      </div>
+      <h2>${loc.name}</h2>
       <div class="day-content">${contentHtml}</div>
     </div>
   `;
