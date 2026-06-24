@@ -223,7 +223,7 @@ itinerary:
         - 129.0756
         - 35.1796
       checkIn: "2026-07-20"
-      checkOut: "2026-07-23"
+      checkOut: "2026-07-22"
       status: open
     days:
       - title: Beach & Arrival
@@ -232,23 +232,112 @@ itinerary:
         activities:
           - poi: haeundae-beach
             notes: ""
-      - title: Culture & Temple
+      - title: Culture, Temple & Markets
         status: open
         activities:
           - poi: gamcheon-culture-village
             notes: Colorful hillside murals, art installations
           - poi: haedong-yonggungsa
             notes: Cliffside ocean temple
-        notes: Gamcheon Culture Village, Haedong Yonggungsa Temple.
-      - title: Seafood & Markets
+        notes: Gamcheon Culture Village, Haedong Yonggungsa Temple. Jagalchi Fish Market evening.
+  - type: transit
+    id: busan-fukuoka
+    label: Busan → Fukuoka
+    from: Busan
+    to: Fukuoka
+    date: "2026-07-22"
+    legs:
+      - mode: flight
+        flight:
+          number: ""
+          airline: Air Busan
+          aircraft: Boeing 737-800
+        departure:
+          airport: PUS
+          city: Busan
+          coordinates:
+            - 128.9384
+            - 35.1796
+        arrival:
+          airport: FUK
+          city: Fukuoka
+          coordinates:
+            - 130.4513
+            - 33.5854
+        duration: 55m
+        route:
+          - - 128.94
+            - 35.18
+          - - 129.5
+            - 34.8
+          - - 130
+            - 34.2
+          - - 130.45
+            - 33.59
+    layovers: []
+    totalDuration: 55m
+  - type: stay
+    location: fukuoka
+    accommodation:
+      checkIn: "2026-07-22"
+      checkOut: "2026-07-24"
+      coordinates:
+        - 130.4017
+        - 33.5904
+      neighborhood: ""
+      type: ""
+      config: ""
+      status: open
+    id: stay-1782336638571
+    days:
+      - title: ""
         status: open
-        notes: Jagalchi Fish Market. Fresh sashimi (hoe), grilled eel.
+        activities: []
+      - title: ""
+        status: open
+        activities: []
+  - type: transit
+    id: fukuoka-busan
+    label: Fukuoka → Busan
+    from: Fukuoka
+    to: Busan
+    date: "2026-07-24"
+    legs:
+      - mode: flight
+        flight:
+          number: ""
+          airline: Air Busan
+          aircraft: Boeing 737-800
+        departure:
+          airport: FUK
+          city: Fukuoka
+          coordinates:
+            - 130.4513
+            - 33.5854
+        arrival:
+          airport: PUS
+          city: Busan
+          coordinates:
+            - 128.9384
+            - 35.1796
+        duration: 55m
+        route:
+          - - 130.45
+            - 33.59
+          - - 130
+            - 34.2
+          - - 129.5
+            - 34.8
+          - - 128.94
+            - 35.18
+    layovers: []
+    totalDuration: 55m
   - type: transit
     id: busan-seoul
     label: Busan → Seoul
     from: Busan
     to: Seoul
-    date: "2026-07-23"
+    date: "2026-07-24"
     legs:
       - mode: train
         train:
@@ -306,16 +395,13 @@ itinerary:
       coordinates:
         - 126.9857
         - 37.5636
-      checkIn: "2026-07-23"
+      checkIn: "2026-07-24"
       checkOut: "2026-07-31"
       status: open
     days:
-      - title: Arrival from Busan
+      - title: Arrival in Seoul
         status: open
-        notes: Settle into Seoul accommodation. Evening street food exploration.
-      - title: K-Pop & Gangnam
-        status: open
-        notes: HYBE Insight area, K-Star Road, Gangnam district.
+        notes: Fly Fukuoka→Busan, KTX to Seoul. Settle in, evening street food.
       - title: KM Chart Awards
         pinnedDate: "2026-07-25"
         status: open
@@ -323,6 +409,9 @@ itinerary:
           - poi: km-chart-awards
             notes: Red carpet 14:30, main show 18:00. Korea University Hwajeong Gymnasium.
         notes: Awards ceremony day. Morning free, head to venue early afternoon.
+      - title: K-Pop & Gangnam
+        status: open
+        notes: HYBE Insight area, K-Star Road, Gangnam district.
       - title: Anime & Gaming
         status: open
         notes: Animate Hongdae, AK Plaza, Yongsan I'Park Mall (anime, figures, Pokemon, Gundam).
@@ -340,9 +429,6 @@ itinerary:
       - title: Nami Island Day Trip
         status: open
         notes: Namiseom + Garden of Morning Calm. Fotospots, nature, low stress.
-      - title: Shopping & K-Pop
-        status: open
-        notes: K-Pop stores in Hongdae, dance cover groups in evening. Han River picnic.
       - title: Departure
         status: open
         notes: Last-minute shopping. Flight AY0042 departs ICN 21:50. Full day available.
