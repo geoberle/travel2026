@@ -77,12 +77,16 @@ app.get('/api/trip', (req, res) => {
 // --- Locations endpoints (POI libraries) ---
 
 app.get('/api/locations', (req, res) => {
-  const trip = readTripYaml();
+  const locationsDir = path.join(TRIP_DIR, 'locations');
   const locations = {};
-  uniqueLocationNames(trip).forEach(name => {
-    const data = readLocationYaml(name);
-    if (data) locations[name] = data;
-  });
+  if (fs.existsSync(locationsDir)) {
+    fs.readdirSync(locationsDir, { withFileTypes: true })
+      .filter(d => d.isDirectory())
+      .forEach(d => {
+        const data = readLocationYaml(d.name);
+        if (data) locations[d.name] = data;
+      });
+  }
   res.json(locations);
 });
 
@@ -99,8 +103,11 @@ app.get('/api/locations/:name/pois', (req, res) => {
 });
 
 app.post('/api/locations/:name/pois', (req, res) => {
-  const loc = readLocationYaml(req.params.name);
-  if (!loc) return res.status(404).json({ error: 'Location not found' });
+  let loc = readLocationYaml(req.params.name);
+  if (!loc) {
+    loc = { name: req.params.name.charAt(0).toUpperCase() + req.params.name.slice(1), coordinates: req.body.coordinates || [0, 0], pois: [] };
+    writeLocationYaml(req.params.name, loc);
+  }
 
   const poi = req.body;
   if (!poi.id) poi.id = poi.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
@@ -341,7 +348,7 @@ const TOOL_DECLARATIONS = [
   },
   {
     name: 'add_poi',
-    description: 'Add a POI to a location. Only call after user confirmed via search_and_propose.',
+    description: 'Add a POI to a location. Creates the location automatically if it does not exist yet. Only call after user confirmed via search_and_propose.',
     parameters: {
       type: 'object',
       properties: {
@@ -585,10 +592,17 @@ async function fillPoiImage(poi, context) {
   } catch {}
 }
 
+function getAllLocationNames() {
+  const locationsDir = path.join(TRIP_DIR, 'locations');
+  if (!fs.existsSync(locationsDir)) return [];
+  return fs.readdirSync(locationsDir, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => d.name);
+}
+
 function getAllPoiIds() {
-  const trip = readTripYaml();
   const ids = new Set();
-  uniqueLocationNames(trip).forEach(name => {
+  getAllLocationNames().forEach(name => {
     const loc = readLocationYaml(name);
     if (loc) (loc.pois || []).forEach(p => ids.add(p.id));
   });
@@ -639,7 +653,7 @@ async function executeTool(name, args) {
     }
     case 'get_pois': {
       const loc = readLocationYaml(args.location);
-      if (!loc) return JSON.stringify({ error: `Location '${args.location}' not found` });
+      if (!loc) return JSON.stringify([]);
       return JSON.stringify(loc.pois || []);
     }
     case 'get_travelers': {
@@ -648,8 +662,15 @@ async function executeTool(name, args) {
       return fs.readFileSync(file, 'utf8');
     }
     case 'add_poi': {
-      const loc = readLocationYaml(args.location);
-      if (!loc) return JSON.stringify({ error: `Location '${args.location}' not found` });
+      let loc = readLocationYaml(args.location);
+      if (!loc) {
+        loc = {
+          name: args.location.charAt(0).toUpperCase() + args.location.slice(1),
+          coordinates: args.coordinates,
+          pois: []
+        };
+        writeLocationYaml(args.location, loc);
+      }
       const poi = {
         id: args.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, ''),
         name: args.name,
@@ -823,6 +844,8 @@ function buildSystemPrompt(activeStayId) {
 
   const template = fs.readFileSync(path.join(__dirname, 'data', 'system-prompt.md'), 'utf8');
   const locationNames = uniqueLocationNames(trip);
+  const allLocationNames = getAllLocationNames();
+  const researchLocationNames = allLocationNames.filter(n => !locationNames.includes(n));
   const base = template
     .replace('{{origin}}', `${trip.origin.city}, ${trip.origin.country}`)
     .replace('{{destinations}}', locationNames.join(' → '))
@@ -834,6 +857,9 @@ function buildSystemPrompt(activeStayId) {
 
   return base + `\n\nThe user is currently viewing stay: ${activeStayId || 'none'} (location: ${activeLocation}).
 Available stay blocks: ${(trip.itinerary || []).filter(b => b.type === 'stay').map(b => b.id).join(', ')}.
+Research locations (not in itinerary yet): ${researchLocationNames.length > 0 ? researchLocationNames.join(', ') : 'none'}.
+
+When the user asks to add POIs to a location that doesn't exist yet, use add_poi — it will auto-create the location directory.
 
 Itinerary:
 ${itinerarySummary}

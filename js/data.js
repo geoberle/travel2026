@@ -26,18 +26,30 @@ const TripStore = {
     const tripYaml = await fetch(`${TRIP_DIR}/trip.yaml?v=${bust}`).then(r => r.text());
     this._trip = jsyaml.load(tripYaml);
 
-    const locationNames = this._uniqueLocationNames();
-    const locationResults = await Promise.all(
-      locationNames.map(name =>
-        fetch(`${TRIP_DIR}/locations/${name}/location.yaml?v=${bust}`)
-          .then(r => r.text())
-          .then(text => ({ name, data: jsyaml.load(text) }))
-      )
-    );
+    let allLocations;
+    try {
+      const resp = await fetch(`/api/locations?v=${bust}`);
+      if (resp.ok) {
+        allLocations = await resp.json();
+      }
+    } catch {}
+
+    if (!allLocations) {
+      const locationNames = this._uniqueLocationNames();
+      allLocations = {};
+      const results = await Promise.all(
+        locationNames.map(name =>
+          fetch(`${TRIP_DIR}/locations/${name}/location.yaml?v=${bust}`)
+            .then(r => r.text())
+            .then(text => ({ name, data: jsyaml.load(text) }))
+        )
+      );
+      results.forEach(({ name, data }) => { allLocations[name] = data; });
+    }
 
     this._locations = {};
     this._allPois = {};
-    locationResults.forEach(({ name, data }) => {
+    Object.entries(allLocations).forEach(([name, data]) => {
       this._locations[name] = data;
       (data.pois || []).forEach(poi => {
         this._allPois[poi.id] = { ...poi, _location: name };
@@ -307,6 +319,13 @@ const TripStore = {
   async deleteBlock(blockId) {
     await fetch(`/api/itinerary/${blockId}`, { method: 'DELETE' });
     this._trip.itinerary = (this._trip.itinerary || []).filter(b => b.id !== blockId);
+  },
+
+  researchLocations() {
+    const linked = new Set(this._uniqueLocationNames());
+    return Object.entries(this._locations)
+      .filter(([name]) => !linked.has(name))
+      .map(([key, data]) => ({ _key: key, ...data }));
   },
 
   findLocationForPoi(poiId) {

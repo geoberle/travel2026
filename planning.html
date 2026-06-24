@@ -187,6 +187,31 @@
     .confirm-dialog .btns button { padding: 8px 20px; border-radius: 6px; border: none; font-family: var(--font); font-size: 0.8rem; font-weight: 600; cursor: pointer; }
     .confirm-dialog .btn-danger { background: var(--danger); color: #fff; }
     .confirm-dialog .btn-cancel { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+    .research-divider { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); padding: 16px 16px 6px; opacity: 0.6; }
+    .block.research { border-left: 3px solid rgba(78, 205, 196, 0.4); }
+    .block.research .block-icon { opacity: 0.7; }
+
+    .pick-dialog { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; max-width: 340px; width: 90vw; }
+    .pick-dialog h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 14px; }
+    .pick-dialog .pick-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 8px; }
+    .pick-locations { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+    .pick-loc-btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); font-family: var(--font); font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: background 0.15s, border-color 0.15s; text-transform: capitalize; }
+    .pick-loc-btn:hover { background: rgba(78,205,196,0.12); border-color: var(--accent); }
+    .pick-loc-btn .pick-poi-count { font-size: 0.65rem; opacity: 0.5; margin-left: 4px; }
+    .pick-divider { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; color: var(--text-muted); font-size: 0.7rem; }
+    .pick-divider::before, .pick-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .pick-new-row { display: flex; gap: 6px; margin-bottom: 16px; }
+    .pick-input { flex: 1; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); font-family: var(--font); font-size: 0.8rem; outline: none; }
+    .pick-input:focus { border-color: var(--accent); }
+    .pick-input[type="date"] { flex: 1; }
+    .pick-btn { padding: 7px 14px; border-radius: 6px; border: none; background: var(--accent); color: #0a0a0f; font-family: var(--font); font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+    .pick-btn:hover { opacity: 0.9; }
+    .pick-btn:disabled { opacity: 0.4; cursor: default; }
+    .pick-btn-ghost { padding: 7px 14px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-family: var(--font); font-size: 0.8rem; cursor: pointer; }
+    .pick-dates { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    .pick-date-row { display: flex; align-items: center; gap: 8px; }
+    .pick-date-row label { font-size: 0.75rem; width: 70px; color: var(--text-muted); }
+    .pick-actions { display: flex; gap: 8px; justify-content: flex-end; }
   </style>
 </head>
 <body>
@@ -309,6 +334,35 @@
       renderItinerary();
     }
 
+    function showResearchDetail(locationKey) {
+      currentView = 'detail';
+      selectedBlockId = `research-${locationKey}`;
+      selectedDayIndex = null;
+      activeLocation = locationKey;
+
+      const loc = TripStore.locations[locationKey];
+      const locName = loc?.name || locationKey;
+
+      document.getElementById('detail-title').innerHTML = `
+        <h2>${locName}</h2>
+        <div class="meta">Research · ${(loc?.pois || []).length} POIs</div>
+      `;
+
+      document.getElementById('view-itinerary').classList.add('hidden-left');
+      document.getElementById('view-detail').classList.remove('hidden-right');
+
+      document.getElementById('detail-days').innerHTML = '';
+      renderPois();
+      clearTransitRoute();
+      refreshMarkers();
+
+      if (loc?.coordinates) {
+        map.flyTo({ center: loc.coordinates, zoom: 12, pitch: 45, bearing: -15, duration: 1500 });
+      }
+
+      renderItinerary();
+    }
+
     // --- Trip header ---
     function renderTripHeader() {
       const trip = TripStore.trip;
@@ -362,6 +416,25 @@
       });
       html += insertPointHtml(itinerary.length);
 
+      const research = TripStore.researchLocations();
+      if (research.length > 0) {
+        html += `<div class="research-divider">Research</div>`;
+        research.forEach(loc => {
+          const sel = selectedBlockId === `research-${loc._key}` ? ' selected' : '';
+          const poiCount = (loc.pois || []).length;
+          html += `<div class="block research${sel}" data-research-location="${loc._key}">
+            <div class="block-header">
+              <div class="block-icon">🔍</div>
+              <div class="block-info">
+                <div class="block-label">${loc.name}</div>
+                <div class="block-meta">${poiCount} POI${poiCount !== 1 ? 's' : ''}</div>
+              </div>
+              <div class="block-chevron">▶</div>
+            </div>
+          </div>`;
+        });
+      }
+
       container.innerHTML = html;
       bindItineraryEvents();
     }
@@ -397,6 +470,10 @@
       document.querySelectorAll('.block-header').forEach(el => {
         el.addEventListener('click', () => {
           const blockEl = el.closest('.block');
+          if (blockEl.dataset.researchLocation) {
+            showResearchDetail(blockEl.dataset.researchLocation);
+            return;
+          }
           const blockId = blockEl.dataset.blockId;
           const block = TripStore.getItinerary().find(b => b.id === blockId);
           if (block?.type === 'stay') {
@@ -578,22 +655,82 @@
     }
 
     // --- Block CRUD ---
-    async function promptAddStay(position) {
-      const city = prompt('City name:');
-      if (!city) return;
-      const checkIn = prompt('Check-in date (YYYY-MM-DD):');
-      if (!checkIn) return;
-      const checkOut = prompt('Check-out date (YYYY-MM-DD):');
-      if (!checkOut) return;
+    function promptAddStay(position) {
+      const research = TripStore.researchLocations();
 
-      await TripStore.addBlock(position, {
-        type: 'stay',
-        location: city.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        accommodation: { checkIn, checkOut, coordinates: [0, 0], neighborhood: '', type: '', config: '', status: 'open' }
+      const overlay = document.createElement('div');
+      overlay.className = 'confirm-overlay';
+
+      let html = `<div class="pick-dialog"><h3>Add Stay</h3>`;
+
+      if (research.length > 0) {
+        html += `<div class="pick-label">Research locations</div><div class="pick-locations">`;
+        research.forEach(loc => {
+          const count = (loc.pois || []).length;
+          html += `<button class="pick-loc-btn" data-key="${loc._key}">${loc.name}<span class="pick-poi-count">${count}</span></button>`;
+        });
+        html += `</div><div class="pick-divider">or</div>`;
+      }
+
+      html += `<div class="pick-label">New city</div>
+        <div class="pick-new-row">
+          <input class="pick-input" type="text" placeholder="City name" id="pick-city-input">
+          <button class="pick-btn" id="pick-city-go">Add</button>
+        </div>
+        <div class="pick-actions"><button class="pick-btn-ghost" id="pick-cancel">Cancel</button></div>
+      </div>`;
+
+      overlay.innerHTML = html;
+      document.body.appendChild(overlay);
+
+      function showDateStep(locationKey) {
+        const loc = TripStore.locations[locationKey];
+        const locName = loc?.name || locationKey;
+        const dialog = overlay.querySelector('.pick-dialog');
+        dialog.innerHTML = `<h3>${locName}</h3>
+          <div class="pick-dates">
+            <div class="pick-date-row"><label>Check-in</label><input class="pick-input" type="date" id="pick-checkin"></div>
+            <div class="pick-date-row"><label>Check-out</label><input class="pick-input" type="date" id="pick-checkout"></div>
+          </div>
+          <div class="pick-actions">
+            <button class="pick-btn-ghost" id="pick-cancel">Cancel</button>
+            <button class="pick-btn" id="pick-confirm">Confirm</button>
+          </div>`;
+
+        dialog.querySelector('#pick-cancel').addEventListener('click', () => overlay.remove());
+        dialog.querySelector('#pick-confirm').addEventListener('click', async () => {
+          const checkIn = dialog.querySelector('#pick-checkin').value;
+          const checkOut = dialog.querySelector('#pick-checkout').value;
+          if (!checkIn || !checkOut) return;
+          overlay.remove();
+
+          const coords = loc?.coordinates || [0, 0];
+          await TripStore.addBlock(position, {
+            type: 'stay',
+            location: locationKey,
+            accommodation: { checkIn, checkOut, coordinates: coords, neighborhood: '', type: '', config: '', status: 'open' }
+          });
+          await TripStore.loadApi();
+          renderItinerary();
+          renderTripHeader();
+        });
+      }
+
+      overlay.querySelectorAll('.pick-loc-btn').forEach(btn => {
+        btn.addEventListener('click', () => showDateStep(btn.dataset.key));
       });
-      await TripStore.loadApi();
-      renderItinerary();
-      renderTripHeader();
+
+      overlay.querySelector('#pick-city-go').addEventListener('click', () => {
+        const val = overlay.querySelector('#pick-city-input').value.trim();
+        if (!val) return;
+        showDateStep(val.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+      });
+
+      overlay.querySelector('#pick-city-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') overlay.querySelector('#pick-city-go').click();
+      });
+
+      overlay.querySelector('#pick-cancel').addEventListener('click', () => overlay.remove());
     }
 
     async function promptAddTransit(position) {
