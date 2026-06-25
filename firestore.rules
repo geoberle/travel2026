@@ -7,7 +7,7 @@ service cloud.firestore {
       allow write: if request.auth.token.email in [
         'gerd.oberlechner@gmail.com',
         'impulse.ck@gmail.com',
-        'lunakeim14@gmail.com'
+        'luna.keim@icloud.com'
       ];
     }
   }
