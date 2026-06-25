@@ -187,6 +187,12 @@ pois:
     url: https://www.gardensbythebay.com.sg
     hours: "05:00–02:00 (outdoor), 09:00–21:00 (conservatories)"
     cost: "SGD 32/adult, SGD 18/child"
+    closedOn: []
+    duration: "2-3 hours"
+    setting: both
+    reservation: recommended
+    neighborhood: Marina Bay
+    tags: [nature, gardens, instagram-spot, family-friendly]
 ```
 
 ### POI fields
@@ -202,6 +208,12 @@ pois:
 | `url` | string | no | Website |
 | `hours` | string | no | Opening hours |
 | `cost` | string | no | Pricing info |
+| `closedOn` | array | no | Weekdays the POI is closed (e.g. `[monday]`, `[sunday, monday]`). Holiday closures stay in `hours`. |
+| `duration` | string | no | Time commitment (e.g. `"30 min"`, `"2-3 hours"`, `"half day"`) |
+| `setting` | string | no | One of: `indoor`, `outdoor`, `both` |
+| `reservation` | string | no | One of: `required`, `recommended`, `none` |
+| `neighborhood` | string | no | Area/district label (e.g. `"Gangnam"`, `"Hakata"`) |
+| `tags` | array | no | Interest tags from shared vocabulary with traveler interests (e.g. `[street-food, k-pop, viewpoint]`) |
 
 ### Category colors
 

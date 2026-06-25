@@ -357,7 +357,16 @@ const TOOL_DECLARATIONS = [
         coordinates: { type: 'array', items: { type: 'number' }, description: '[longitude, latitude]' },
         description: { type: 'string' },
         category: { type: 'string', enum: ['attraction', 'food', 'culture', 'shopping', 'nature', 'transport'] },
-        image: { type: 'string', description: 'Image URL or empty string' }
+        image: { type: 'string', description: 'Image URL or empty string' },
+        url: { type: 'string', description: 'Website URL' },
+        hours: { type: 'string', description: 'Opening hours' },
+        cost: { type: 'string', description: 'Pricing info' },
+        duration: { type: 'string', description: 'Time commitment, e.g. "2-3 hours"' },
+        setting: { type: 'string', enum: ['indoor', 'outdoor', 'both'] },
+        reservation: { type: 'string', enum: ['required', 'recommended', 'none'] },
+        neighborhood: { type: 'string', description: 'Area/district name' },
+        tags: { type: 'array', items: { type: 'string' }, description: 'Interest tags' },
+        closedOn: { type: 'array', items: { type: 'string' }, description: 'Weekdays closed, e.g. ["monday"]' }
       },
       required: ['location', 'name', 'coordinates', 'description', 'category']
     }
@@ -679,6 +688,8 @@ async function executeTool(name, args) {
         category: args.category,
         image: args.image || ''
       };
+      const optionalFields = ['url', 'hours', 'cost', 'duration', 'setting', 'reservation', 'neighborhood', 'tags', 'closedOn'];
+      for (const f of optionalFields) { if (args[f] != null) poi[f] = args[f]; }
       if (!loc.pois) loc.pois = [];
       if (loc.pois.some(p => p.id === poi.id)) return JSON.stringify({ error: 'POI already exists', id: poi.id });
       loc.pois.push(poi);

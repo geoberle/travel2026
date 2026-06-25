@@ -8,25 +8,49 @@ pois:
     coordinates:
       - 129.1604
       - 35.1587
-    description: Busan's most famous beach with golden sand, bustling boardwalk, and summer festivals.
+    description: Walk 1.5km of golden sand, swim in summer (Jun–Sep), ride the Sky Capsule along the coastal railway, and eat grilled seafood at the boardwalk stalls.
     category: nature
     image: "https://images.unsplash.com/photo-1559494007-9f5847c49d94?w=800"
+    url: https://www.busan.go.kr/eng/beaches/1325815
+    hours: "Beach open year-round, swimming season Jun–Sep"
+    cost: "Free, sunbed/umbrella rental ~10,000 KRW each"
+    duration: "2-3 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Haeundae
+    tags: [beach, family-friendly, free-entry]
   - id: haedong-yonggungsa
     name: Haedong Yonggungsa Temple
     coordinates:
       - 129.2231
       - 35.1884
-    description: Cliffside Buddhist temple perched on the ocean's edge with stunning coastal views.
+    description: Descend 100+ steps to a cliffside Buddhist temple perched on the ocean's edge. Arrive at sunrise for empty paths and golden light on the waves.
     category: culture
     image: "https://images.unsplash.com/photo-1590559899731-a382839e5549?w=800"
+    url: https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=108618
+    hours: "04:30–19:00 daily"
+    cost: "Free admission"
+    duration: "1-2 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Gijang
+    tags: [temple, photography, viewpoint, free-entry]
   - id: gamcheon-culture-village
     name: Gamcheon Culture Village
     coordinates:
       - 129.0105
       - 35.0975
-    description: Colorful hillside village with murals, sculptures, and art installations.
+    description: Wind through steep alleys of pastel-painted houses, hunt for hidden art installations and murals, and grab the stamp map to collect stamps at each landmark.
     category: culture
-    image: "https://images.unsplash.com/photo-1573832035811-f90e5aad4e28?w=800"
+    image: "https://images.unsplash.com/photo-1672671187899-a10f547341f1?w=800"
+    url: https://www.visitbusan.net/en/index.do?menuCd=DOM_000000301001001000&uc_seq=365
+    hours: "09:00–18:00 (Mar–Oct), 09:00–17:00 (Nov–Feb)"
+    cost: "Free admission, stamp map 2,000 KRW"
+    duration: "1.5-2 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Saha
+    tags: [art, photography, instagram-spot, family-friendly, free-entry]
   - id: arte-museum-busan
     name: ARTE MUSEUM Busan
     coordinates:
@@ -38,11 +62,24 @@ pois:
     url: https://artemuseum.com/BUSAN
     hours: "10:00–20:00 daily, last admission 19:00"
     cost: "19,000 KRW weekday, 22,000 KRW weekend. Free with Visit Busan Pass. 2h free parking."
+    duration: "1.5-2 hours"
+    setting: indoor
+    reservation: recommended
+    neighborhood: Yeongdo
+    tags: [immersive-art, art, instagram-spot, family-friendly]
   - id: jagalchi-market
     name: Jagalchi Fish Market
     coordinates:
       - 129.0306
       - 35.0968
-    description: Korea's largest seafood market. Fresh sashimi (hoe), grilled eel, and live seafood.
+    description: Pick live seafood from tanks on the ground floor, have it sliced into sashimi upstairs, and eat grilled eel and raw octopus at Korea's largest fish market.
     category: food
     image: "https://images.unsplash.com/photo-1590650516275-0943b2a62f0e?w=800"
+    url: https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=69318
+    hours: "05:00–22:00, closed 1st & 3rd Tuesdays"
+    cost: "Sashimi platters 20,000–50,000 KRW"
+    duration: "1-2 hours"
+    setting: both
+    reservation: none
+    neighborhood: Nampo
+    tags: [seafood, traditional-market, street-food]

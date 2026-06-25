@@ -141,6 +141,9 @@
     .poi-status.added { color: var(--accent); }
     .poi-status.dismissed { color: var(--text-muted); }
     .poi-alignment { display: flex; gap: 4px; margin-top: 4px; }
+    .poi-tags-inline { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 3px; }
+    .poi-tag-sm { font-size: 0.55rem; padding: 1px 5px; border-radius: 9999px; background: rgba(255,255,255,0.06); opacity: 0.5; }
+    .poi-item .neighborhood { font-size: 0.55rem; opacity: 0.3; }
     .alignment-badge { display: flex; align-items: center; gap: 3px; font-size: 0.6rem; }
     .alignment-avatar { width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.5rem; font-weight: 700; color: #0a0a0f; }
     .alignment-pct { opacity: 0.6; }
@@ -891,9 +894,12 @@
       const link = poi.url ? `<a href="${poi.url}" target="_blank" class="poi-popup-link">Website →</a>` : '';
       const hours = poi.hours ? `<div class="poi-popup-meta">🕐 ${poi.hours}</div>` : '';
       const cost = poi.cost ? `<div class="poi-popup-meta">💰 ${poi.cost}</div>` : '';
+      const tags = (poi.tags && poi.tags.length) ? `<div style="display:flex;flex-wrap:wrap;gap:3px;margin:4px 0">${poi.tags.map(t => `<span class="poi-tag-sm">${t}</span>`).join('')}</div>` : '';
+      const duration = poi.duration ? `<div class="poi-popup-meta">${poi.duration}</div>` : '';
+      const neighborhood = poi.neighborhood ? `<div class="poi-popup-meta">${poi.neighborhood}</div>` : '';
       activePopup = new mapboxgl.Popup({ offset: [0, -15], anchor: 'bottom', maxWidth: '220px', closeButton: true })
         .setLngLat(poi.coordinates)
-        .setHTML(`${img}<div class="poi-popup-body"><div class="poi-popup-header">${cat}<strong>${poi.name}</strong></div><p class="poi-popup-desc">${poi.description || ''}</p>${hours}${cost}${link}</div>`)
+        .setHTML(`${img}<div class="poi-popup-body"><div class="poi-popup-header">${cat}<strong>${poi.name}</strong></div><p class="poi-popup-desc">${poi.description || ''}</p>${tags}${duration}${neighborhood}${hours}${cost}${link}</div>`)
         .addTo(map);
     }
 
@@ -917,9 +923,10 @@
       let html = `<div class="poi-count">${pois.length} places · ${TripStore.locations[activeLocation]?.name || activeLocation}</div>`;
       pois.forEach(poi => {
         const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+        const nh = poi.neighborhood ? `<div class="neighborhood">${poi.neighborhood}</div>` : '';
         html += `<div class="poi-item" data-id="${poi.id}" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${poi.id}')" onclick="flyAndShow('${poi.id}')">
           <div class="dot" style="background:${color}"></div>
-          <div class="info"><div class="name">${poi.name}</div><div class="cat">${poi.category}</div></div>
+          <div class="info"><div class="name">${poi.name}</div><div class="cat">${poi.category}</div>${nh}</div>
           <div class="actions"><button onclick="event.stopPropagation();delPoi('${poi.id}')" title="Delete">✕</button></div>
         </div>`;
       });
@@ -1057,7 +1064,8 @@
           const btns = isExisting ? '' : `<div class="poi-actions"><button class="poi-add-btn">+ Add</button><button class="poi-dismiss-btn">✕</button></div>`;
           const img = poi.image ? `<img class="poi-suggestion-img" src="${poi.image}" onerror="this.remove()">` : '';
           const meta = [poi.category, poi.price_range, poi.rating ? `★${poi.rating}` : ''].filter(Boolean).join(' · ');
-          div.innerHTML = `${img}<div class="name" style="color:${color}">${poi.name}${badge}</div><div class="desc">${poi.description || ''}</div><div class="cat">${meta}</div>${alignmentHtml(poi.alignment)}${btns}`;
+          const ptags = (poi.tags && poi.tags.length) ? `<div class="poi-tags-inline">${poi.tags.map(t => `<span class="poi-tag-sm">${t}</span>`).join('')}</div>` : '';
+          div.innerHTML = `${img}<div class="name" style="color:${color}">${poi.name}${badge}</div><div class="desc">${poi.description || ''}</div><div class="cat">${meta}</div>${ptags}${alignmentHtml(poi.alignment)}${btns}`;
 
           div.addEventListener('mouseenter', () => highlightProposalPin(i, true));
           div.addEventListener('mouseleave', () => highlightProposalPin(i, false));

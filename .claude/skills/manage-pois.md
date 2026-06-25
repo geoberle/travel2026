@@ -8,107 +8,102 @@ Trigger on: "add poi", "new poi", "add a place", "add stop", "remove poi", "upda
 
 ## Context
 
-This is a travel planning app. POIs live in city JSON files, referenced by ID from day markdown files.
+POIs live in location YAML files, referenced by ID from trip.yaml day activities.
 
 ### File layout
 
 ```
-data/pois/{city}.json    — POI definitions per city
-days/day-{NN}-{slug}.md  — day plans with frontmatter + markdown
-data/trip.json           — maps city names to POI files via poiFiles
+trips/seoul-2026/
+├── trip.yaml                      # Trip metadata + itinerary
+├── travelers.yaml                 # Traveler profiles with interests
+└── locations/
+    ├── locations.yaml             # List of location directory names
+    ├── seoul/location.yaml        # POI library for Seoul
+    ├── busan/location.yaml
+    └── fukuoka/location.yaml
 ```
 
-### POI schema (in `data/pois/{city}.json`)
-
-```json
-{
-  "id": "kebab-case-slug",
-  "name": "Human Name",
-  "coordinates": [lng, lat],
-  "image": "https://images.unsplash.com/photo-...?w=800",
-  "description": "One sentence. What it is, why visit.",
-  "category": "attraction|food|culture|shopping|nature|transport"
-}
-```
-
-Rules:
-- `id` is kebab-case, unique within city file, used as reference key everywhere
-- `coordinates` is `[longitude, latitude]` (GeoJSON order, NOT lat/lng)
-- `image` must be an Unsplash URL with `?w=800` suffix
-- `description` is one sentence, concise, may include practical tips
-- `category` must be one of: `attraction`, `food`, `culture`, `shopping`, `nature`, `transport`
-
-### Day frontmatter POI references
+### POI schema
 
 ```yaml
-pois: ["poi-id-1", "poi-id-2"]
+- id: gyeongbokgung                    # kebab-case, unique within location
+  name: Gyeongbokgung Palace
+  coordinates: [126.9771, 37.5782]      # [longitude, latitude] GeoJSON order
+  description: Walk through the grand Joseon royal palace...
+  category: culture                      # attraction|food|culture|shopping|nature|transport
+  image: "https://images.unsplash.com/photo-...?w=800"
+  url: https://example.com               # optional
+  hours: "09:00–18:30, closed Tuesdays"  # optional
+  cost: "3,000 KRW adult"               # optional
+  closedOn: [tuesday]                    # optional — lowercase weekday names
+  duration: "1.5-2 hours"               # optional — free text time commitment
+  setting: outdoor                       # optional — indoor|outdoor|both
+  reservation: none                      # optional — required|recommended|none
+  neighborhood: Jongno                   # optional — area/district label
+  tags: [history, palace, family-friendly] # optional — interest keywords
 ```
 
-Array of POI IDs from the city's POI file. Only POIs listed here get markers on the map for that day.
+### Activity references in trip.yaml
 
-### Day markdown POI links
-
-```md
-[Display Name](poi:poi-id)
+```yaml
+itinerary:
+  - type: stay
+    id: seoul-stay
+    location: seoul                      # references locations/seoul/location.yaml
+    days:
+      - title: Palaces & Culture
+        activities:
+          - poi: gyeongbokgung           # references location.yaml pois[].id
+            notes: Morning visit, catch guard ceremony at 10:00
 ```
 
-Inline links in the day content. The `poi:` prefix is a custom scheme resolved by the app.
+## Rules
+
+- `id` is kebab-case, unique within location file, auto-generated from name
+- `coordinates` is `[longitude, latitude]` (GeoJSON order, NOT lat/lng)
+- `image` should be an Unsplash URL with `?w=800` suffix
+- `category` must be one of: `attraction`, `food`, `culture`, `shopping`, `nature`, `transport`
+- `setting` must be one of: `indoor`, `outdoor`, `both`
+- `reservation` must be one of: `required`, `recommended`, `none`
+- `closedOn` values are lowercase full weekday names
+- `tags` should be consistent with existing tags across all locations and traveler interests from `travelers.yaml`
 
 ## Procedure
 
 ### Adding a POI
 
-1. Determine the city from user input or day file context
-2. Look up the city's POI file via `data/trip.json` → `poiFiles`
-3. Read the existing POI file to check for duplicates and understand naming conventions
-4. **Ask the user** for any missing fields. At minimum need: name, what it is. Look up coordinates yourself via web search if not provided.
-5. Find an appropriate Unsplash image URL via web search: search `unsplash {poi name} {city}`, pick a relevant landscape/exterior photo, use `?w=800`
-6. Generate the POI entry with all fields
-7. Append to the city's `pois` array (maintain alphabetical order by id)
-8. If a target day is specified or obvious from context:
-   - Add the POI id to that day's frontmatter `pois` array
-   - Add a `[Name](poi:id)` link in the appropriate section of the day's markdown
-9. Show the user what was added and where
+1. Determine the location from user input or context
+2. Read the location YAML to check for duplicate IDs
+3. Ask the user for any missing fields. At minimum need: name, what it is. Look up coordinates via web search if not provided.
+4. Find an Unsplash image: search `unsplash {poi name} {city}`, pick relevant photo, use `?w=800`
+5. Read existing tags from all location YAMLs + traveler interests for vocabulary consistency
+6. Generate the POI entry with all fields (core + metadata)
+7. Append to the location's `pois` array
+8. If a target day is specified: add activity reference to that day in trip.yaml
+9. Show the user what was added
 
 ### Updating a POI
 
-1. Read the city POI file
+1. Read the location YAML
 2. Find the POI by id or name (fuzzy match on name is fine)
 3. Apply the requested changes
-4. If `id` changes, update all references in day files (frontmatter `pois` array + markdown links)
+4. If `id` changes, update all activity references in trip.yaml
 
 ### Removing a POI
 
-1. Remove from the city POI file
-2. Remove from all day frontmatter `pois` arrays
-3. Remove or replace `[...](poi:id)` links in day markdown — replace with plain text name
-4. Warn the user about which days were affected
+1. Remove from the location YAML
+2. Remove from all day activities in trip.yaml that reference this POI
+3. Warn the user about which days were affected
 
-### Moving a POI to a different day
+### Moving a POI between days
 
-1. Remove the POI id from the source day's frontmatter `pois` array
-2. Remove the `[...](poi:id)` link from the source day's markdown
-3. Add the POI id to the target day's frontmatter `pois` array
-4. Add a `[Name](poi:id)` link in the appropriate section of the target day's markdown
+1. Remove the activity reference from the source day
+2. Add the activity reference to the target day
 
 ## Validation
 
 After any change, verify:
-- Every POI id referenced in day frontmatter exists in the city's POI file
-- Every `poi:` link in day markdown has a matching frontmatter entry
-- No duplicate ids in POI files
+- Every POI id referenced in day activities exists in the location's YAML
+- No duplicate ids within a location file
 - Coordinates are valid `[lng, lat]` (lng: -180..180, lat: -90..90)
-
-## Examples
-
-User: "add Gwangjang Market to the Seoul trip, it's a traditional market with street food"
-→ Create POI in `data/pois/seoul.json`, ask which day to add it to
-
-User: "add a temple near Bukchon to day 6"
-→ Ask for the temple name, look up coordinates, create POI, wire into day-06
-
-User: "move Lotte World from day 8 to day 9"
-→ Update both day files' frontmatter and markdown
-
-User: "remove the zoo from Singapore"
-→ Remove from `data/pois/singapore.json`, clean up any day references
+- Enum fields have valid values

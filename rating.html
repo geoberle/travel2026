@@ -148,6 +148,16 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    @keyframes cardOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-16px); }
+    }
+
+    .poi-card.leaving {
+      animation: cardOut 0.2s ease-in forwards;
+      pointer-events: none;
+    }
+
     .poi-card-image {
       height: 200px;
       position: relative;
@@ -210,6 +220,44 @@
     }
 
     .poi-card-meta span { display: block; }
+
+    .poi-card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .poi-tag {
+      font-size: 0.65rem;
+      font-weight: 500;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      background: var(--surface-light, rgba(255,255,255,0.08));
+      opacity: 0.6;
+      letter-spacing: 0.02em;
+    }
+
+    .poi-tag.match {
+      opacity: 1;
+      background: rgba(78, 205, 196, 0.15);
+      color: #4ecdc4;
+    }
+
+    .poi-card-metadata {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.75rem;
+      opacity: 0.55;
+    }
+
+    .poi-card-metadata span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
 
     /* ───────── Rating buttons ───────── */
 
@@ -600,6 +648,32 @@
       text-overflow: ellipsis;
     }
 
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(0);
+      background: rgba(255, 107, 107, 0.95);
+      color: #fff;
+      padding: 0.7rem 1.5rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      z-index: 200;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      animation: toastIn 0.3s ease-out, toastOut 0.3s ease-in 3.7s forwards;
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    @keyframes toastOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
     .cat-attraction { background: rgba(78, 205, 196, 0.85); color: #fff; }
     .cat-food { background: rgba(255, 159, 67, 0.85); color: #fff; }
     .cat-culture { background: rgba(165, 94, 234, 0.85); color: #fff; }
@@ -694,6 +768,7 @@ const db = firebase.firestore();
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
 const RATING_LABELS = { must_go: 'Love it', sure: 'Okay', skip: 'Pass' };
+const RATING_COLORS = { must_go: '#00b894', sure: '#fdcb6e', skip: '#b2bec3' };
 
 // ───────── State ─────────
 
@@ -758,17 +833,13 @@ function signOut() {
 async function init() {
   try {
     await loadLocations();
-    console.log('Locations loaded:', Object.keys(locations));
     buildPoiList();
-    console.log('POIs built:', allPois.length, allPois.map(p => p.id));
     initMap();
     await loadRatings();
-    console.log('Ratings loaded:', Object.keys(ratings));
     buildDeck();
-    console.log('Deck built:', deckQueue.length);
     renderSummary();
   } catch (err) {
-    console.error('Init error:', err);
+    showToast('Failed to initialize. Please reload.');
   }
 }
 
@@ -811,15 +882,19 @@ function buildPoiList() {
 // ───────── Firestore ─────────
 
 async function loadRatings() {
-  const snapshot = await db.collection('ratings').doc(TRIP_ID)
-    .collection('pois').get();
+  try {
+    const snapshot = await db.collection('ratings').doc(TRIP_ID)
+      .collection('pois').get();
 
-  ratings = {};
-  snapshot.forEach(doc => {
-    ratings[doc.id] = doc.data();
-  });
+    ratings = {};
+    snapshot.forEach(doc => {
+      ratings[doc.id] = doc.data();
+    });
 
-  listenForChanges();
+    listenForChanges();
+  } catch (err) {
+    showToast('Could not load ratings. Working offline.');
+  }
 }
 
 let unsubscribe = null;
@@ -920,8 +995,7 @@ function showSummaryMarkers() {
     const myVote = getMyVote(poi.id);
     if (!myVote) continue;
 
-    const color = myVote === 'must_go' ? 'var(--must-go)' :
-                  myVote === 'sure' ? 'var(--sure)' : 'var(--skip)';
+    const color = RATING_COLORS[myVote];
 
     const el = document.createElement('div');
     el.className = 'poi-circle-wrap';
@@ -939,8 +1013,12 @@ function showSummaryMarkers() {
       circle.appendChild(img);
     }
 
+    const label = document.createElement('div');
+    label.className = 'poi-circle-label';
+    label.textContent = poi.name;
+
     el.appendChild(circle);
-    el.title = poi.name;
+    el.appendChild(label);
 
     const marker = new mapboxgl.Marker(el)
       .setLngLat(poi.coordinates)
@@ -966,6 +1044,30 @@ function clearMarkers() {
   accommodationMarkers = [];
 }
 
+// ───────── POI metadata helpers ─────────
+
+const SETTING_LABELS = { indoor: 'Indoor', outdoor: 'Outdoor', both: 'Indoor & Outdoor' };
+const RESERVATION_LABELS = { required: 'Reservation required', recommended: 'Reservation recommended' };
+
+function renderTags(tags) {
+  if (!tags || tags.length === 0) return '';
+  const interests = currentUser?.interests || [];
+  return `<div class="poi-card-tags">${tags.map(tag => {
+    const isMatch = interests.includes(tag);
+    return `<span class="poi-tag${isMatch ? ' match' : ''}">${tag}</span>`;
+  }).join('')}</div>`;
+}
+
+function renderMetadata(poi) {
+  const parts = [];
+  if (poi.duration) parts.push(`<span>${poi.duration}</span>`);
+  if (poi.setting && SETTING_LABELS[poi.setting]) parts.push(`<span>${SETTING_LABELS[poi.setting]}</span>`);
+  if (poi.reservation && RESERVATION_LABELS[poi.reservation]) parts.push(`<span>${RESERVATION_LABELS[poi.reservation]}</span>`);
+  if (poi.neighborhood) parts.push(`<span>${poi.neighborhood}</span>`);
+  if (parts.length === 0) return '';
+  return `<div class="poi-card-metadata">${parts.join('')}</div>`;
+}
+
 // ───────── Card deck ─────────
 
 function buildDeck() {
@@ -984,7 +1086,9 @@ function showCurrentCard() {
   const deck = document.getElementById('deck');
 
   if (deckIndex >= deckQueue.length) {
-    deck.innerHTML = `<div id="deck-empty">All POIs rated!<br>Check the Summary tab.</div>`;
+    deck.innerHTML = `<div id="deck-empty">All done! Switching to summary...</div>`;
+    document.getElementById('current-location').style.display = 'none';
+    setTimeout(() => switchTab('summary'), 1200);
     return;
   }
 
@@ -1015,6 +1119,8 @@ function showCurrentCard() {
       <div class="poi-card-body">
         <h2>${poi.name}</h2>
         <p class="description">${poi.description || ''}</p>
+        ${renderTags(poi.tags)}
+        ${renderMetadata(poi)}
         ${poi.hours ? `<div class="poi-card-detail"><span class="detail-icon">🕐</span> ${poi.hours}</div>` : ''}
         ${poi.cost ? `<div class="poi-card-detail"><span class="detail-icon">💰</span> ${poi.cost}</div>` : ''}
         ${poi.url ? `<a class="poi-card-link" href="${poi.url}" target="_blank" rel="noopener">Visit website →</a>` : ''}
@@ -1036,11 +1142,27 @@ async function rate(value) {
   const buttons = document.querySelectorAll('.rate-btn');
   buttons.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
 
-  await submitRating(poi.id, poi._location, value);
+  try {
+    await submitRating(poi.id, poi._location, value);
+  } catch (err) {
+    showToast('Failed to save rating. Check your connection.');
+    buttons.forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+    return;
+  }
 
-  deckIndex++;
-  updateBadges();
-  showCurrentCard();
+  const card = document.querySelector('.poi-card');
+  if (card) {
+    card.classList.add('leaving');
+    card.addEventListener('animationend', () => {
+      deckIndex++;
+      updateBadges();
+      showCurrentCard();
+    }, { once: true });
+  } else {
+    deckIndex++;
+    updateBadges();
+    showCurrentCard();
+  }
 }
 
 function updateBadges() {
@@ -1176,6 +1298,16 @@ function switchTab(name) {
 
 function show(id) { document.getElementById(id).style.display = 'flex'; }
 function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+function showToast(msg) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
   </script>
 </body>
 </html>

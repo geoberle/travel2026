@@ -14,17 +14,28 @@ pois:
     url: https://www.koreatraveleasy.com/post/2026-km-charts-awards-k-pop-concert/
     hours: "Red Carpet 14:30, Main Show 18:00"
     cost: "Ticket packages via KoreaTravelEasy, Klook, Trazy"
+    duration: "4-5 hours"
+    setting: indoor
+    reservation: required
+    neighborhood: Seongbuk
+    tags: [k-pop, family-friendly]
   - id: gyeongbokgung
     name: Gyeongbokgung Palace
     coordinates:
       - 126.9771
       - 37.5782
-    description: Grand Joseon dynasty royal palace with changing of the guard ceremony. Free entry in hanbok.
+    description: Walk through the grand Joseon royal palace, watch the changing of the guard ceremony, and wear hanbok for free entry and photo ops.
     category: culture
     image: "https://images.unsplash.com/photo-1566800890932-e89159daf3dc?w=800"
     url: https://english.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=87740
     hours: "09:00–18:30 (Jun–Aug), closed Tuesdays"
     cost: "3,000 KRW adult, free in hanbok or under 7"
+    closedOn: [tuesday]
+    duration: "1.5-2 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Jongno
+    tags: [history, palace, hanbok, photography, family-friendly, free-entry]
   - id: changdeokgung
     name: Changdeokgung Palace & Secret Garden
     coordinates:
@@ -36,6 +47,12 @@ pois:
     url: https://english.cha.go.kr/html/HtmlPage.do?pg=%2Froyal%2FRoyalPalaces_infomation_1.jsp&mn=EN_02_03_02
     hours: "09:00–18:30 (Jun–Aug), closed Mondays. Secret Garden tours 10:30/11:30/14:30/15:30"
     cost: "3,000 KRW palace + 5,000 KRW Secret Garden tour"
+    closedOn: [monday]
+    duration: "1.5-2 hours"
+    setting: outdoor
+    reservation: recommended
+    neighborhood: Jongno
+    tags: [history, palace, gardens, photography]
   - id: banpo-rainbow-fountain
     name: Banpo Bridge Rainbow Fountain
     coordinates:
@@ -47,6 +64,11 @@ pois:
     url: https://english.visitseoul.net/area/Banpodaegyo-Bridge-Moonlight-Rainbow-Fountain/ENP002220
     hours: "Jul–Aug shows: 12:00, 19:30, 20:00, 20:30, 21:00, 21:30 (20 min each)"
     cost: "Free"
+    duration: "30-60 min"
+    setting: outdoor
+    reservation: none
+    neighborhood: Seocho
+    tags: [photography, family-friendly, free-entry]
   - id: myeongdong-market
     name: Myeongdong Night Market
     coordinates:
@@ -57,6 +79,11 @@ pois:
     image: "https://images.unsplash.com/photo-1552912470-ee2e96439539?w=800"
     hours: "15:00–22:00 daily, fewer stalls Mon–Thu"
     cost: "Street food 3,000–15,000 KRW per item, bring cash"
+    duration: "1-2 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Myeongdong
+    tags: [street-food, shopping, family-friendly]
   - id: gwangjang-market
     name: Gwangjang Market
     coordinates:
@@ -68,6 +95,11 @@ pois:
     url: https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=106358
     hours: "Food vendors 09:00–23:00 daily, shops 10:00–19:00 (closed Sun)"
     cost: "Bindaetteok 5,000 KRW, kalguksu 6,000–7,000 KRW"
+    duration: "1-2 hours"
+    setting: indoor
+    reservation: none
+    neighborhood: Jongno
+    tags: [street-food, traditional-market, family-friendly]
   - id: namdaemun-market
     name: Namdaemun Market
     coordinates:
@@ -79,6 +111,12 @@ pois:
     url: https://english.visitseoul.net/shopping/Namdaemun-Market/ENP000085
     hours: "09:00–17:00 shops, food alleys 05:00–21:00, closed Sundays"
     cost: "Prices 10–20% below retail, bargaining welcome"
+    closedOn: [sunday]
+    duration: "1-2 hours"
+    setting: both
+    reservation: none
+    neighborhood: Hoehyeon
+    tags: [traditional-market, street-food, shopping]
   - id: namsangol-hanok
     name: Namsangol Hanok Village
     coordinates:
@@ -90,16 +128,28 @@ pois:
     url: https://www.hanokmaeul.or.kr/en/guide
     hours: "09:00–21:00 (Apr–Oct), 09:00–20:00 (Nov–Mar), closed Mondays. Garden 24h."
     cost: "Free admission. Some craft programs have fees."
+    closedOn: [monday]
+    duration: "1-1.5 hours"
+    setting: both
+    reservation: none
+    neighborhood: Chungmuro
+    tags: [history, hanbok, culture, free-entry, family-friendly]
   - id: bukchon-hanok
     name: Bukchon Hanok Village
     coordinates:
       - 126.9831
       - 37.5826
-    description: 900+ traditional Joseon-era houses between two palaces. Iconic rooftop views toward N Seoul Tower.
+    description: Walk through 900 traditional Joseon-era houses between two palaces, snap rooftop photos toward N Seoul Tower, and duck into small galleries and tea houses.
     category: culture
     image: "https://images.unsplash.com/photo-1512059555341-6a121e7d4d86?w=800"
     hours: "Tourist access 10:00–17:00 only (100,000 KRW fine outside hours), closed Sundays"
     cost: "Free"
+    closedOn: [sunday]
+    duration: "1-2 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Jongno
+    tags: [history, hanbok, photography, architecture]
   - id: bukchon-observatory
     name: Bukchon Observatory
     coordinates:
@@ -110,17 +160,27 @@ pois:
     image: "https://images.unsplash.com/photo-1523760957528-55d1d540360d?w=800"
     hours: "09:00–20:00 daily, closed Lunar New Year & Chuseok"
     cost: "3,000 KRW adult (incl. 1 drink), 2,000 KRW student/child"
+    duration: "30 min"
+    setting: indoor
+    reservation: none
+    neighborhood: Jongno
+    tags: [viewpoint, photography]
   - id: seoul-forest
     name: Seoul Forest
     coordinates:
       - 127.0374
       - 37.5444
-    description: Vast urban park with deer enclosure, butterfly garden, and cherry blossom paths. Free entry, open 24h.
+    description: Feed deer at the wildlife enclosure, chase butterflies in the seasonal garden, and walk cherry blossom-lined paths in this vast urban park.
     category: nature
     image: "https://images.unsplash.com/photo-1597891387547-99bb301e98ef?w=800"
     url: https://english.visitseoul.net/nature/Seoul-Forest/ENP001838
     hours: "Park 24h. Insect Garden 10:00–17:00 (closed Mon). Butterfly Garden May–Oct."
     cost: "Free"
+    duration: "1-2 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Seongsu
+    tags: [nature, parks, family-friendly, free-entry]
   - id: coex-starfield-library
     name: COEX Starfield Library
     coordinates:
@@ -132,6 +192,11 @@ pois:
     url: https://english.seoul.go.kr/starfield-library-coex/
     hours: "10:30–22:00 daily"
     cost: "Free"
+    duration: "30-60 min"
+    setting: indoor
+    reservation: none
+    neighborhood: Gangnam
+    tags: [instagram-spot, free-entry, architecture]
   - id: seongsu-dong
     name: Seongsu-dong
     coordinates:
@@ -142,6 +207,11 @@ pois:
     image: "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800"
     hours: "Most shops/popups 11:00–21:00. Check #성수팝업 on Instagram for current popups."
     cost: "Free entry to most popups. Olive Young N Seongsu is the largest in Korea."
+    duration: "2-3 hours"
+    setting: both
+    reservation: none
+    neighborhood: Seongsu
+    tags: [shopping, instagram-spot, art]
   - id: naksan-park
     name: Naksan Park & Seoul City Wall
     coordinates:
@@ -152,6 +222,11 @@ pois:
     image: "https://images.unsplash.com/photo-1570191913384-7b4ff11716e7?w=800"
     hours: "24h (bring bug spray for evening walks)"
     cost: "Free"
+    duration: "1-2 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Ihwa
+    tags: [viewpoint, nature, photography, history, free-entry]
   - id: lotte-cinema
     name: Lotte Cinema World Tower
     coordinates:
@@ -163,14 +238,24 @@ pois:
     url: https://www.lwt.co.kr/en/entertainment/cinema.do
     hours: "First screening ~09:00, last ~midnight. Check lottecinema.co.kr for showtimes."
     cost: "~15,000 KRW standard, IMAX/Super Plex premium"
+    duration: "2-3 hours"
+    setting: indoor
+    reservation: recommended
+    neighborhood: Jamsil
+    tags: [cinema, family-friendly]
   - id: lotte-world
     name: Lotte World
     coordinates:
       - 127.0981
       - 37.5112
-    description: World's largest indoor theme park plus outdoor Magic Island. MapleStory festival in 2026.
+    description: Ride rollercoasters at the world's largest indoor theme park, cross to outdoor Magic Island, and hit the MapleStory festival zone in 2026.
     category: attraction
     image: "https://images.unsplash.com/photo-1640927023021-fda655832937?w=800"
     url: https://adventure.lotteworld.com
     hours: "Sun–Thu 10:00–21:00, Fri–Sat 10:00–22:00"
     cost: "61,000 KRW adult (discounted ~37,000–41,000 via Klook/Agoda)"
+    duration: "half day"
+    setting: both
+    reservation: recommended
+    neighborhood: Jamsil
+    tags: [theme-park, gaming, family-friendly]

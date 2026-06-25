@@ -8,22 +8,47 @@ pois:
     coordinates:
       - 130.402
       - 33.584
-    description: A bustling market where you can find fresh seafood and local produce.
+    description: Browse 47 stalls of fresh fish, seasonal produce, and local snacks at Fukuoka's kitchen. Try the in-market diner for a seafood breakfast. Cash only.
     category: food
     image: https://images.unsplash.com/photo-1665844237472-043c0a164434?w=800
+    url: https://gofukuoka.jp/spots/detail/26956
+    hours: "08:00–18:00 Mon–Sat, closed Sundays & holidays"
+    cost: "Free entry, cash only"
+    closedOn: [sunday]
+    duration: "1-1.5 hours"
+    setting: indoor
+    reservation: none
+    neighborhood: Tenjin
+    tags: [seafood, traditional-market, street-food]
   - id: teamlab-forest-fukuoka
     name: teamLab Forest Fukuoka
     coordinates:
       - 130.35
       - 33.592
-    description: An immersive digital art museum offering a unique sensory experience.
+    description: Walk through immersive digital art rooms, chase virtual animals across projection floors, and create your own creatures at this five-floor teamLab experience.
     category: attraction
     image: https://images.unsplash.com/photo-1627890352182-844e8d0355f2?w=800
+    url: https://www.teamlab.art/e/forest/
+    hours: "Weekdays 11:00–20:00, weekends 10:00–20:00"
+    cost: "¥2,400 adult, ¥1,000 child (under 15), free under 3"
+    duration: "1-1.5 hours"
+    setting: indoor
+    reservation: recommended
+    neighborhood: Jigyohama
+    tags: [immersive-art, art, family-friendly, instagram-spot]
   - id: pok-mon-center-fukuoka
     name: Pokémon Center Fukuoka
     coordinates:
       - 130.4187
       - 33.5902
-    description: The only official Pokémon shop in Kyushu, offering over 2,500 types of merchandise and hosting Pokémon card game tournaments. It is located at Amu Plaza Hakata.
+    description: Shop 2,500+ Pokémon items and Fukuoka-exclusive merchandise, play card games at the tournament station, and pose with the ramen-chef Pikachu. Relocated to Hakata Marui 2F in 2025.
     category: shopping
     image: "https://images.unsplash.com/photo-1775410633369-a17e0079920c?w=800"
+    url: https://www.pokemon.co.jp/shop/en/pokecen/fukuoka/
+    hours: "10:00–21:00 daily"
+    cost: "Free entry"
+    duration: "30-60 min"
+    setting: indoor
+    reservation: none
+    neighborhood: Hakata
+    tags: [gaming, anime, manga, shopping, family-friendly]

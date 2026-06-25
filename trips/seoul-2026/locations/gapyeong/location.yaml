@@ -14,3 +14,8 @@ pois:
     url: https://www.morningcalm.co.kr/eng/
     hours: "08:30–19:00 (last entry 18:00), hours vary by season"
     cost: "11,000 KRW adult, 8,500 KRW youth, 7,500 KRW child"
+    duration: "2-3 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Gapyeong
+    tags: [nature, gardens, photography, family-friendly]
