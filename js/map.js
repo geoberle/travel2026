@@ -183,7 +183,7 @@ function addAccommodationMarkers(map, accommodations) {
     el.addEventListener('click', (e) => {
       e.stopPropagation();
       if (activePopup) activePopup.remove();
-      activePopup = new mapboxgl.Popup({ offset: [0, -30], anchor: 'bottom', maxWidth: '220px', closeButton: true })
+      activePopup = new mapboxgl.Popup({ offset: [0, -30], anchor: 'bottom', maxWidth: '320px', closeButton: true })
         .setLngLat(acc.coordinates)
         .setHTML(`<div class="poi-popup-body"><strong>${acc.neighborhood}</strong><div class="poi-popup-desc">${acc.type}${acc.config ? ' · ' + acc.config : ''}</div></div>`)
         .addTo(map);
@@ -678,22 +678,27 @@ function showPoiPopup(map, poi) {
     ? `<a href="${poi.url}" target="_blank" rel="noopener" class="poi-popup-link">Visit website →</a>`
     : '';
 
-  const hoursHtml = poi.hours
-    ? `<div class="poi-popup-meta">🕐 ${poi.hours}</div>`
+  const tagsHtml = (poi.tags && poi.tags.length)
+    ? `<div class="poi-popup-tags">${poi.tags.map(t => `<span class="poi-popup-tag">${t}</span>`).join('')}</div>`
     : '';
 
-  const costHtml = poi.cost
-    ? `<div class="poi-popup-meta">💰 ${poi.cost}</div>`
-    : '';
+  let metaHtml = '';
+  if (poi.duration) {
+    const s = poi.setting === 'indoor' ? ' · Indoor' : poi.setting === 'outdoor' ? ' · Outdoor' : poi.setting === 'both' ? ' · Indoor & Outdoor' : '';
+    metaHtml += `<div class="poi-popup-meta">⏱ ${poi.duration}${s}</div>`;
+  }
+  if (poi.neighborhood) metaHtml += `<div class="poi-popup-meta">📍 ${poi.neighborhood}</div>`;
+  if (poi.hours) metaHtml += `<div class="poi-popup-meta">🕐 ${poi.hours}</div>`;
+  if (poi.cost) metaHtml += `<div class="poi-popup-meta">💰 ${poi.cost}</div>`;
 
-  activePopup = new mapboxgl.Popup({ offset: [0, -60], anchor: 'bottom', maxWidth: '240px', closeButton: true })
+  activePopup = new mapboxgl.Popup({ offset: [0, -60], anchor: 'bottom', maxWidth: '320px', closeButton: true })
     .setLngLat(poi.coordinates)
     .setHTML(`
       ${imgHtml}
       <div class="poi-popup-body">
         <div class="poi-popup-header">${categoryLabel}<strong>${poi.name}</strong></div>
         <p class="poi-popup-desc">${poi.description}</p>
-        ${hoursHtml}${costHtml}${linkHtml}
+        ${tagsHtml}${metaHtml}${linkHtml}
       </div>
     `)
     .addTo(map);

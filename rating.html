@@ -53,8 +53,9 @@
     }
 
     #panel {
-      width: 33.33vw;
-      min-width: 320px;
+      width: 38vw;
+      min-width: 400px;
+      max-width: 560px;
       display: flex;
       flex-direction: column;
       background: rgba(10, 10, 20, 0.95);
@@ -210,7 +211,7 @@
       font-size: 0.85rem;
       line-height: 1.55;
       opacity: 0.7;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
     }
 
     .poi-card-meta {
@@ -225,7 +226,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 0.35rem;
-      margin-bottom: 0.75rem;
+      margin-bottom: 1rem;
     }
 
     .poi-tag {
@@ -244,19 +245,11 @@
       color: #4ecdc4;
     }
 
-    .poi-card-metadata {
+    .poi-card-details {
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem 1rem;
-      margin-bottom: 0.5rem;
-      font-size: 0.75rem;
-      opacity: 0.55;
-    }
-
-    .poi-card-metadata span {
-      display: inline-flex;
-      align-items: center;
+      flex-direction: column;
       gap: 0.3rem;
+      margin-bottom: 0.5rem;
     }
 
     /* ───────── Rating buttons ───────── */
@@ -535,10 +528,11 @@
         flex-direction: column;
       }
 
-      #map { height: 35dvh; flex: none; }
+      #map { height: 30dvh; flex: none; }
 
       #panel {
         width: 100%;
+        min-width: unset;
         max-width: 100%;
         flex: 1;
         border-left: none;
@@ -584,23 +578,24 @@
     }
 
     .poi-card-detail {
-      font-size: 0.8rem;
-      opacity: 0.6;
-      line-height: 1.7;
+      font-size: 0.75rem;
+      opacity: 0.55;
+      line-height: 1.5;
       display: flex;
       align-items: baseline;
       gap: 0.4rem;
     }
 
-    .detail-icon { font-size: 0.7rem; flex-shrink: 0; }
+    .detail-icon { font-size: 0.65rem; flex-shrink: 0; width: 1rem; text-align: center; }
 
     .poi-card-link {
       display: inline-block;
-      margin-top: 0.75rem;
-      font-size: 0.8rem;
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
       font-weight: 600;
       color: var(--accent);
       text-decoration: none;
+      opacity: 0.8;
     }
 
     .poi-card-link:hover { text-decoration: underline; }
@@ -1047,6 +1042,7 @@ function clearMarkers() {
 // ───────── POI metadata helpers ─────────
 
 const SETTING_LABELS = { indoor: 'Indoor', outdoor: 'Outdoor', both: 'Indoor & Outdoor' };
+const SETTING_ICONS = { indoor: '🏠', outdoor: '☀️', both: '↔️' };
 const RESERVATION_LABELS = { required: 'Reservation required', recommended: 'Reservation recommended' };
 
 function renderTags(tags) {
@@ -1058,14 +1054,18 @@ function renderTags(tags) {
   }).join('')}</div>`;
 }
 
-function renderMetadata(poi) {
-  const parts = [];
-  if (poi.duration) parts.push(`<span>${poi.duration}</span>`);
-  if (poi.setting && SETTING_LABELS[poi.setting]) parts.push(`<span>${SETTING_LABELS[poi.setting]}</span>`);
-  if (poi.reservation && RESERVATION_LABELS[poi.reservation]) parts.push(`<span>${RESERVATION_LABELS[poi.reservation]}</span>`);
-  if (poi.neighborhood) parts.push(`<span>${poi.neighborhood}</span>`);
-  if (parts.length === 0) return '';
-  return `<div class="poi-card-metadata">${parts.join('')}</div>`;
+function renderDetails(poi) {
+  const lines = [];
+  if (poi.duration) {
+    const setting = poi.setting ? ` · ${SETTING_LABELS[poi.setting]}` : '';
+    lines.push(`<div class="poi-card-detail"><span class="detail-icon">⏱</span> ${poi.duration}${setting}</div>`);
+  }
+  if (poi.neighborhood) lines.push(`<div class="poi-card-detail"><span class="detail-icon">📍</span> ${poi.neighborhood}</div>`);
+  if (poi.hours) lines.push(`<div class="poi-card-detail"><span class="detail-icon">🕐</span> ${poi.hours}</div>`);
+  if (poi.cost) lines.push(`<div class="poi-card-detail"><span class="detail-icon">💰</span> ${poi.cost}</div>`);
+  if (poi.reservation && RESERVATION_LABELS[poi.reservation]) lines.push(`<div class="poi-card-detail"><span class="detail-icon">🎫</span> ${RESERVATION_LABELS[poi.reservation]}</div>`);
+  if (lines.length === 0) return '';
+  return `<div class="poi-card-details">${lines.join('')}</div>`;
 }
 
 // ───────── Card deck ─────────
@@ -1120,9 +1120,7 @@ function showCurrentCard() {
         <h2>${poi.name}</h2>
         <p class="description">${poi.description || ''}</p>
         ${renderTags(poi.tags)}
-        ${renderMetadata(poi)}
-        ${poi.hours ? `<div class="poi-card-detail"><span class="detail-icon">🕐</span> ${poi.hours}</div>` : ''}
-        ${poi.cost ? `<div class="poi-card-detail"><span class="detail-icon">💰</span> ${poi.cost}</div>` : ''}
+        ${renderDetails(poi)}
         ${poi.url ? `<a class="poi-card-link" href="${poi.url}" target="_blank" rel="noopener">Visit website →</a>` : ''}
       </div>
       <div class="rating-buttons">

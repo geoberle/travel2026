@@ -891,15 +891,16 @@
       const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
       const img = poi.image ? `<img src="${poi.image}" alt="${poi.name}" onerror="this.remove()" class="poi-popup-img">` : '';
       const cat = `<span class="poi-popup-category" style="background:${color}20;color:${color}">${poi.category}</span>`;
-      const link = poi.url ? `<a href="${poi.url}" target="_blank" class="poi-popup-link">Website →</a>` : '';
-      const hours = poi.hours ? `<div class="poi-popup-meta">🕐 ${poi.hours}</div>` : '';
-      const cost = poi.cost ? `<div class="poi-popup-meta">💰 ${poi.cost}</div>` : '';
-      const tags = (poi.tags && poi.tags.length) ? `<div style="display:flex;flex-wrap:wrap;gap:3px;margin:4px 0">${poi.tags.map(t => `<span class="poi-tag-sm">${t}</span>`).join('')}</div>` : '';
-      const duration = poi.duration ? `<div class="poi-popup-meta">${poi.duration}</div>` : '';
-      const neighborhood = poi.neighborhood ? `<div class="poi-popup-meta">${poi.neighborhood}</div>` : '';
-      activePopup = new mapboxgl.Popup({ offset: [0, -15], anchor: 'bottom', maxWidth: '220px', closeButton: true })
+      const link = poi.url ? `<a href="${poi.url}" target="_blank" class="poi-popup-link">Visit website →</a>` : '';
+      const tags = (poi.tags && poi.tags.length) ? `<div style="display:flex;flex-wrap:wrap;gap:3px;margin:6px 0 2px">${poi.tags.map(t => `<span class="poi-tag-sm">${t}</span>`).join('')}</div>` : '';
+      let meta = '';
+      if (poi.duration) { const s = poi.setting === 'indoor' ? ' · Indoor' : poi.setting === 'outdoor' ? ' · Outdoor' : poi.setting === 'both' ? ' · Indoor & Outdoor' : ''; meta += `<div class="poi-popup-meta">⏱ ${poi.duration}${s}</div>`; }
+      if (poi.neighborhood) meta += `<div class="poi-popup-meta">📍 ${poi.neighborhood}</div>`;
+      if (poi.hours) meta += `<div class="poi-popup-meta">🕐 ${poi.hours}</div>`;
+      if (poi.cost) meta += `<div class="poi-popup-meta">💰 ${poi.cost}</div>`;
+      activePopup = new mapboxgl.Popup({ offset: [0, -15], anchor: 'bottom', maxWidth: '320px', closeButton: true })
         .setLngLat(poi.coordinates)
-        .setHTML(`${img}<div class="poi-popup-body"><div class="poi-popup-header">${cat}<strong>${poi.name}</strong></div><p class="poi-popup-desc">${poi.description || ''}</p>${tags}${duration}${neighborhood}${hours}${cost}${link}</div>`)
+        .setHTML(`${img}<div class="poi-popup-body"><div class="poi-popup-header">${cat}<strong>${poi.name}</strong></div><p class="poi-popup-desc">${poi.description || ''}</p>${tags}${meta}${link}</div>`)
         .addTo(map);
     }
 
