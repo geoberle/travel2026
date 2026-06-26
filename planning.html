@@ -263,12 +263,9 @@
   <script src="https://unpkg.com/mapbox-gl@3/dist/mapbox-gl.js"></script>
   <script src="https://unpkg.com/js-yaml@4/dist/js-yaml.min.js"></script>
   <script src="js/data.js"></script>
+  <script src="js/popup.js"></script>
   <script>
     const MAPBOX_TOKEN = 'pk.eyJ1IjoiZ2VyZG9iZXJsZWNobmVyIiwiYSI6ImNtcHpwNjdzYjA2d3EycnBnZWJkZ2p5ODUifQ.vl5h0bVgSuSaW_ZPIH0CKA';
-    const CATEGORY_COLORS = {
-      attraction: '#4ecdc4', food: '#ff9f43', culture: '#a55eea',
-      shopping: '#fd79a8', nature: '#00b894', transport: '#636e72'
-    };
     const TRAVELER_COLORS = { G: '#4ecdc4', C: '#ff9f43', L: '#a55eea' };
 
     let map, selectedBlockId = null, selectedDayIndex = null, activeLocation = null;
@@ -551,7 +548,7 @@
         (day.activities || []).forEach(a => {
           const p = TripStore.allPois[a.poi];
           if (p) {
-            const color = CATEGORY_COLORS[p.category] || '#4ecdc4';
+            const color = getCategoryColor(p.category);
             poisHtml += `<div class="poi-chip assigned" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${p.id}')" data-poi="${p.id}">
               <div class="dot" style="background:${color}"></div>${p.name}<button class="poi-unassign" onclick="event.stopPropagation();unassignPoi('${stay.id}',${idx},'${p.id}')" title="Remove">✕</button>
             </div>`;
@@ -799,7 +796,7 @@
       clearMarkers();
       if (!activeLocation) return;
       TripStore.getLocationPois(activeLocation).forEach(poi => {
-        const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+        const color = getCategoryColor(poi.category);
         const el = document.createElement('div');
         el.className = 'poi-circle-marker';
         if (poi.image) { el.style.backgroundImage = `url(${poi.image})`; el.style.backgroundSize = 'cover'; el.style.backgroundPosition = 'center'; }
@@ -807,7 +804,7 @@
         el.style.borderColor = color;
         el.style.boxShadow = `0 0 12px ${color}88, 0 0 4px rgba(255,255,255,0.3)`;
 
-        el.addEventListener('click', (e) => { e.stopPropagation(); map.flyTo({ center: poi.coordinates, zoom: 16, duration: 800 }); map.once('moveend', () => showPopup(poi)); });
+        el.addEventListener('click', (e) => { e.stopPropagation(); popupFlyTo(map, poi.coordinates, { zoom: 16 }); map.once('moveend', () => showPopup(poi)); });
         el.addEventListener('mouseenter', () => { el.classList.add('active'); highlightPoiInList(poi.id, true); });
         el.addEventListener('mouseleave', () => { el.classList.remove('active'); highlightPoiInList(poi.id, false); });
 
@@ -833,7 +830,7 @@
 
       pois.forEach((poi, i) => {
         if (!poi.coordinates) return;
-        const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+        const color = getCategoryColor(poi.category);
 
         const el = document.createElement('div');
         el.className = 'poi-circle-marker proposal';
@@ -889,22 +886,7 @@
     function highlightPoiInList(id, active) { document.querySelectorAll(`.poi-item[data-id="${id}"]`).forEach(el => el.classList.toggle('highlight', active)); }
 
     function showPopup(poi) {
-      if (activePopup) activePopup.remove();
-      const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
-      const img = poi.image ? `<img src="${poi.image}" alt="${poi.name}" onerror="this.remove()" class="poi-popup-img">` : '';
-      const cat = `<span class="poi-popup-category" style="background:${color}20;color:${color}">${poi.category}</span>`;
-      const link = poi.url ? `<a href="${poi.url}" target="_blank" class="poi-popup-link">Visit website →</a>` : '';
-      const _TS = {'sini-recommended': {css: 'recommended', label: 'Sini ⭐'}, 'tourist-trap': {css: 'tourist-trap', label: '⚠️ tourist trap'}};
-      const tags = (poi.tags && poi.tags.length) ? `<div style="display:flex;flex-wrap:wrap;gap:3px;margin:6px 0 2px">${poi.tags.map(t => { const s = _TS[t]; return `<span class="poi-tag-sm${s ? ' ' + s.css : ''}">${s ? s.label : t}</span>`; }).join('')}</div>` : '';
-      let meta = '';
-      if (poi.duration) { const s = poi.setting === 'indoor' ? ' · Indoor' : poi.setting === 'outdoor' ? ' · Outdoor' : poi.setting === 'both' ? ' · Indoor & Outdoor' : ''; meta += `<div class="poi-popup-meta">⏱ ${poi.duration}${s}</div>`; }
-      if (poi.neighborhood) meta += `<div class="poi-popup-meta">📍 ${poi.neighborhood}</div>`;
-      if (poi.hours) meta += `<div class="poi-popup-meta">🕐 ${poi.hours}</div>`;
-      if (poi.cost) meta += `<div class="poi-popup-meta">💰 ${poi.cost}</div>`;
-      activePopup = new mapboxgl.Popup({ offset: [0, -15], anchor: 'bottom', maxWidth: '320px', closeButton: true })
-        .setLngLat(poi.coordinates)
-        .setHTML(`${img}<div class="poi-popup-body"><div class="poi-popup-header">${cat}<strong>${poi.name}</strong></div><p class="poi-popup-desc">${poi.description || ''}</p>${tags}${meta}${link}</div>`)
-        .addTo(map);
+      activePopup = showPoiPopupOnMap(map, poi, { offset: [0, -15], removeExisting: activePopup });
     }
 
     // --- Detail tabs ---
@@ -926,7 +908,7 @@
       const pois = TripStore.getLocationPois(activeLocation);
       let html = `<div class="poi-count">${pois.length} places · ${TripStore.locations[activeLocation]?.name || activeLocation}</div>`;
       pois.forEach(poi => {
-        const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+        const color = getCategoryColor(poi.category);
         const nh = poi.neighborhood ? `<div class="neighborhood">${poi.neighborhood}</div>` : '';
         html += `<div class="poi-item" data-id="${poi.id}" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${poi.id}')" onclick="flyAndShow('${poi.id}')">
           <div class="dot" style="background:${color}"></div>
@@ -937,7 +919,7 @@
       list.innerHTML = html;
     }
 
-    function flyAndShow(id) { const poi = TripStore.allPois[id]; if (poi) { map.flyTo({ center: poi.coordinates, zoom: 15, duration: 1000 }); map.once('moveend', () => showPopup(poi)); } }
+    function flyAndShow(id) { const poi = TripStore.allPois[id]; if (poi) { popupFlyTo(map, poi.coordinates, { zoom: 15, duration: 1000 }); map.once('moveend', () => showPopup(poi)); } }
 
     async function delPoi(id) {
       if (!activeLocation) return;
@@ -1060,7 +1042,7 @@
 
         const container = document.createElement('div');
         pois.forEach((poi, i) => {
-          const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+          const color = getCategoryColor(poi.category);
           const isExisting = !!poi.existing;
           const div = document.createElement('div');
           div.className = 'poi-suggestion' + (isExisting ? ' existing' : '');
@@ -1068,8 +1050,7 @@
           const btns = isExisting ? '' : `<div class="poi-actions"><button class="poi-add-btn">+ Add</button><button class="poi-dismiss-btn">✕</button></div>`;
           const img = poi.image ? `<img class="poi-suggestion-img" src="${poi.image}" onerror="this.remove()">` : '';
           const meta = [poi.category, poi.price_range, poi.rating ? `★${poi.rating}` : ''].filter(Boolean).join(' · ');
-          const _TS2 = {'sini-recommended': {css: 'recommended', label: 'Sini ⭐'}, 'tourist-trap': {css: 'tourist-trap', label: '⚠️ tourist trap'}};
-          const ptags = (poi.tags && poi.tags.length) ? `<div class="poi-tags-inline">${poi.tags.map(t => { const s = _TS2[t]; return `<span class="poi-tag-sm${s ? ' ' + s.css : ''}">${s ? s.label : t}</span>`; }).join('')}</div>` : '';
+          const ptags = (poi.tags && poi.tags.length) ? `<div class="poi-tags-inline">${renderTagsHtml(poi.tags, 'poi-tag-sm')}</div>` : '';
           div.innerHTML = `${img}<div class="name" style="color:${color}">${poi.name}${badge}</div><div class="desc">${poi.description || ''}</div><div class="cat">${meta}</div>${ptags}${alignmentHtml(poi.alignment)}${btns}`;
 
           div.addEventListener('mouseenter', () => highlightProposalPin(i, true));

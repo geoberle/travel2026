@@ -604,13 +604,8 @@ function showPoiMarkers(map, pois, showLabels) {
 
   clearPoiMarkers(map);
 
-  const CATEGORY_COLORS = {
-    attraction: '#4ecdc4', food: '#ff9f43', culture: '#a55eea',
-    shopping: '#fd79a8', nature: '#00b894', transport: '#636e72'
-  };
-
   pois.forEach(poi => {
-    const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+    const color = getCategoryColor(poi.category);
 
     const el = document.createElement('div');
     el.className = 'poi-circle-marker';
@@ -666,43 +661,7 @@ function showPoiMarkers(map, pois, showLabels) {
 let activePopup = null;
 
 function showPoiPopup(map, poi) {
-  if (activePopup) activePopup.remove();
-
-  const imgHtml = poi.image
-    ? `<img src="${poi.image}" alt="${poi.name}" onerror="this.remove()" class="poi-popup-img">`
-    : '';
-
-  const categoryLabel = poi.category ? `<span class="poi-popup-category" style="background:${CATEGORY_COLORS[poi.category] || '#4ecdc4'}20;color:${CATEGORY_COLORS[poi.category] || '#4ecdc4'}">${poi.category}</span>` : '';
-
-  const linkHtml = poi.url
-    ? `<a href="${poi.url}" target="_blank" rel="noopener" class="poi-popup-link">Visit website →</a>`
-    : '';
-
-  const TAG_SPECIAL = {'sini-recommended': {css: 'recommended', label: 'Sini ⭐'}, 'tourist-trap': {css: 'tourist-trap', label: '⚠️ tourist trap'}};
-  const tagsHtml = (poi.tags && poi.tags.length)
-    ? `<div class="poi-popup-tags">${poi.tags.map(t => { const s = TAG_SPECIAL[t]; return `<span class="poi-popup-tag${s ? ' ' + s.css : ''}">${s ? s.label : t}</span>`; }).join('')}</div>`
-    : '';
-
-  let metaHtml = '';
-  if (poi.duration) {
-    const s = poi.setting === 'indoor' ? ' · Indoor' : poi.setting === 'outdoor' ? ' · Outdoor' : poi.setting === 'both' ? ' · Indoor & Outdoor' : '';
-    metaHtml += `<div class="poi-popup-meta">⏱ ${poi.duration}${s}</div>`;
-  }
-  if (poi.neighborhood) metaHtml += `<div class="poi-popup-meta">📍 ${poi.neighborhood}</div>`;
-  if (poi.hours) metaHtml += `<div class="poi-popup-meta">🕐 ${poi.hours}</div>`;
-  if (poi.cost) metaHtml += `<div class="poi-popup-meta">💰 ${poi.cost}</div>`;
-
-  activePopup = new mapboxgl.Popup({ offset: [0, -60], anchor: 'bottom', maxWidth: '320px', closeButton: true })
-    .setLngLat(poi.coordinates)
-    .setHTML(`
-      ${imgHtml}
-      <div class="poi-popup-body">
-        <div class="poi-popup-header">${categoryLabel}<strong>${poi.name}</strong></div>
-        <p class="poi-popup-desc">${poi.description}</p>
-        ${tagsHtml}${metaHtml}${linkHtml}
-      </div>
-    `)
-    .addTo(map);
+  activePopup = showPoiPopupOnMap(map, poi, { offset: [0, -60], removeExisting: activePopup });
 }
 
 function highlightPoi(poiId, active) {

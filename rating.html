@@ -767,6 +767,7 @@
   <script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore-compat.js"></script>
+  <script src="js/popup.js"></script>
   <script>
 'use strict';
 
@@ -776,14 +777,7 @@ const MAPBOX_TOKEN = 'pk.eyJ1IjoiZ2VyZG9iZXJsZWNobmVyIiwiYSI6ImNtcHpwNjdzYjA2d3E
 const TRIP_DIR = 'trips/seoul-2026';
 const TRIP_ID = 'seoul-2026';
 
-const CATEGORY_COLORS = {
-  attraction: '#4ecdc4',
-  food: '#ff9f43',
-  culture: '#a55eea',
-  shopping: '#fd79a8',
-  nature: '#00b894',
-  transport: '#636e72'
-};
+// CATEGORY_COLORS, TAG_SPECIAL, buildPopupHtml, getCategoryColor, renderTagsHtml from popup.js
 
 firebase.initializeApp({
   apiKey: "AIzaSyC-0yRauuc_1P8R-cae9wWpfOdeiHAennQ",
@@ -981,28 +975,8 @@ function initMap() {
 let activePoiPopup = null;
 
 function showPoiDetailsPopup(poi) {
-  if (activePoiPopup) activePoiPopup.remove();
-
-  const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
-  const imgHtml = poi.image ? `<img src="${poi.image}" alt="${poi.name}" onerror="this.remove()" class="poi-popup-img">` : '';
-  const categoryLabel = poi.category ? `<span class="poi-popup-category" style="background:${color}20;color:${color}">${poi.category}</span>` : '';
-  const linkHtml = poi.url ? `<a href="${poi.url}" target="_blank" rel="noopener" class="poi-popup-link">Visit website →</a>` : '';
-  const _TS3 = {'sini-recommended': {css: 'recommended', label: 'Sini ⭐'}, 'tourist-trap': {css: 'tourist-trap', label: '⚠️ tourist trap'}};
-  const tagsHtml = (poi.tags && poi.tags.length) ? `<div class="poi-popup-tags">${poi.tags.map(t => { const s = _TS3[t]; return `<span class="poi-popup-tag${s ? ' ' + s.css : ''}">${s ? s.label : t}</span>`; }).join('')}</div>` : '';
-
-  let metaHtml = '';
-  if (poi.duration) {
-    const s = poi.setting === 'indoor' ? ' · Indoor' : poi.setting === 'outdoor' ? ' · Outdoor' : poi.setting === 'both' ? ' · Indoor & Outdoor' : '';
-    metaHtml += `<div class="poi-popup-meta">⏱ ${poi.duration}${s}</div>`;
-  }
-  if (poi.neighborhood) metaHtml += `<div class="poi-popup-meta">📍 ${poi.neighborhood}</div>`;
-  if (poi.hours) metaHtml += `<div class="poi-popup-meta">🕐 ${poi.hours}</div>`;
-  if (poi.cost) metaHtml += `<div class="poi-popup-meta">💰 ${poi.cost}</div>`;
-
-  activePoiPopup = new mapboxgl.Popup({ offset: [0, -35], anchor: 'bottom', maxWidth: '320px', closeButton: true })
-    .setLngLat(poi.coordinates)
-    .setHTML(`${imgHtml}<div class="poi-popup-body"><div class="poi-popup-header">${categoryLabel}<strong>${poi.name}</strong></div><p class="poi-popup-desc">${poi.description}</p>${tagsHtml}${metaHtml}${linkHtml}</div>`)
-    .addTo(map);
+  if (document.querySelector('.tab[data-tab="rate"].active')) return;
+  activePoiPopup = showPoiPopupOnMap(map, poi, { offset: [0, -35], removeExisting: activePoiPopup });
 }
 
 function flyToPoi(poi) {
@@ -1012,7 +986,7 @@ function flyToPoi(poi) {
   clearMarkers();
   if (activePoiPopup) { activePoiPopup.remove(); activePoiPopup = null; }
 
-  const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+  const color = getCategoryColor(poi.category);
   const el = document.createElement('div');
   el.className = 'poi-circle-wrap';
 
@@ -1034,7 +1008,7 @@ function flyToPoi(poi) {
     .setLngLat(coords)
     .addTo(map);
 
-  map.flyTo({ center: coords, zoom: 14, duration: 800 });
+  popupFlyTo(map, coords);
   map.once('moveend', () => showPoiDetailsPopup(poi));
 }
 
@@ -1076,7 +1050,7 @@ function showSummaryMarkers() {
     el.appendChild(circle);
     el.appendChild(label);
     el.addEventListener('click', () => {
-      map.flyTo({ center: poi.coordinates, zoom: 14, duration: 800 });
+      popupFlyTo(map, poi.coordinates);
       map.once('moveend', () => showPoiDetailsPopup(poi));
     });
 
@@ -1110,7 +1084,6 @@ const SETTING_LABELS = { indoor: 'Indoor', outdoor: 'Outdoor', both: 'Indoor & O
 const SETTING_ICONS = { indoor: '🏠', outdoor: '☀️', both: '↔️' };
 const RESERVATION_LABELS = { required: 'Reservation required', recommended: 'Reservation recommended' };
 
-const TAG_SPECIAL = {'sini-recommended': {css: 'recommended', label: 'Sini ⭐'}, 'tourist-trap': {css: 'tourist-trap', label: '⚠️ tourist trap'}};
 function renderTags(tags) {
   if (!tags || tags.length === 0) return '';
   const interests = currentUser?.interests || [];
@@ -1161,7 +1134,7 @@ function showCurrentCard() {
 
   const poi = deckQueue[deckIndex];
   const catClass = `cat-${poi.category}`;
-  const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+  const color = getCategoryColor(poi.category);
 
   const locBar = document.getElementById('current-location');
   locBar.style.display = 'flex';
