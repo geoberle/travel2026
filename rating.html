@@ -141,6 +141,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      margin-top: 8px;
       animation: cardIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -207,11 +208,25 @@
       margin-bottom: 0.5rem;
     }
 
+    .poi-card-location {
+      font-size: 0.7rem;
+      font-weight: 500;
+      opacity: 0.4;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.02em;
+    }
+
     .poi-card-body .description {
       font-size: 0.85rem;
       line-height: 1.55;
       opacity: 0.7;
-      margin-bottom: 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .poi-card-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      margin: 0.75rem 0;
     }
 
     .poi-card-meta {
@@ -389,6 +404,34 @@
     .summary-my-rating.sure { background: rgba(253, 203, 110, 0.15); color: var(--sure); }
     .summary-my-rating.skip { background: rgba(178, 190, 195, 0.15); color: var(--skip); }
 
+    .summary-item-name { cursor: pointer; }
+    .summary-item-name:hover { color: var(--accent); }
+
+    .summary-item-details {
+      display: none;
+      padding: 0.75rem 1.5rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      animation: detailSlide 0.2s ease-out;
+    }
+
+    .summary-item-details.open { display: block; }
+
+    @keyframes detailSlide {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .summary-item-details .description {
+      font-size: 0.8rem;
+      line-height: 1.5;
+      opacity: 0.7;
+      margin-bottom: 0.6rem;
+    }
+
+    .summary-item-details .poi-card-tags { margin-bottom: 0.6rem; }
+    .summary-item-details .poi-card-details { margin-bottom: 0.4rem; }
+    .summary-item-details .poi-card-link { font-size: 0.7rem; }
+
     /* ───────── Change rating popover ───────── */
 
     .change-popover {
@@ -409,6 +452,13 @@
       font-size: 0.65rem;
       min-height: 36px;
       border-radius: 8px;
+    }
+
+    .change-popover .rate-btn.remove {
+      background: rgba(214, 48, 49, 0.15);
+      color: #d63031;
+      flex: 0;
+      padding: 0.5rem 0.6rem;
     }
 
     /* ───────── Consensus badge ───────── */
@@ -555,8 +605,8 @@
     /* ───────── Category colors ───────── */
 
     .current-location {
-      padding: 0.5rem 1.5rem;
-      font-size: 0.65rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.85rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.1em;
@@ -574,7 +624,7 @@
       position: absolute;
       bottom: 0;
       left: 0;
-      height: 5px;
+      height: 8px;
       background: linear-gradient(90deg, #ff6b6b, #fdcb6e);
       width: var(--progress, 0%);
       transition: width 0.3s ease;
@@ -1008,8 +1058,13 @@ function flyToPoi(poi) {
     .setLngLat(coords)
     .addTo(map);
 
-  popupFlyTo(map, coords);
-  map.once('moveend', () => showPoiDetailsPopup(poi));
+  const isRateTab = !!document.querySelector('.tab[data-tab="rate"].active');
+  if (isRateTab) {
+    map.flyTo({ center: coords, zoom: 14, duration: 800 });
+  } else {
+    popupFlyTo(map, coords);
+    map.once('moveend', () => showPoiDetailsPopup(poi));
+  }
 }
 
 function flyToLocation(locData) {
@@ -1100,7 +1155,6 @@ function renderDetails(poi) {
     const setting = poi.setting ? ` · ${SETTING_LABELS[poi.setting]}` : '';
     lines.push(`<div class="poi-card-detail"><span class="detail-icon">⏱</span> ${poi.duration}${setting}</div>`);
   }
-  if (poi.neighborhood) lines.push(`<div class="poi-card-detail"><span class="detail-icon">📍</span> ${poi.neighborhood}</div>`);
   if (poi.hours) lines.push(`<div class="poi-card-detail"><span class="detail-icon">🕐</span> ${poi.hours}</div>`);
   if (poi.cost) lines.push(`<div class="poi-card-detail"><span class="detail-icon">💰</span> ${poi.cost}</div>`);
   if (poi.reservation && RESERVATION_LABELS[poi.reservation]) lines.push(`<div class="poi-card-detail"><span class="detail-icon">🎫</span> ${RESERVATION_LABELS[poi.reservation]}</div>`);
@@ -1158,8 +1212,10 @@ function showCurrentCard() {
       </div>` : `<div style="padding:1rem 1.5rem 0"><span class="poi-card-category ${catClass}" style="position:static;display:inline-block">${poi.category}</span></div>`}
       <div class="poi-card-body">
         <h2>${poi.name}</h2>
+        <div class="poi-card-location">${poi._locationName}${poi.neighborhood ? ' · ' + poi.neighborhood : ''}</div>
         <p class="description">${poi.description || ''}</p>
         ${renderTags(poi.tags)}
+        <div class="poi-card-divider"></div>
         ${renderDetails(poi)}
         ${poi.url ? `<a class="poi-card-link" href="${poi.url}" target="_blank" rel="noopener">Visit website →</a>` : ''}
       </div>
@@ -1230,8 +1286,9 @@ function renderSummary() {
     for (const poi of pois) {
       const myVote = getMyVote(poi.id);
       const poiRatings = ratings[poi.id]?.votes || {};
+      const poiJson = JSON.stringify(poi).replace(/"/g, '&quot;');
 
-      html += `<div class="summary-item" onclick="flyToPoi(${JSON.stringify(poi).replace(/"/g, '&quot;')})">`;
+      html += `<div class="summary-item" onclick="flyToPoi(${poiJson})">`;
 
       let consensusHtml = '';
       if (myVote) {
@@ -1243,9 +1300,8 @@ function renderSummary() {
           consensusHtml = ` <span class="consensus-badge mixed">Mixed</span>`;
         }
       }
-      html += `<span class="summary-item-name">${poi.name}${consensusHtml}</span>`;
+      html += `<span class="summary-item-name" onclick="event.stopPropagation(); toggleSummaryDetails('${poi.id}')">${poi.name}${consensusHtml}</span>`;
 
-      // Vote dots for each traveler
       html += `<div class="summary-votes">`;
       for (const t of travelers) {
         const vote = poiRatings[t.google_account];
@@ -1262,16 +1318,38 @@ function renderSummary() {
       }
       html += `</div>`;
 
-      // My rating (clickable to change)
       if (myVote) {
         html += `<span class="summary-my-rating ${myVote}" onclick="event.stopPropagation(); showChangePopover(event, '${poi.id}', '${locName}')">${RATING_LABELS[myVote]}</span>`;
       }
 
       html += `</div>`;
+
+      // Expandable details
+      const catClass = `cat-${poi.category}`;
+      html += `<div class="summary-item-details" id="details-${poi.id}">`;
+      if (poi.image) {
+        html += `<img src="${poi.image}" alt="${poi.name}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:0.6rem" onerror="this.style.display='none'">`;
+      }
+      html += `<span class="poi-card-category ${catClass}" style="position:static;display:inline-block;margin-bottom:0.5rem">${poi.category}</span>`;
+      if (poi.description) html += `<p class="description">${poi.description}</p>`;
+      html += renderTags(poi.tags);
+      html += renderDetails(poi);
+      if (poi.url) html += `<a class="poi-card-link" href="${poi.url}" target="_blank" rel="noopener">Visit website →</a>`;
+      html += `</div>`;
     }
   }
 
   container.innerHTML = html;
+}
+
+// ───────── Summary detail toggle ─────────
+
+function toggleSummaryDetails(poiId) {
+  const el = document.getElementById('details-' + poiId);
+  if (!el) return;
+  const wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.summary-item-details.open').forEach(d => d.classList.remove('open'));
+  if (!wasOpen) el.classList.add('open');
 }
 
 // ───────── Change rating popover ─────────
@@ -1291,6 +1369,7 @@ function showChangePopover(event, poiId, locationName) {
     <button class="rate-btn must-go" onclick="changeRating('${poiId}', '${locationName}', 'must_go')">Love it</button>
     <button class="rate-btn sure" onclick="changeRating('${poiId}', '${locationName}', 'sure')">Okay</button>
     <button class="rate-btn skip" onclick="changeRating('${poiId}', '${locationName}', 'skip')">Pass</button>
+    <button class="rate-btn remove" onclick="removeRating('${poiId}')">✕</button>
   `;
 
   document.body.appendChild(pop);
@@ -1311,6 +1390,19 @@ function closePopover() {
 async function changeRating(poiId, locationName, value) {
   closePopover();
   await submitRating(poiId, locationName, value);
+  renderSummary();
+}
+
+async function removeRating(poiId) {
+  closePopover();
+  const docRef = db.collection('ratings').doc(TRIP_ID)
+    .collection('pois').doc(poiId);
+  await docRef.update(
+    new firebase.firestore.FieldPath('votes', currentUser.email),
+    firebase.firestore.FieldValue.delete()
+  );
+  if (ratings[poiId]?.votes) delete ratings[poiId].votes[currentUser.email];
+  buildDeck();
   renderSummary();
 }
 
