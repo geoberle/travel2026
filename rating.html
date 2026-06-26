@@ -675,6 +675,28 @@
     .cat-shopping { background: rgba(253, 121, 168, 0.85); color: #fff; }
     .cat-nature { background: rgba(0, 184, 148, 0.85); color: #fff; }
     .cat-transport { background: rgba(99, 110, 114, 0.85); color: #fff; }
+
+    .mapboxgl-popup-content {
+      background: rgba(15, 15, 25, 0.95);
+      color: #e8e8f0;
+      border-radius: 12px;
+      padding: 0;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+    .mapboxgl-popup-tip { border-top-color: rgba(15, 15, 25, 0.95); }
+    .mapboxgl-popup-close-button { color: rgba(255,255,255,0.6); font-size: 18px; right: 4px; top: 2px; }
+    .poi-popup-img { width: 100%; height: 110px; object-fit: cover; display: block; }
+    .poi-popup-body { padding: 10px 12px 12px; }
+    .poi-popup-header { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+    .poi-popup-header strong { font-size: 0.85rem; }
+    .poi-popup-category { font-size: 0.55rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 6px; border-radius: 4px; }
+    .poi-popup-desc { font-size: 0.75rem; line-height: 1.45; opacity: 0.8; margin: 0 0 6px; }
+    .poi-popup-meta { font-size: 0.7rem; opacity: 0.6; margin-bottom: 3px; }
+    .poi-popup-tags { display: flex; flex-wrap: wrap; gap: 3px; margin: 6px 0 2px; }
+    .poi-popup-tag { font-size: 0.55rem; font-weight: 500; padding: 1px 5px; border-radius: 9999px; background: rgba(255,255,255,0.08); opacity: 0.6; }
+    .poi-popup-link { display: inline-block; margin-top: 6px; font-size: 0.7rem; font-weight: 600; color: var(--accent); text-decoration: none; }
+    .poi-popup-link:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -942,11 +964,38 @@ function initMap() {
   map.addControl(new mapboxgl.NavigationControl(), 'top-left');
 }
 
+let activePoiPopup = null;
+
+function showPoiDetailsPopup(poi) {
+  if (activePoiPopup) activePoiPopup.remove();
+
+  const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
+  const imgHtml = poi.image ? `<img src="${poi.image}" alt="${poi.name}" onerror="this.remove()" class="poi-popup-img">` : '';
+  const categoryLabel = poi.category ? `<span class="poi-popup-category" style="background:${color}20;color:${color}">${poi.category}</span>` : '';
+  const linkHtml = poi.url ? `<a href="${poi.url}" target="_blank" rel="noopener" class="poi-popup-link">Visit website →</a>` : '';
+  const tagsHtml = (poi.tags && poi.tags.length) ? `<div class="poi-popup-tags">${poi.tags.map(t => `<span class="poi-popup-tag">${t}</span>`).join('')}</div>` : '';
+
+  let metaHtml = '';
+  if (poi.duration) {
+    const s = poi.setting === 'indoor' ? ' · Indoor' : poi.setting === 'outdoor' ? ' · Outdoor' : poi.setting === 'both' ? ' · Indoor & Outdoor' : '';
+    metaHtml += `<div class="poi-popup-meta">⏱ ${poi.duration}${s}</div>`;
+  }
+  if (poi.neighborhood) metaHtml += `<div class="poi-popup-meta">📍 ${poi.neighborhood}</div>`;
+  if (poi.hours) metaHtml += `<div class="poi-popup-meta">🕐 ${poi.hours}</div>`;
+  if (poi.cost) metaHtml += `<div class="poi-popup-meta">💰 ${poi.cost}</div>`;
+
+  activePoiPopup = new mapboxgl.Popup({ offset: [0, -60], anchor: 'bottom', maxWidth: '320px', closeButton: true })
+    .setLngLat(poi.coordinates)
+    .setHTML(`${imgHtml}<div class="poi-popup-body"><div class="poi-popup-header">${categoryLabel}<strong>${poi.name}</strong></div><p class="poi-popup-desc">${poi.description}</p>${tagsHtml}${metaHtml}${linkHtml}</div>`)
+    .addTo(map);
+}
+
 function flyToPoi(poi) {
   if (!map) return;
   const coords = Array.isArray(poi.coordinates) ? poi.coordinates : [0, 0];
 
   if (currentMarker) currentMarker.remove();
+  if (activePoiPopup) { activePoiPopup.remove(); activePoiPopup = null; }
 
   const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
   const el = document.createElement('div');
@@ -963,18 +1012,14 @@ function flyToPoi(poi) {
     circle.appendChild(img);
   }
 
-  const label = document.createElement('div');
-  label.className = 'poi-circle-label';
-  label.textContent = poi.name;
-
   el.appendChild(circle);
-  el.appendChild(label);
 
   currentMarker = new mapboxgl.Marker(el)
     .setLngLat(coords)
     .addTo(map);
 
   map.flyTo({ center: coords, zoom: 14, duration: 800 });
+  map.once('moveend', () => showPoiDetailsPopup(poi));
 }
 
 function flyToLocation(locData) {
