@@ -143,6 +143,8 @@
     .poi-alignment { display: flex; gap: 4px; margin-top: 4px; }
     .poi-tags-inline { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 3px; }
     .poi-tag-sm { font-size: 0.55rem; padding: 1px 5px; border-radius: 9999px; background: rgba(255,255,255,0.06); opacity: 0.5; }
+    .poi-tag-sm.recommended { opacity: 1; background: rgba(255, 154, 0, 0.2); color: #ff9a00; }
+    .poi-tag-sm.tourist-trap { opacity: 1; background: rgba(214, 48, 49, 0.2); color: #d63031; }
     .poi-item .neighborhood { font-size: 0.55rem; opacity: 0.3; }
     .alignment-badge { display: flex; align-items: center; gap: 3px; font-size: 0.6rem; }
     .alignment-avatar { width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.5rem; font-weight: 700; color: #0a0a0f; }
@@ -892,7 +894,8 @@
       const img = poi.image ? `<img src="${poi.image}" alt="${poi.name}" onerror="this.remove()" class="poi-popup-img">` : '';
       const cat = `<span class="poi-popup-category" style="background:${color}20;color:${color}">${poi.category}</span>`;
       const link = poi.url ? `<a href="${poi.url}" target="_blank" class="poi-popup-link">Visit website →</a>` : '';
-      const tags = (poi.tags && poi.tags.length) ? `<div style="display:flex;flex-wrap:wrap;gap:3px;margin:6px 0 2px">${poi.tags.map(t => `<span class="poi-tag-sm">${t}</span>`).join('')}</div>` : '';
+      const _TS = {'sini-recommended': {css: 'recommended', label: 'Sini ⭐'}, 'tourist-trap': {css: 'tourist-trap', label: '⚠️ tourist trap'}};
+      const tags = (poi.tags && poi.tags.length) ? `<div style="display:flex;flex-wrap:wrap;gap:3px;margin:6px 0 2px">${poi.tags.map(t => { const s = _TS[t]; return `<span class="poi-tag-sm${s ? ' ' + s.css : ''}">${s ? s.label : t}</span>`; }).join('')}</div>` : '';
       let meta = '';
       if (poi.duration) { const s = poi.setting === 'indoor' ? ' · Indoor' : poi.setting === 'outdoor' ? ' · Outdoor' : poi.setting === 'both' ? ' · Indoor & Outdoor' : ''; meta += `<div class="poi-popup-meta">⏱ ${poi.duration}${s}</div>`; }
       if (poi.neighborhood) meta += `<div class="poi-popup-meta">📍 ${poi.neighborhood}</div>`;
@@ -1065,7 +1068,8 @@
           const btns = isExisting ? '' : `<div class="poi-actions"><button class="poi-add-btn">+ Add</button><button class="poi-dismiss-btn">✕</button></div>`;
           const img = poi.image ? `<img class="poi-suggestion-img" src="${poi.image}" onerror="this.remove()">` : '';
           const meta = [poi.category, poi.price_range, poi.rating ? `★${poi.rating}` : ''].filter(Boolean).join(' · ');
-          const ptags = (poi.tags && poi.tags.length) ? `<div class="poi-tags-inline">${poi.tags.map(t => `<span class="poi-tag-sm">${t}</span>`).join('')}</div>` : '';
+          const _TS2 = {'sini-recommended': {css: 'recommended', label: 'Sini ⭐'}, 'tourist-trap': {css: 'tourist-trap', label: '⚠️ tourist trap'}};
+          const ptags = (poi.tags && poi.tags.length) ? `<div class="poi-tags-inline">${poi.tags.map(t => { const s = _TS2[t]; return `<span class="poi-tag-sm${s ? ' ' + s.css : ''}">${s ? s.label : t}</span>`; }).join('')}</div>` : '';
           div.innerHTML = `${img}<div class="name" style="color:${color}">${poi.name}${badge}</div><div class="desc">${poi.description || ''}</div><div class="cat">${meta}</div>${ptags}${alignmentHtml(poi.alignment)}${btns}`;
 
           div.addEventListener('mouseenter', () => highlightProposalPin(i, true));

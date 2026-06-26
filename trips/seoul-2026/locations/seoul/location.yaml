@@ -41,7 +41,7 @@ pois:
     coordinates:
       - 126.9910
       - 37.5794
-    description: UNESCO World Heritage palace with guided Secret Garden tours through centuries-old royal gardens.
+    description: Explore a UNESCO World Heritage palace, then join a 90-min guided walk through the Secret Garden — 300-year-old trees, lotus ponds, hidden pavilions, and a royal rice field with a straw-roofed gazebo.
     category: culture
     image: "https://images.unsplash.com/photo-1677697087635-bc9771a28c98?w=800"
     url: https://english.cha.go.kr/html/HtmlPage.do?pg=%2Froyal%2FRoyalPalaces_infomation_1.jsp&mn=EN_02_03_02
@@ -58,7 +58,7 @@ pois:
     coordinates:
       - 126.9957
       - 37.5126
-    description: World's longest bridge fountain with rainbow LED light shows over the Han River. Free.
+    description: Watch 380 jets shoot rainbow-lit water 20m from both sides of Banpo Bridge. Grab a spot at Moonlight Square or Jamsu Bridge underneath for the best view. Pair with fried chicken delivery on a picnic mat.
     category: attraction
     image: "https://images.unsplash.com/photo-1590287480190-7cac0ac013f4?w=800"
     url: https://english.visitseoul.net/area/Banpodaegyo-Bridge-Moonlight-Rainbow-Fountain/ENP002220
@@ -77,13 +77,14 @@ pois:
     description: Seoul's biggest street food market with 200+ vendors. Giant ice creams, tteokbokki, grilled squid, lobster.
     category: food
     image: "https://images.unsplash.com/photo-1552912470-ee2e96439539?w=800"
+    url: https://english.visitseoul.net/attractions/Myeong-dong/ENP000283
     hours: "15:00–22:00 daily, fewer stalls Mon–Thu"
     cost: "Street food 3,000–15,000 KRW per item, bring cash"
     duration: "1-2 hours"
     setting: outdoor
     reservation: none
     neighborhood: Myeongdong
-    tags: [street-food, shopping, family-friendly]
+    tags: [street-food, shopping, family-friendly, tourist-trap]
   - id: gwangjang-market
     name: Gwangjang Market
     coordinates:
@@ -99,7 +100,7 @@ pois:
     setting: indoor
     reservation: none
     neighborhood: Jongno
-    tags: [street-food, traditional-market, family-friendly]
+    tags: [street-food, traditional-market, family-friendly, tourist-trap]
   - id: namdaemun-market
     name: Namdaemun Market
     coordinates:
@@ -142,6 +143,7 @@ pois:
     description: Walk through 900 traditional Joseon-era houses between two palaces, snap rooftop photos toward N Seoul Tower, and duck into small galleries and tea houses.
     category: culture
     image: "https://images.unsplash.com/photo-1512059555341-6a121e7d4d86?w=800"
+    url: https://english.visitseoul.net/attractions/Bukchon-Hanok-Village/ENP000261
     hours: "Tourist access 10:00–17:00 only (100,000 KRW fine outside hours), closed Sundays"
     cost: "Free"
     closedOn: [sunday]
@@ -149,7 +151,7 @@ pois:
     setting: outdoor
     reservation: none
     neighborhood: Jongno
-    tags: [history, hanbok, photography, architecture]
+    tags: [history, hanbok, photography, architecture, tourist-trap]
   - id: bukchon-observatory
     name: Bukchon Observatory
     coordinates:
@@ -158,6 +160,7 @@ pois:
     description: Rooftop viewing platform in a villa above Bukchon Hanok Village. Panoramic views of hanok rooftops, N Seoul Tower, and Gyeongbokgung. Includes one drink.
     category: attraction
     image: "https://images.unsplash.com/photo-1523760957528-55d1d540360d?w=800"
+    url: https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=65455
     hours: "09:00–20:00 daily, closed Lunar New Year & Chuseok"
     cost: "3,000 KRW adult (incl. 1 drink), 2,000 KRW student/child"
     duration: "30 min"
@@ -186,7 +189,7 @@ pois:
     coordinates:
       - 127.0590
       - 37.5121
-    description: Stunning 13m-tall bookshelves in a 2,800sqm atrium inside COEX Mall. 70,000 books, great photo spot.
+    description: Wander through 13m-tall bookshelves in a 2,800sqm atrium inside COEX Mall. Browse 70,000 books, grab a seat with power plugs, or head to the 2nd floor for the best photo angle. Free, open to all.
     category: attraction
     image: "https://images.unsplash.com/photo-1523180003485-e6e7d62c938b?w=800"
     url: https://english.seoul.go.kr/starfield-library-coex/
@@ -205,6 +208,7 @@ pois:
     description: Seoul's coolest neighborhood (Time Out #4 worldwide). Converted factory cafes, K-beauty flagships, rotating popup stores.
     category: shopping
     image: "https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800"
+    url: https://english.visitseoul.net/editorspicks/Seongsu-dong/ENNg9y9rs
     hours: "Most shops/popups 11:00–21:00. Check #성수팝업 on Instagram for current popups."
     cost: "Free entry to most popups. Olive Young N Seongsu is the largest in Korea."
     duration: "2-3 hours"
@@ -220,6 +224,7 @@ pois:
     description: Easy hilltop walk along the 1396 Joseon fortress wall. Best city panorama at sunset/night, Ihwa Mural Village en route.
     category: nature
     image: "https://images.unsplash.com/photo-1570191913384-7b4ff11716e7?w=800"
+    url: https://english.visitseoul.net/area/Naksan-Park-At-Night/ENP016320
     hours: "24h (bring bug spray for evening walks)"
     cost: "Free"
     duration: "1-2 hours"
@@ -259,3 +264,175 @@ pois:
     reservation: recommended
     neighborhood: Jamsil
     tags: [theme-park, gaming, family-friendly]
+  - id: somunnan-guksu
+    name: Somunnan Guksu (소문난국수)
+    coordinates:
+      - 127.0010
+      - 37.5705
+    description: Slurp handmade noodles at this no-frills local joint near Jongno 5-ga. Famous for janchi guksu and bibim guksu at rock-bottom prices.
+    category: food
+    image: "https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?w=800"
+    hours: "11:00–20:00"
+    cost: "3,000–6,000 KRW per bowl"
+    duration: "30 min"
+    setting: indoor
+    reservation: none
+    neighborhood: Jongno
+    tags: [korean-food, street-food, sini-recommended]
+  - id: meerkat-friends
+    name: Meerkat Friends (미어캣프랜즈)
+    coordinates:
+      - 126.9240
+      - 37.5508
+    description: Pet meerkats, wallabies, arctic foxes, and raccoons at this two-floor animal cafe near Hongdae. Enter the meerkat pen for 10 minutes of hands-on time.
+    category: attraction
+    image: "https://images.unsplash.com/photo-1586959140255-aab0163e21cf?w=800"
+    url: https://creatrip.com/en/spot/12765
+    hours: "Mon–Fri 13:50–19:30, Sat–Sun 13:20–20:00"
+    cost: "15,000 KRW entry (includes animal snacks)"
+    duration: "1-1.5 hours"
+    setting: indoor
+    reservation: none
+    neighborhood: Hongdae
+    tags: [animals, family-friendly, sini-recommended]
+  - id: starfield-coex-mall
+    name: Starfield COEX Mall
+    coordinates:
+      - 127.0590
+      - 37.5115
+    description: Shop 300+ stores in Asia's largest underground mall. Fashion, beauty, COEX Aquarium, MegaBox Cinema, and City Center Airport check-in all under one roof.
+    category: shopping
+    image: "https://images.unsplash.com/photo-1672671109385-a5cd3ff8c182?w=800"
+    url: https://m.starfield.co.kr/coexmall?lang=en
+    hours: "10:30–22:00 daily"
+    cost: "Free entry, shops vary"
+    duration: "2-3 hours"
+    setting: indoor
+    reservation: none
+    neighborhood: Gangnam
+    tags: [shopping, family-friendly, sini-recommended]
+  - id: gangnam-style-sculpture
+    name: Gangnam Style Sculpture
+    coordinates:
+      - 127.0605
+      - 37.5129
+    description: Snap a photo with PSY's 5m-tall bronze crossed-fist sculpture in front of COEX Mall. Music plays as you approach, and it lights up at night.
+    category: attraction
+    image: "https://images.unsplash.com/photo-1722084426182-b88c8e217f10?w=800"
+    hours: "24h"
+    cost: "Free"
+    duration: "15 min"
+    setting: outdoor
+    reservation: none
+    neighborhood: Gangnam
+    tags: [k-pop, photography, free-entry, instagram-spot, sini-recommended]
+  - id: samcheong-bingsu
+    name: Samcheong Bingsu (삼청빙수)
+    coordinates:
+      - 126.9817
+      - 37.5813
+    description: Cool down with milk-based shaved ice in a traditional hanok near Bukchon. Flavors from classic patbingsu to mango, green tea, and black sesame.
+    category: food
+    image: "https://images.unsplash.com/photo-1595275320712-24b6f2b0a984?w=800"
+    hours: "Mon–Thu 12:00–19:00, Fri–Sun 12:00–22:00"
+    cost: "10,000–15,000 KRW per bingsu"
+    duration: "30-60 min"
+    setting: indoor
+    reservation: none
+    neighborhood: Samcheong
+    tags: [dessert, cafe, instagram-spot, sini-recommended]
+  - id: hwangsaengga-kalguksu
+    name: Hwangsaengga Kalguksu (황생가칼국수)
+    coordinates:
+      - 126.9836
+      - 37.5803
+    description: Queue up for Michelin Bib Gourmand knife-cut noodles in rich ox-bone broth near Bukchon. Giant wang mandu dumplings and cold kongguksu in summer.
+    category: food
+    image: "https://images.unsplash.com/photo-1612927601601-6638404737ce?w=800"
+    url: https://guide.michelin.com/us/en/seoul-capital-area/kr-seoul/restaurant/hwangsaengga-kalguksu
+    hours: "11:00–21:30 daily, no break time"
+    cost: "~10,000–15,000 KRW per person"
+    duration: "30-60 min"
+    setting: indoor
+    reservation: none
+    neighborhood: Jongno
+    tags: [korean-food, family-friendly, sini-recommended]
+  - id: yeouido-park
+    name: Yeouido Park
+    coordinates:
+      - 126.9222
+      - 37.5247
+    description: Bike, picnic, or walk the 2.9km loop through four themed gardens on Yeouido Island. Ride the SEOULDAL balloon 130m up for aerial city views.
+    category: nature
+    image: "https://images.unsplash.com/photo-1668737488609-68b4f816dfe3?w=800"
+    url: https://english.visitseoul.net/nature/YeouidoPark_/2167
+    hours: "24h (SEOULDAL balloon Tue–Sun 12:00–22:00)"
+    cost: "Free (bike rental ~3,000 KRW/hr, balloon extra)"
+    duration: "1-2 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Yeouido
+    tags: [nature, parks, family-friendly, free-entry, sini-recommended]
+  - id: daom-vegetarian-noodle
+    name: Daom Vegetarian Noodle (다옴국수집)
+    coordinates:
+      - 126.9714
+      - 37.5475
+    description: Cheap vegetarian janchi guksu and bibim guksu near Seoul Station. No meat — only anchovy broth. All-you-can-eat kimchi, under 10,000 KRW a head.
+    category: food
+    image: "https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?w=800"
+    hours: "17:00–20:00 daily"
+    cost: "1,000–10,000 KRW per person"
+    duration: "30 min"
+    setting: indoor
+    reservation: none
+    neighborhood: Yongsan
+    tags: [korean-food, vegetarian, sini-recommended]
+  - id: ipark-mall
+    name: I'Park Mall (현대 아이파크몰)
+    coordinates:
+      - 126.9649
+      - 37.5284
+    description: 11-floor mall at Yongsan Station with Pokémon, PlayStation, Gundam, and Nintendo shops alongside fashion brands, IMAX CGV cinema, and an e-sports stadium.
+    category: shopping
+    image: "https://images.unsplash.com/photo-1719132140379-1d94d4608e22?w=800"
+    url: http://www.iparkmall.co.kr
+    hours: "Sun–Thu 10:30–20:30, Fri–Sat 10:30–21:00"
+    cost: "Free entry"
+    duration: "2-3 hours"
+    setting: indoor
+    reservation: none
+    neighborhood: Yongsan
+    tags: [shopping, gaming, anime, manga, family-friendly, sini-recommended]
+  - id: seoullo-7017
+    name: Seoullo 7017
+    coordinates:
+      - 126.9726
+      - 37.5558
+    description: Walk 1km along a former highway overpass turned elevated garden near Seoul Station. 24,000 plants, city views, cafes, and light shows at night.
+    category: nature
+    image: "https://images.unsplash.com/photo-1672671109385-a5cd3ff8c182?w=800"
+    url: https://english.visitseoul.net/tours/all-about-seoullo-7017_/21502
+    hours: "10:00–22:00 daily"
+    cost: "Free"
+    duration: "30-60 min"
+    setting: outdoor
+    reservation: none
+    neighborhood: Jung-gu
+    tags: [nature, photography, free-entry, architecture, sini-recommended]
+  - id: eland-cruise
+    name: E-Land Cruise (한강유람선)
+    coordinates:
+      - 126.9342
+      - 37.5268
+    description: Cruise the Han River from Yeouido dock — 40-min daytime tours or 50-min evening jazz cruises with Seoul's skyline lit up. Banpo Rainbow Fountain visible Apr–Oct.
+    category: attraction
+    image: "https://images.unsplash.com/photo-1537152101133-4bd6148c7bf1?w=800"
+    url: https://www.koreatraveleasy.com/product/hanriver-hangangriver-ferry-cruise-eland-story-music/
+    hours: "Weekday departures 10:50/12:50/14:50/15:50, weekends add 13:50. Night cruises vary by month."
+    cost: "~15,000 KRW adult day cruise, night cruises 19,900+ KRW. Free under 3."
+    duration: "40-50 min"
+    setting: outdoor
+    reservation: recommended
+    neighborhood: Yeouido
+    tags: [cruise, photography, family-friendly, sini-recommended]

@@ -6,8 +6,8 @@ pois:
   - id: yanagibashi-rengo-market
     name: Yanagibashi Rengo Market
     coordinates:
-      - 130.402
-      - 33.584
+      - 130.4042
+      - 33.5878
     description: Browse 47 stalls of fresh fish, seasonal produce, and local snacks at Fukuoka's kitchen. Try the in-market diner for a seafood breakfast. Cash only.
     category: food
     image: https://images.unsplash.com/photo-1665844237472-043c0a164434?w=800
@@ -23,8 +23,8 @@ pois:
   - id: teamlab-forest-fukuoka
     name: teamLab Forest Fukuoka
     coordinates:
-      - 130.35
-      - 33.592
+      - 130.3622
+      - 33.5953
     description: Walk through immersive digital art rooms, chase virtual animals across projection floors, and create your own creatures at this five-floor teamLab experience.
     category: attraction
     image: https://images.unsplash.com/photo-1627890352182-844e8d0355f2?w=800

@@ -678,8 +678,9 @@ function showPoiPopup(map, poi) {
     ? `<a href="${poi.url}" target="_blank" rel="noopener" class="poi-popup-link">Visit website →</a>`
     : '';
 
+  const TAG_SPECIAL = {'sini-recommended': {css: 'recommended', label: 'Sini ⭐'}, 'tourist-trap': {css: 'tourist-trap', label: '⚠️ tourist trap'}};
   const tagsHtml = (poi.tags && poi.tags.length)
-    ? `<div class="poi-popup-tags">${poi.tags.map(t => `<span class="poi-popup-tag">${t}</span>`).join('')}</div>`
+    ? `<div class="poi-popup-tags">${poi.tags.map(t => { const s = TAG_SPECIAL[t]; return `<span class="poi-popup-tag${s ? ' ' + s.css : ''}">${s ? s.label : t}</span>`; }).join('')}</div>`
     : '';
 
   let metaHtml = '';

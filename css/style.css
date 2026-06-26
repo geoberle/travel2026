@@ -578,6 +578,18 @@ body {
   opacity: 0.6;
 }
 
+.poi-popup-tag.recommended {
+  opacity: 1;
+  background: rgba(255, 154, 0, 0.2);
+  color: #ff9a00;
+}
+
+.poi-popup-tag.tourist-trap {
+  opacity: 1;
+  background: rgba(214, 48, 49, 0.2);
+  color: #d63031;
+}
+
 .poi-popup-link {
   display: inline-block;
   margin-top: 6px;

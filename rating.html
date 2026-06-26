@@ -245,6 +245,18 @@
       color: #4ecdc4;
     }
 
+    .poi-tag.recommended {
+      opacity: 1;
+      background: rgba(255, 154, 0, 0.2);
+      color: #ff9a00;
+    }
+
+    .poi-tag.tourist-trap {
+      opacity: 1;
+      background: rgba(214, 48, 49, 0.2);
+      color: #d63031;
+    }
+
     .poi-card-details {
       display: flex;
       flex-direction: column;
@@ -695,6 +707,8 @@
     .poi-popup-meta { font-size: 0.7rem; opacity: 0.6; margin-bottom: 3px; }
     .poi-popup-tags { display: flex; flex-wrap: wrap; gap: 3px; margin: 6px 0 2px; }
     .poi-popup-tag { font-size: 0.55rem; font-weight: 500; padding: 1px 5px; border-radius: 9999px; background: rgba(255,255,255,0.08); opacity: 0.6; }
+    .poi-popup-tag.recommended { opacity: 1; background: rgba(255, 154, 0, 0.2); color: #ff9a00; }
+    .poi-popup-tag.tourist-trap { opacity: 1; background: rgba(214, 48, 49, 0.2); color: #d63031; }
     .poi-popup-link { display: inline-block; margin-top: 6px; font-size: 0.7rem; font-weight: 600; color: var(--accent); text-decoration: none; }
     .poi-popup-link:hover { text-decoration: underline; }
   </style>
@@ -973,7 +987,8 @@ function showPoiDetailsPopup(poi) {
   const imgHtml = poi.image ? `<img src="${poi.image}" alt="${poi.name}" onerror="this.remove()" class="poi-popup-img">` : '';
   const categoryLabel = poi.category ? `<span class="poi-popup-category" style="background:${color}20;color:${color}">${poi.category}</span>` : '';
   const linkHtml = poi.url ? `<a href="${poi.url}" target="_blank" rel="noopener" class="poi-popup-link">Visit website →</a>` : '';
-  const tagsHtml = (poi.tags && poi.tags.length) ? `<div class="poi-popup-tags">${poi.tags.map(t => `<span class="poi-popup-tag">${t}</span>`).join('')}</div>` : '';
+  const _TS3 = {'sini-recommended': {css: 'recommended', label: 'Sini ⭐'}, 'tourist-trap': {css: 'tourist-trap', label: '⚠️ tourist trap'}};
+  const tagsHtml = (poi.tags && poi.tags.length) ? `<div class="poi-popup-tags">${poi.tags.map(t => { const s = _TS3[t]; return `<span class="poi-popup-tag${s ? ' ' + s.css : ''}">${s ? s.label : t}</span>`; }).join('')}</div>` : '';
 
   let metaHtml = '';
   if (poi.duration) {
@@ -984,7 +999,7 @@ function showPoiDetailsPopup(poi) {
   if (poi.hours) metaHtml += `<div class="poi-popup-meta">🕐 ${poi.hours}</div>`;
   if (poi.cost) metaHtml += `<div class="poi-popup-meta">💰 ${poi.cost}</div>`;
 
-  activePoiPopup = new mapboxgl.Popup({ offset: [0, -60], anchor: 'bottom', maxWidth: '320px', closeButton: true })
+  activePoiPopup = new mapboxgl.Popup({ offset: [0, -35], anchor: 'bottom', maxWidth: '320px', closeButton: true })
     .setLngLat(poi.coordinates)
     .setHTML(`${imgHtml}<div class="poi-popup-body"><div class="poi-popup-header">${categoryLabel}<strong>${poi.name}</strong></div><p class="poi-popup-desc">${poi.description}</p>${tagsHtml}${metaHtml}${linkHtml}</div>`)
     .addTo(map);
@@ -994,7 +1009,7 @@ function flyToPoi(poi) {
   if (!map) return;
   const coords = Array.isArray(poi.coordinates) ? poi.coordinates : [0, 0];
 
-  if (currentMarker) currentMarker.remove();
+  clearMarkers();
   if (activePoiPopup) { activePoiPopup.remove(); activePoiPopup = null; }
 
   const color = CATEGORY_COLORS[poi.category] || '#4ecdc4';
@@ -1013,6 +1028,7 @@ function flyToPoi(poi) {
   }
 
   el.appendChild(circle);
+  el.addEventListener('click', () => showPoiDetailsPopup(poi));
 
   currentMarker = new mapboxgl.Marker(el)
     .setLngLat(coords)
@@ -1059,6 +1075,10 @@ function showSummaryMarkers() {
 
     el.appendChild(circle);
     el.appendChild(label);
+    el.addEventListener('click', () => {
+      map.flyTo({ center: poi.coordinates, zoom: 14, duration: 800 });
+      map.once('moveend', () => showPoiDetailsPopup(poi));
+    });
 
     const marker = new mapboxgl.Marker(el)
       .setLngLat(poi.coordinates)
@@ -1090,12 +1110,14 @@ const SETTING_LABELS = { indoor: 'Indoor', outdoor: 'Outdoor', both: 'Indoor & O
 const SETTING_ICONS = { indoor: '🏠', outdoor: '☀️', both: '↔️' };
 const RESERVATION_LABELS = { required: 'Reservation required', recommended: 'Reservation recommended' };
 
+const TAG_SPECIAL = {'sini-recommended': {css: 'recommended', label: 'Sini ⭐'}, 'tourist-trap': {css: 'tourist-trap', label: '⚠️ tourist trap'}};
 function renderTags(tags) {
   if (!tags || tags.length === 0) return '';
   const interests = currentUser?.interests || [];
   return `<div class="poi-card-tags">${tags.map(tag => {
-    const isMatch = interests.includes(tag);
-    return `<span class="poi-tag${isMatch ? ' match' : ''}">${tag}</span>`;
+    const s = TAG_SPECIAL[tag];
+    const isMatch = !s && interests.includes(tag);
+    return `<span class="poi-tag${isMatch ? ' match' : ''}${s ? ' ' + s.css : ''}">${s ? s.label : tag}</span>`;
   }).join('')}</div>`;
 }
 

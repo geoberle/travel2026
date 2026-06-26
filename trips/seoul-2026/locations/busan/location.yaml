@@ -50,7 +50,7 @@ pois:
     setting: outdoor
     reservation: none
     neighborhood: Saha
-    tags: [art, photography, instagram-spot, family-friendly, free-entry]
+    tags: [art, photography, instagram-spot, family-friendly, free-entry, tourist-trap]
   - id: arte-museum-busan
     name: ARTE MUSEUM Busan
     coordinates:
