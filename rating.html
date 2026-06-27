@@ -799,7 +799,7 @@
           <div class="tab active" data-tab="rate" onclick="switchTab('rate')">
             Rate <span class="badge" id="unrated-badge">0</span>
           </div>
-          <div class="tab" data-tab="summary" onclick="switchTab('summary')">All POIs</div>
+          <div class="tab" data-tab="summary" onclick="switchTab('summary')">Ideas</div>
         </div>
         <div class="current-location" id="current-location">
           <span class="current-location-name" id="current-location-name"></span>
@@ -1092,7 +1092,6 @@ function flyToPoi(poi) {
   } else {
     highlightMarker(poi.id);
     popupFlyTo(map, coords);
-    map.once('moveend', () => showPoiDetailsPopup(poi));
   }
 }
 
