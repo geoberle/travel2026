@@ -38,7 +38,7 @@
     /* ───────── Layout ───────── */
 
     #app { display: none; flex: 1; overflow: hidden; }
-    #login-screen { display: flex; align-items: center; justify-content: center; height: 100dvh; }
+    #login-screen { display: none; align-items: center; justify-content: center; height: 100dvh; }
     #error-screen { display: none; align-items: center; justify-content: center; height: 100dvh; }
 
     .app-layout {
@@ -869,9 +869,13 @@ document.getElementById('login-btn').addEventListener('click', () => {
 
 auth.onAuthStateChanged(async user => {
   if (!user) {
-    show('login-screen');
-    hide('app');
+    // Anonymous read-only mode
+    currentUser = null;
+    hide('login-screen');
     hide('error-screen');
+    show('app');
+    setReadOnlyMode();
+    await init();
     return;
   }
 
@@ -879,11 +883,15 @@ auth.onAuthStateChanged(async user => {
   const traveler = travelers.find(t => t.google_account === user.email);
 
   if (!traveler) {
-    document.getElementById('error-msg').textContent =
-      `${user.email} is not on the travelers list.`;
-    show('error-screen');
+    // Logged in but not a traveler — read-only with user bar
+    currentUser = null;
+    document.getElementById('user-avatar').src = user.photoURL || '';
+    document.getElementById('user-name').textContent = user.displayName || user.email;
     hide('login-screen');
-    hide('app');
+    hide('error-screen');
+    show('app');
+    setReadOnlyMode();
+    await init();
     return;
   }
 
@@ -894,9 +902,21 @@ auth.onAuthStateChanged(async user => {
   hide('login-screen');
   hide('error-screen');
   show('app');
+  setReadWriteMode();
 
   await init();
 });
+
+function setReadOnlyMode() {
+  document.querySelector('.tab[data-tab="rate"]').style.display = 'none';
+  document.querySelector('.user-bar').style.display = currentUser ? 'flex' : 'none';
+  switchTab('summary');
+}
+
+function setReadWriteMode() {
+  document.querySelector('.tab[data-tab="rate"]').style.display = '';
+  document.querySelector('.user-bar').style.display = 'flex';
+}
 
 function signOut() {
   auth.signOut();
@@ -907,11 +927,12 @@ function signOut() {
 
 async function init() {
   try {
+    if (!travelers.length) await loadTravelers();
     await loadLocations();
     buildPoiList();
     initMap();
     await loadRatings();
-    buildDeck();
+    if (currentUser) buildDeck();
     renderSummary();
   } catch (err) {
     showToast('Failed to initialize. Please reload.');
@@ -1173,6 +1194,7 @@ function buildDeck() {
 }
 
 function getMyVote(poiId) {
+  if (!currentUser) return null;
   return ratings[poiId]?.votes?.[currentUser.email] || null;
 }
 
@@ -1290,8 +1312,9 @@ function renderSummary() {
 
       html += `<div class="summary-item" onclick="flyToPoi(${poiJson})">`;
 
+      const isAnonymous = !currentUser;
       let consensusHtml = '';
-      if (myVote) {
+      if (isAnonymous || myVote) {
         const voterCount = travelers.length;
         const votes = Object.values(poiRatings);
         if (votes.length === voterCount && votes.every(v => v === votes[0])) {
@@ -1305,8 +1328,8 @@ function renderSummary() {
       html += `<div class="summary-votes">`;
       for (const t of travelers) {
         const vote = poiRatings[t.google_account];
-        const isSelf = t.google_account === currentUser.email;
-        const canSee = isSelf || myVote;
+        const isSelf = !isAnonymous && t.google_account === currentUser.email;
+        const canSee = isAnonymous || isSelf || myVote;
 
         if (!canSee) {
           html += `<div class="vote-dot hidden" title="${t.name}: hidden">${t.initial}</div>`;
@@ -1318,7 +1341,7 @@ function renderSummary() {
       }
       html += `</div>`;
 
-      if (myVote) {
+      if (!isAnonymous && myVote) {
         html += `<span class="summary-my-rating ${myVote}" onclick="event.stopPropagation(); showChangePopover(event, '${poi.id}', '${locName}')">${RATING_LABELS[myVote]}</span>`;
       }
 
