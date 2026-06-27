@@ -1041,6 +1041,12 @@ function initMap() {
   });
 
   map.addControl(new mapboxgl.NavigationControl(), 'top-left');
+  map.on('click', (e) => {
+    if (!e.originalEvent.target.closest('.poi-circle-wrap')) {
+      clearMarkerHighlight();
+      if (activePoiPopup) { activePoiPopup.remove(); activePoiPopup = null; }
+    }
+  });
 }
 
 let activePoiPopup = null;
@@ -1084,6 +1090,7 @@ function flyToPoi(poi) {
 
     map.flyTo({ center: coords, zoom: 14, duration: 800 });
   } else {
+    highlightMarker(poi.id);
     popupFlyTo(map, coords);
     map.once('moveend', () => showPoiDetailsPopup(poi));
   }
@@ -1098,16 +1105,13 @@ function flyToLocation(locData) {
 function showSummaryMarkers() {
   clearMarkers();
 
-  const isAnonymous = !currentUser;
-
   for (const poi of allPois) {
     const myVote = getMyVote(poi.id);
-    if (!isAnonymous && !myVote) continue;
-
     const color = myVote ? RATING_COLORS[myVote] : getCategoryColor(poi.category);
 
     const el = document.createElement('div');
     el.className = 'poi-circle-wrap';
+    el.dataset.poiId = poi.id;
 
     const circle = document.createElement('div');
     circle.className = 'poi-circle-marker';
@@ -1129,6 +1133,7 @@ function showSummaryMarkers() {
     el.appendChild(circle);
     el.appendChild(label);
     el.addEventListener('click', () => {
+      highlightMarker(poi.id);
       popupFlyTo(map, poi.coordinates);
       map.once('moveend', () => showPoiDetailsPopup(poi));
     });
@@ -1142,13 +1147,25 @@ function showSummaryMarkers() {
 
   if (allPois.length > 0) {
     const bounds = new mapboxgl.LngLatBounds();
-    allPois.forEach(p => {
-      if (isAnonymous || getMyVote(p.id)) bounds.extend(p.coordinates);
-    });
+    allPois.forEach(p => bounds.extend(p.coordinates));
     if (!bounds.isEmpty()) {
       map.fitBounds(bounds, { padding: 60, duration: 800 });
     }
   }
+}
+
+function highlightMarker(selectedPoiId) {
+  document.querySelectorAll('#map .poi-circle-wrap').forEach(el => {
+    el.style.opacity = el.dataset.poiId === selectedPoiId ? '1' : '0.25';
+    el.style.transition = 'opacity 0.3s';
+  });
+}
+
+function clearMarkerHighlight() {
+  document.querySelectorAll('#map .poi-circle-wrap').forEach(el => {
+    el.style.opacity = '1';
+    el.style.transition = 'opacity 0.3s';
+  });
 }
 
 function clearMarkers() {
@@ -1326,7 +1343,7 @@ function renderSummary() {
           consensusHtml = ` <span class="consensus-badge mixed">Mixed</span>`;
         }
       }
-      html += `<span class="summary-item-name" onclick="event.stopPropagation(); toggleSummaryDetails('${poi.id}')">${poi.name}${consensusHtml}</span>`;
+      html += `<span class="summary-item-name" onclick="event.stopPropagation(); toggleSummaryDetails('${poi.id}'); flyToPoi(${poiJson})">${poi.name}${consensusHtml}</span>`;
 
       html += `<div class="summary-votes">`;
       for (const t of travelers) {
