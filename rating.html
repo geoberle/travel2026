@@ -799,7 +799,7 @@
           <div class="tab active" data-tab="rate" onclick="switchTab('rate')">
             Rate <span class="badge" id="unrated-badge">0</span>
           </div>
-          <div class="tab" data-tab="summary" onclick="switchTab('summary')">Summary</div>
+          <div class="tab" data-tab="summary" onclick="switchTab('summary')">All POIs</div>
         </div>
         <div class="current-location" id="current-location">
           <span class="current-location-name" id="current-location-name"></span>
@@ -1053,34 +1053,35 @@ function showPoiDetailsPopup(poi) {
 function flyToPoi(poi) {
   if (!map) return;
   const coords = Array.isArray(poi.coordinates) ? poi.coordinates : [0, 0];
+  const isRateTab = !!document.querySelector('.tab[data-tab="rate"].active');
 
-  clearMarkers();
   if (activePoiPopup) { activePoiPopup.remove(); activePoiPopup = null; }
 
-  const color = getCategoryColor(poi.category);
-  const el = document.createElement('div');
-  el.className = 'poi-circle-wrap';
-
-  const circle = document.createElement('div');
-  circle.className = 'poi-circle-marker';
-  circle.style.borderColor = color;
-
-  if (poi.image) {
-    const img = document.createElement('img');
-    img.src = poi.image;
-    img.alt = poi.name;
-    circle.appendChild(img);
-  }
-
-  el.appendChild(circle);
-  el.addEventListener('click', () => showPoiDetailsPopup(poi));
-
-  currentMarker = new mapboxgl.Marker(el)
-    .setLngLat(coords)
-    .addTo(map);
-
-  const isRateTab = !!document.querySelector('.tab[data-tab="rate"].active');
   if (isRateTab) {
+    clearMarkers();
+
+    const color = getCategoryColor(poi.category);
+    const el = document.createElement('div');
+    el.className = 'poi-circle-wrap';
+
+    const circle = document.createElement('div');
+    circle.className = 'poi-circle-marker';
+    circle.style.borderColor = color;
+
+    if (poi.image) {
+      const img = document.createElement('img');
+      img.src = poi.image;
+      img.alt = poi.name;
+      circle.appendChild(img);
+    }
+
+    el.appendChild(circle);
+    el.addEventListener('click', () => showPoiDetailsPopup(poi));
+
+    currentMarker = new mapboxgl.Marker(el)
+      .setLngLat(coords)
+      .addTo(map);
+
     map.flyTo({ center: coords, zoom: 14, duration: 800 });
   } else {
     popupFlyTo(map, coords);
@@ -1097,11 +1098,13 @@ function flyToLocation(locData) {
 function showSummaryMarkers() {
   clearMarkers();
 
+  const isAnonymous = !currentUser;
+
   for (const poi of allPois) {
     const myVote = getMyVote(poi.id);
-    if (!myVote) continue;
+    if (!isAnonymous && !myVote) continue;
 
-    const color = RATING_COLORS[myVote];
+    const color = myVote ? RATING_COLORS[myVote] : getCategoryColor(poi.category);
 
     const el = document.createElement('div');
     el.className = 'poi-circle-wrap';
@@ -1140,7 +1143,7 @@ function showSummaryMarkers() {
   if (allPois.length > 0) {
     const bounds = new mapboxgl.LngLatBounds();
     allPois.forEach(p => {
-      if (getMyVote(p.id)) bounds.extend(p.coordinates);
+      if (isAnonymous || getMyVote(p.id)) bounds.extend(p.coordinates);
     });
     if (!bounds.isEmpty()) {
       map.fitBounds(bounds, { padding: 60, duration: 800 });
