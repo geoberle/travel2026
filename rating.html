@@ -1078,7 +1078,7 @@ function flyToPoi(poi) {
     map.flyTo({ center: coords, zoom: 14, duration: 800 });
   } else {
     highlightMarker(poi.id);
-    popupFlyTo(map, coords);
+    map.flyTo({ center: coords, zoom: 14, duration: 800 });
   }
 }
 
