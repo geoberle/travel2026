@@ -344,7 +344,7 @@
 
     .summary-item {
       display: grid;
-      grid-template-columns: 1fr 78px 70px;
+      grid-template-columns: 1fr 78px;
       align-items: center;
       gap: 0.5rem;
       padding: 0.65rem 1.5rem;
@@ -387,22 +387,8 @@
     .vote-dot.skip { background: var(--skip); color: #2d3436; }
     .vote-dot.unrated { background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.3); }
     .vote-dot.hidden { background: rgba(255, 255, 255, 0.06); color: rgba(255, 255, 255, 0.15); }
+    .vote-dot.mine { cursor: pointer; outline: 2px solid rgba(255, 255, 255, 0.3); }
 
-    .summary-my-rating {
-      justify-self: end;
-      white-space: nowrap;
-      font-size: 0.6rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      padding: 3px 8px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .summary-my-rating.must_go { background: rgba(0, 184, 148, 0.15); color: var(--must-go); }
-    .summary-my-rating.sure { background: rgba(253, 203, 110, 0.15); color: var(--sure); }
-    .summary-my-rating.skip { background: rgba(178, 190, 195, 0.15); color: var(--skip); }
 
     .summary-item-name { cursor: pointer; }
     .summary-item-name:hover { color: var(--accent); }
@@ -934,6 +920,7 @@ async function init() {
     await loadRatings();
     if (currentUser) buildDeck();
     renderSummary();
+    if (document.querySelector('.tab[data-tab="summary"].active')) showSummaryMarkers();
   } catch (err) {
     showToast('Failed to initialize. Please reload.');
   }
@@ -1354,15 +1341,13 @@ function renderSummary() {
           html += `<div class="vote-dot hidden" title="${t.name}: hidden">${t.initial}</div>`;
         } else if (!vote) {
           html += `<div class="vote-dot unrated" title="${t.name}: not rated">${t.initial}</div>`;
+        } else if (isSelf) {
+          html += `<div class="vote-dot ${vote} mine" title="${t.name}: ${RATING_LABELS[vote]} (click to change)" onclick="event.stopPropagation(); showChangePopover(event, '${poi.id}', '${locName}')">${t.initial}</div>`;
         } else {
           html += `<div class="vote-dot ${vote}" title="${t.name}: ${RATING_LABELS[vote]}">${t.initial}</div>`;
         }
       }
       html += `</div>`;
-
-      if (!isAnonymous && myVote) {
-        html += `<span class="summary-my-rating ${myVote}" onclick="event.stopPropagation(); showChangePopover(event, '${poi.id}', '${locName}')">${RATING_LABELS[myVote]}</span>`;
-      }
 
       html += `</div>`;
 
