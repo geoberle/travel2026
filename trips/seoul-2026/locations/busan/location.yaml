@@ -83,3 +83,68 @@ pois:
     reservation: none
     neighborhood: Nampo
     tags: [seafood, traditional-market, street-food]
+  - id: spa-land-centum-city
+    name: Spa Land Centum City
+    coordinates:
+      - 129.1293
+      - 35.1695
+    description: Premium jjimjilbang inside Shinsegae Centum City (world's largest department store). 22 themed spa rooms, indoor/outdoor hot springs, Finnish sauna, salt room, and kids' zone.
+    category: attraction
+    image: "https://images.unsplash.com/photo-1540555700478-4be289fbec6d?w=800"
+    url: https://www.shinsegae.com/store/spaland
+    hours: "06:00–24:00 daily (last entry 22:30)"
+    cost: "18,000 KRW weekday, 22,000 KRW weekend"
+    duration: "2-3 hours"
+    setting: indoor
+    reservation: none
+    neighborhood: Centum City
+    tags: [relaxation, family-friendly]
+  - id: taejongdae
+    name: Taejongdae Resort Park
+    coordinates:
+      - 129.0847
+      - 35.0519
+    description: Dramatic coastal cliffs with lighthouse at Yeongdo's southern tip. Paved loop trail through forest, or ride the Danubi train. Clear days reveal Japan across the strait.
+    category: nature
+    image: "https://images.unsplash.com/photo-34E4_lyavMM?w=800"
+    url: https://www.visitbusan.net/index.do?menuCd=DOM_000000301001001000&uc_seq=258&lang_cd=en
+    hours: "04:00–24:00 (Mar–Oct), 05:00–24:00 (Nov–Feb)"
+    cost: "Free (Danubi train 3,000 KRW)"
+    duration: "2-3 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Yeongdo
+    tags: [nature, viewpoint, photography, family-friendly, free-entry]
+  - id: igidae-coastal-walk
+    name: Igidae Coastal Walk
+    coordinates:
+      - 129.1213
+      - 35.1147
+    description: 5km cliffside trail ending at Oryukdo Skywalk — a glass-bottom platform 35m above the ocean. 80-million-year-old volcanic rocks, sea caves, and unbroken ocean views the whole way.
+    category: nature
+    image: "https://images.unsplash.com/photo-UckC7HDWnEM?w=800"
+    url: https://www.visitbusan.net/en/index.do?menuCd=DOM_000000301001001000&uc_seq=379
+    hours: "24h (Oryukdo Skywalk 09:00–18:00, closed Mon)"
+    cost: "Free"
+    closedOn: [monday]
+    duration: "2-3 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Nam-gu
+    tags: [nature, viewpoint, photography, family-friendly, free-entry]
+  - id: geoje-island
+    name: Geoje Island
+    coordinates:
+      - 128.6217
+      - 34.8806
+    description: Korea's 2nd largest island with dramatic sea cliffs at Haegeumgang, Windy Hill viewpoint, and Oedo Botania botanical island by ferry. Connected to mainland by bridge.
+    category: nature
+    image: "https://images.unsplash.com/photo-LEYuE-06nwk?w=800"
+    url: https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=110618
+    hours: "Daylight hours, ferry tours 09:00–16:00"
+    cost: "Oedo ferry ~15,000 KRW adult, ~8,000 KRW child"
+    duration: "full day"
+    setting: outdoor
+    reservation: recommended
+    neighborhood: Geoje
+    tags: [nature, viewpoint, photography, family-friendly]

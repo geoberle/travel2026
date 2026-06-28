@@ -52,3 +52,84 @@ pois:
     reservation: none
     neighborhood: Hakata
     tags: [gaming, anime, manga, shopping, family-friendly]
+  - id: mandarake-fukuoka
+    name: Mandarake Fukuoka
+    coordinates:
+      - 130.3946
+      - 33.5895
+    description: Massive otaku warehouse. Manga, anime figures, vintage toys, trading cards, cosplay, retro games. Warehouse-style aisles crammed floor to ceiling.
+    category: shopping
+    image: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800"
+    url: https://www.mandarake.co.jp/shop/fku/
+    hours: "12:00–20:00 daily"
+    cost: "Free entry"
+    duration: "1-2 hours"
+    setting: indoor
+    reservation: none
+    neighborhood: Tenjin
+    tags: [anime, manga, gaming, shopping]
+  - id: ohori-park
+    name: Ōhori Park
+    coordinates:
+      - 130.3790
+      - 33.5862
+    description: Huge lakeside park with 2km walking path around a central pond, rental swan boats, a Japanese garden, and playgrounds. Perfect for decompressing between otaku shopping runs.
+    category: nature
+    image: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800"
+    url: https://www.ohorikouen.jp
+    hours: "24h (Japanese Garden 09:00–17:00, closed Mon)"
+    cost: "Free (Japanese Garden 250 yen)"
+    closedOn: [monday]
+    duration: "1-2 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Ōhori
+    tags: [parks, gardens, relaxation, family-friendly, free-entry]
+  - id: nokonoshima-island-park
+    name: Nokonoshima Island Park
+    coordinates:
+      - 130.3517
+      - 33.6283
+    description: Flower-covered hills on a small island in Hakata Bay. Sunflowers in July, animal feeding (rabbits, goats), rope skiing, swings, and ocean views. 10min ferry from Meinohama.
+    category: nature
+    image: "https://images.unsplash.com/photo-KcXkfn6AZpg?w=800"
+    url: https://nokonoshima.com/en
+    hours: "09:00–17:30 (Mon–Sat), 09:00–18:30 (Sun & holidays, Mar–Nov)"
+    cost: "¥1,200 adult, ¥600 child. Ferry ¥230 one-way."
+    duration: "3-4 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Nishi-ku
+    tags: [nature, gardens, family-friendly, photography, animals]
+  - id: uminonakamichi-seaside-park
+    name: Uminonakamichi Seaside Park
+    coordinates:
+      - 130.3764
+      - 33.6547
+    description: Sprawling 290ha national park on a peninsula. Seasonal flower fields, mini zoo with capybaras and kangaroos, bike rentals, and a summer water playground. Free for under 15.
+    category: nature
+    image: "https://images.unsplash.com/photo-L_GSQ5N8IU0?w=800"
+    url: https://uminaka-park.jp
+    hours: "09:30–17:30 (Mar–Oct), 09:30–17:00 (Nov–Feb)"
+    cost: "¥450 adult, free under 15"
+    duration: "half day"
+    setting: outdoor
+    reservation: none
+    neighborhood: Higashi-ku
+    tags: [nature, parks, gardens, animals, family-friendly, free-entry]
+  - id: dazaifu-tenmangu
+    name: Dazaifu Tenmangu
+    coordinates:
+      - 130.5350
+      - 33.5210
+    description: Shrine to the god of learning, 10M visitors/year. Forested grounds, koi ponds, Kengo Kuma-designed Starbucks on approach road, and grilled umegae mochi everywhere. Kyushu National Museum next door.
+    category: culture
+    image: "https://images.unsplash.com/photo-JfJIc4TNPWA?w=800"
+    url: https://www.dazaifutenmangu.or.jp/en/
+    hours: "06:30–19:00 (spring/fall), 06:00–19:30 (summer)"
+    cost: "Free (Kyushu National Museum ¥700)"
+    duration: "2-3 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Dazaifu
+    tags: [culture, gardens, photography, family-friendly, free-entry, good-food]
