@@ -99,7 +99,7 @@ const TripStore = {
 
         (block.days || []).forEach((day, idx) => {
           const dayDate = new Date(checkIn.getTime() + idx * 86400000);
-          const dateStr = dayDate.toISOString().split('T')[0];
+          const dateStr = `${dayDate.getFullYear()}-${String(dayDate.getMonth()+1).padStart(2,'0')}-${String(dayDate.getDate()).padStart(2,'0')}`;
 
           const poiIds = (day.activities || []).map(a => a.poi);
           const uniquePoiIds = [...new Set(poiIds)];

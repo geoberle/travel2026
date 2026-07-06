@@ -2,14 +2,6 @@ const MAPBOX_TOKEN = 'pk.eyJ1IjoiZ2VyZG9iZXJsZWNobmVyIiwiYSI6ImNtcHpwNjdzYjA2d3E
 
 let rotationFrame = null;
 
-const CATEGORY_COLORS = {
-  attraction: '#4ecdc4',
-  food: '#ff9f43',
-  culture: '#a55eea',
-  shopping: '#fd79a8',
-  nature: '#00b894',
-  transport: '#636e72'
-};
 
 async function init() {
   await TripStore.loadStatic();

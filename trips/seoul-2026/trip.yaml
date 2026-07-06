@@ -142,29 +142,12 @@ itinerary:
         city: Helsinki
         duration: 4h 25m
     totalDuration: 18h 50m
-  - type: stay
-    id: seoul-arrival
-    location: seoul
-    accommodation:
-      neighborhood: ""
-      type: ""
-      config: ""
-      coordinates:
-        - 126.9857
-        - 37.5636
-      checkIn: "2026-07-19"
-      checkOut: "2026-07-20"
-      status: open
-    days:
-      - title: Arrival
-        status: open
-        notes: Arrive ICN ~11:20. Check in, recover from 18h travel. Light evening walk.
   - type: transit
     id: seoul-busan
     label: Seoul → Busan
     from: Seoul
     to: Busan
-    date: "2026-07-20"
+    date: "2026-07-19"
     legs:
       - mode: train
         train:
@@ -216,19 +199,22 @@ itinerary:
     id: busan-stay
     location: busan
     accommodation:
-      neighborhood: ""
-      type: ""
-      config: ""
+      neighborhood: Jung-gu
+      type: Korean-style house
+      config: 4BR/2BA, max 9
       coordinates:
-        - 129.0756
-        - 35.1796
-      checkIn: "2026-07-20"
-      checkOut: "2026-07-22"
-      status: open
+        - 129.0396
+        - 35.1152
+      checkIn: "2026-07-19"
+      checkOut: "2026-07-23"
+      status: booked
     days:
-      - title: Beach & Arrival
+      - title: Arrival
         status: open
-        notes: Travel Seoul to Busan (KTX ~2.5h). Haeundae Beach.
+        notes: Arrive ICN ~11:20, KTX to Busan (~2.5h). Settle in, light evening walk.
+      - title: Beach Day
+        status: open
+        notes: Haeundae Beach.
         activities:
           - poi: haeundae-beach
             notes: ""
@@ -303,17 +289,17 @@ itinerary:
           - poi: pok-mon-center-fukuoka
             notes: ""
   - type: transit
-    id: fukuoka-busan
-    label: Fukuoka → Busan
+    id: fukuoka-seoul
+    label: Fukuoka → Seoul
     from: Fukuoka
-    to: Busan
+    to: Seoul
     date: "2026-07-24"
     legs:
       - mode: flight
         flight:
           number: ""
-          airline: Air Busan
-          aircraft: Boeing 737-800
+          airline: ""
+          aircraft: ""
         departure:
           airport: FUK
           city: Fukuoka
@@ -321,76 +307,25 @@ itinerary:
             - 130.4513
             - 33.5854
         arrival:
-          airport: PUS
-          city: Busan
+          airport: ICN
+          city: Seoul
           coordinates:
-            - 128.9384
-            - 35.1796
-        duration: 55m
+            - 126.4407
+            - 37.4602
+        duration: 1h 30m
         route:
           - - 130.45
             - 33.59
-          - - 130
-            - 34.2
           - - 129.5
-            - 34.8
-          - - 128.94
-            - 35.18
+            - 34.5
+          - - 128.5
+            - 35.5
+          - - 127.5
+            - 36.5
+          - - 126.44
+            - 37.46
     layovers: []
-    totalDuration: 55m
-  - type: transit
-    id: busan-seoul
-    label: Busan → Seoul
-    from: Busan
-    to: Seoul
-    date: "2026-07-24"
-    legs:
-      - mode: train
-        train:
-          operator: Korail
-          number: KTX
-        departure:
-          city: Busan
-          coordinates:
-            - 129.0413
-            - 35.1152
-        arrival:
-          city: Seoul
-          coordinates:
-            - 126.9706
-            - 37.5547
-        duration: 2h 30m
-        route:
-          - - 129.04
-            - 35.12
-          - - 128.85
-            - 35.3
-          - - 128.7
-            - 35.55
-          - - 128.62
-            - 35.8
-          - - 128.6
-            - 35.87
-          - - 128.2
-            - 35.85
-          - - 127.9
-            - 36
-          - - 127.4
-            - 36.35
-          - - 127.38
-            - 36.63
-          - - 127.15
-            - 36.95
-          - - 127.1
-            - 37.15
-          - - 127.05
-            - 37.35
-          - - 127
-            - 37.48
-          - - 126.97
-            - 37.55
-    layovers: []
-    totalDuration: 2h 30m
+    totalDuration: 1h 30m
   - type: stay
     id: seoul-stay
     location: seoul
@@ -407,7 +342,7 @@ itinerary:
     days:
       - title: Arrival in Seoul
         status: open
-        notes: Fly Fukuoka→Busan, KTX to Seoul. Settle in, evening street food.
+        notes: Fly Fukuoka→Seoul (~1.5h). Settle in, evening street food.
       - title: KM Chart Awards
         pinnedDate: "2026-07-25"
         status: open
