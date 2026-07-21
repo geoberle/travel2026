@@ -85,6 +85,22 @@ pois:
     reservation: none
     neighborhood: Myeongdong
     tags: [street-food, shopping, family-friendly, tourist-trap]
+  - id: cheonggyecheon-stream
+    name: Cheonggyecheon Stream
+    coordinates:
+      - 126.9784
+      - 37.5696
+    description: 10.9km urban stream walk through central Seoul, built on a demolished elevated highway. Public art, stepping stones across the water, lit up at night. Starts at Cheonggye Plaza near City Hall.
+    category: nature
+    image: "https://images.unsplash.com/photo-1573832035811-4b3e6e81e9e3?w=800"
+    url: https://english.visitseoul.net/attractions/Cheonggyecheon-Stream/ENP000295
+    hours: "Open 24h"
+    cost: "Free"
+    duration: "1-2 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Jongno
+    tags: [walking, photography, family-friendly, free-entry]
   - id: gwangjang-market
     name: Gwangjang Market
     coordinates:

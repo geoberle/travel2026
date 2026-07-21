@@ -148,6 +148,8 @@ itinerary:
     from: Seoul
     to: Busan
     date: "2026-07-19"
+    notes: Explored Myeongdong before KTX departure.
+    status: done
     legs:
       - mode: train
         train:
@@ -212,12 +214,14 @@ itinerary:
       - title: Arrival
         status: open
         notes: Arrive ICN ~11:20, KTX to Busan (~2.5h). Settle in, light evening walk.
-      - title: Beach Day
-        status: open
-        notes: Haeundae Beach.
+      - title: ARTE Museum & BIFF Square
+        status: done
+        notes: ARTE Museum, BIFF Square, explored neighboring markets (not fish market).
         activities:
-          - poi: haeundae-beach
+          - poi: arte-museum-busan
             notes: ""
+          - poi: biff-square
+            notes: Strolled neighboring markets
       - title: Culture, Temple & Markets
         status: open
         activities:
