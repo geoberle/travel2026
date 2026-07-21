@@ -99,6 +99,38 @@ pois:
     reservation: none
     neighborhood: Nampo
     tags: [seafood, traditional-market, street-food]
+  - id: sealife-busan-aquarium
+    name: SEA LIFE Busan Aquarium
+    coordinates:
+      - 129.1594
+      - 35.1583
+    description: Underwater tunnel aquarium at Haeundae Beach with 250+ species. Touch pools, shark feeding, and ocean-themed zones popular with kids.
+    category: attraction
+    image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800"
+    url: https://www.visitsealife.com/busan/
+    hours: "10:00–19:00 (weekdays), 09:30–20:00 (weekends)"
+    cost: "29,000 KRW adult, 24,000 KRW child (cheaper online)"
+    duration: "1.5-2 hours"
+    setting: indoor
+    reservation: recommended
+    neighborhood: Haeundae
+    tags: [aquarium, family-friendly, rainy-day]
+  - id: gwangalli-beach
+    name: Gwangalli Beach
+    coordinates:
+      - 129.1186
+      - 35.1532
+    description: Urban beach with iconic view of Gwangan Bridge, especially stunning at night when lit up. Cafes and restaurants line the beachfront. Less crowded than Haeundae.
+    category: nature
+    image: "https://images.unsplash.com/photo-1596937447609-6e6c1e4a4a1f?w=800"
+    url: https://www.visitbusan.net/en/index.do?menuCd=DOM_000000301001001000&uc_seq=362
+    hours: "Open 24h, swimming season Jun–Sep"
+    cost: "Free"
+    duration: "1-2 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Suyeong
+    tags: [beach, photography, nightlife, family-friendly, free-entry]
   - id: spa-land-centum-city
     name: Spa Land Centum City
     coordinates:

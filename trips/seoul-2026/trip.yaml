@@ -202,6 +202,7 @@ itinerary:
     location: busan
     accommodation:
       neighborhood: Jung-gu
+      address: 32, Jungdong-ro, Jung-gu, Busan
       type: Korean-style house
       config: 4BR/2BA, max 9
       coordinates:
@@ -222,114 +223,80 @@ itinerary:
             notes: ""
           - poi: biff-square
             notes: Strolled neighboring markets
-      - title: Culture, Temple & Markets
+      - title: Culture Village & Fish Market
         status: open
         activities:
           - poi: gamcheon-culture-village
             notes: Colorful hillside murals, art installations
+          - poi: jagalchi-market
+            notes: ""
+        notes: Gamcheon Culture Village, Jagalchi Fish Market.
+      - title: Temple, Beach & Aquarium
+        status: open
+        activities:
           - poi: haedong-yonggungsa
             notes: Cliffside ocean temple
-        notes: Gamcheon Culture Village, Haedong Yonggungsa Temple. Jagalchi Fish Market evening.
+          - poi: haeundae-beach
+            notes: ""
+          - poi: sealife-busan-aquarium
+            notes: ""
+          - poi: gwangalli-beach
+            notes: Evening, Gwangan Bridge views
+        notes: Haedong Yonggungsa, Haeundae Beach, SEA LIFE Aquarium, Gwangalli Beach evening.
   - type: transit
-    id: busan-fukuoka
-    label: Busan → Fukuoka
+    id: busan-seoul
+    label: Busan → Seoul
     from: Busan
-    to: Fukuoka
-    date: "2026-07-22"
+    to: Seoul
+    date: "2026-07-23"
+    notes: Evening KTX back to Seoul.
     legs:
-      - mode: flight
-        flight:
-          number: ""
-          airline: Air Busan
-          aircraft: Boeing 737-800
+      - mode: train
+        train:
+          operator: Korail
+          number: KTX
         departure:
-          airport: PUS
           city: Busan
           coordinates:
-            - 128.9384
-            - 35.1796
+            - 129.0413
+            - 35.1152
         arrival:
-          airport: FUK
-          city: Fukuoka
-          coordinates:
-            - 130.4513
-            - 33.5854
-        duration: 55m
-        route:
-          - - 128.94
-            - 35.18
-          - - 129.5
-            - 34.8
-          - - 130
-            - 34.2
-          - - 130.45
-            - 33.59
-    layovers: []
-    totalDuration: 55m
-  - type: stay
-    location: fukuoka
-    accommodation:
-      checkIn: "2026-07-22"
-      checkOut: "2026-07-24"
-      coordinates:
-        - 130.4017
-        - 33.5904
-      neighborhood: ""
-      type: ""
-      config: ""
-      status: open
-    id: stay-1782336638571
-    days:
-      - title: ""
-        status: open
-        activities:
-          - poi: yanagibashi-rengo-market
-            notes: ""
-          - poi: teamlab-forest-fukuoka
-            notes: ""
-      - title: ""
-        status: open
-        activities:
-          - poi: pok-mon-center-fukuoka
-            notes: ""
-  - type: transit
-    id: fukuoka-seoul
-    label: Fukuoka → Seoul
-    from: Fukuoka
-    to: Seoul
-    date: "2026-07-24"
-    legs:
-      - mode: flight
-        flight:
-          number: ""
-          airline: ""
-          aircraft: ""
-        departure:
-          airport: FUK
-          city: Fukuoka
-          coordinates:
-            - 130.4513
-            - 33.5854
-        arrival:
-          airport: ICN
           city: Seoul
           coordinates:
-            - 126.4407
-            - 37.4602
-        duration: 1h 30m
+            - 126.9706
+            - 37.5547
+        duration: 2h 30m
         route:
-          - - 130.45
-            - 33.59
-          - - 129.5
-            - 34.5
-          - - 128.5
-            - 35.5
-          - - 127.5
-            - 36.5
-          - - 126.44
-            - 37.46
+          - - 129.04
+            - 35.12
+          - - 128.85
+            - 35.3
+          - - 128.7
+            - 35.55
+          - - 128.62
+            - 35.8
+          - - 128.6
+            - 35.87
+          - - 128.2
+            - 35.85
+          - - 127.9
+            - 36
+          - - 127.4
+            - 36.35
+          - - 127.38
+            - 36.63
+          - - 127.15
+            - 36.95
+          - - 127.1
+            - 37.15
+          - - 127.05
+            - 37.35
+          - - 127
+            - 37.48
+          - - 126.97
+            - 37.55
     layovers: []
-    totalDuration: 1h 30m
+    totalDuration: 2h 30m
   - type: stay
     id: seoul-stay
     location: seoul
@@ -340,13 +307,13 @@ itinerary:
       coordinates:
         - 126.9857
         - 37.5636
-      checkIn: "2026-07-24"
+      checkIn: "2026-07-23"
       checkOut: "2026-07-31"
       status: open
     days:
       - title: Arrival in Seoul
         status: open
-        notes: Fly Fukuoka→Seoul (~1.5h). Settle in, evening street food.
+        notes: Evening KTX from Busan. Settle in, evening street food.
       - title: KM Chart Awards
         pinnedDate: "2026-07-25"
         status: open
