@@ -349,36 +349,21 @@ itinerary:
       - title: Arrival in Seoul
         status: open
         notes: Evening KTX from Busan. Settle in, evening street food.
+      - title: ""
+        status: open
       - title: KM Chart Awards
         pinnedDate: "2026-07-25"
         status: open
         activities:
           - poi: km-chart-awards
-            notes: Red carpet 14:30, main show 18:00. Korea University Hwajeong Gymnasium.
-        notes: Awards ceremony day. Morning free, head to venue early afternoon.
-      - title: K-Pop & Gangnam
-        status: open
-        notes: HYBE Insight area, K-Star Road, Gangnam district.
-      - title: Anime & Gaming
-        status: open
-        notes: Animate Hongdae, AK Plaza, Yongsan I'Park Mall (anime, figures, Pokemon, Gundam).
-      - title: Korean Skincare & Myeongdong
-        status: open
-        notes: Olive Young Gangnam Town, flagship stores, Myeongdong skincare shopping.
-      - title: Lotte World & Fun
+            notes: Ticket collection 12:00–18:00. Red carpet 14:30. Entry 16:30. Show 18:00–21:30.
+        notes: KM Chart Awards at Korea University Hwajeong Gymnasium. Morning free.
+      - title: Beauty Day — TheiA Clinic
         status: open
         activities:
-          - poi: lotte-world
-            notes: Book discounted tickets via Klook/Agoda (~37,000 KRW vs 61,000 gate price)
-          - poi: coex-starfield-library
+          - poi: theia-clinic
             notes: ""
-        notes: Lotte World, COEX Mall, Starfield Library.
-      - title: Nami Island Day Trip
-        status: open
-        notes: Namiseom + Garden of Morning Calm. Fotospots, nature, low stress.
-      - title: Departure
-        status: open
-        notes: Last-minute shopping. Flight AY0042 departs ICN 21:50. Full day available.
+        notes: Beauty treatments at TheiA Clinic, Gangnam.
   - type: transit
     id: return
     label: Seoul → Klagenfurt

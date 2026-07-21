@@ -452,3 +452,19 @@ pois:
     reservation: recommended
     neighborhood: Yeouido
     tags: [cruise, photography, family-friendly, sini-recommended]
+  - id: theia-clinic
+    name: TheiA Clinic
+    coordinates:
+      - 127.0282
+      - 37.4979
+    description: AI-powered dermatology clinic at Gangnam Station Exit 10. Personalized skin analysis with in-house AI (Derma:Code), beauty treatments, lifting, fillers, skincare.
+    category: attraction
+    image: "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=800"
+    url: https://theiaclinic.co.kr/en
+    hours: "Mon–Fri 10:00–19:00, Sat 10:00–17:00, closed Sun"
+    cost: "Varies by treatment"
+    duration: "2-3 hours"
+    setting: indoor
+    reservation: required
+    neighborhood: Gangnam
+    tags: [beauty, skincare, k-beauty]
