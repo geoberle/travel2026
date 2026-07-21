@@ -168,7 +168,7 @@ function addAccommodationMarkers(map, accommodations) {
 
   const stayColor = '#ff6b6b';
 
-  accommodations.forEach(acc => {
+  accommodations.filter(acc => acc.coordinates).forEach(acc => {
     const el = document.createElement('div');
     el.className = 'poi-circle-marker no-img';
     el.textContent = '🏠';

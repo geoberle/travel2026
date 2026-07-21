@@ -99,6 +99,22 @@ pois:
     reservation: none
     neighborhood: Nampo
     tags: [seafood, traditional-market, street-food]
+  - id: songdo-beach
+    name: Songdo Beach
+    coordinates:
+      - 129.0173
+      - 35.0722
+    description: Busan's first public beach (1913). Songdo Skywalk extends over the ocean, cable car connects to Amnam Park. Less touristy than Haeundae with rocky coastline views.
+    category: nature
+    image: "https://images.unsplash.com/photo-1596937447609-6e6c1e4a4a1f?w=800"
+    url: https://www.visitbusan.net/en/index.do?menuCd=DOM_000000301001001000&uc_seq=361
+    hours: "Beach open 24h, Skywalk 06:00–23:00, Cable car 09:00–22:00"
+    cost: "Beach free, cable car 17,000 KRW round trip"
+    duration: "1-2 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Seo-gu
+    tags: [beach, viewpoint, family-friendly, free-entry]
   - id: sealife-busan-aquarium
     name: SEA LIFE Busan Aquarium
     coordinates:

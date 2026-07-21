@@ -239,14 +239,18 @@ itinerary:
             notes: ""
           - poi: biff-square
             notes: Strolled neighboring markets
-      - title: Culture Village & Fish Market
-        status: open
+      - title: Culture Village, Fish Market & Songdo
+        status: done
         activities:
           - poi: gamcheon-culture-village
             notes: Colorful hillside murals, art installations
           - poi: jagalchi-market
             notes: ""
-        notes: Gamcheon Culture Village, Jagalchi Fish Market.
+          - poi: songdo-beach
+            notes: ""
+          - poi: biff-square
+            notes: Dinner — loved it so much we came back
+        notes: Gamcheon Culture Village, Jagalchi Fish Market, Songdo Beach, BIFF Square dinner.
       - title: Temple, Beach & Aquarium
         status: open
         activities:
