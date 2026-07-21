@@ -260,9 +260,11 @@ itinerary:
             notes: ""
           - poi: daereungwon-tombs
             notes: ""
+          - poi: woljeonggyo-bridge
+            notes: ""
           - poi: donggung-wolji
             notes: Evening, lit up reflections
-        notes: Day trip to Gyeongju. Bulguksa Temple, Gyochon Village, Hwangnidan-gil, Daereungwon Tombs, Donggung Palace & Wolji Pond at night.
+        notes: Day trip to Gyeongju. Bulguksa Temple, Gyochon Village, Hwangnidan-gil, Daereungwon Tombs, Woljeonggyo Bridge, Donggung Palace & Wolji Pond at night.
       - title: Temple, Beach & Aquarium
         status: open
         activities:

@@ -179,6 +179,22 @@ pois:
     reservation: none
     neighborhood: Gyeongju
     tags: [history, photography, family-friendly]
+  - id: woljeonggyo-bridge
+    name: Woljeonggyo Bridge
+    coordinates:
+      - 129.2252
+      - 35.8280
+    description: Reconstructed Silla-era wooden bridge (760 AD) over Namcheon stream. Beautifully lit at night, connecting Gyochon Village to the royal quarter.
+    category: culture
+    image: "https://images.unsplash.com/photo-1746500780899-08a16fa3c417?w=800"
+    url: https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=124017
+    hours: "09:00–22:00 daily"
+    cost: "Free"
+    duration: "30 min"
+    setting: outdoor
+    reservation: none
+    neighborhood: Gyeongju
+    tags: [bridge, photography, night-view, free-entry]
   - id: donggung-wolji
     name: Donggung Palace & Wolji Pond
     coordinates:
