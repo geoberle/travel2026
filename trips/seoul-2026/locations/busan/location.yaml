@@ -74,7 +74,7 @@ pois:
       - 35.0987
     description: Busan International Film Festival square in Nampo-dong. Handprints of famous directors, street food stalls (hotteok, ssiat hotteok), and bustling market atmosphere. Gateway to Gukje and Bupyeong markets.
     category: culture
-    image: "https://images.unsplash.com/photo-OxsIv3_zWXg?w=800"
+    image: "https://images.unsplash.com/photo-1628532429788-c35922b5e6c1?w=800"
     url: https://www.visitbusan.net/en/index.do?menuCd=DOM_000000301001001000&uc_seq=196
     hours: "Open 24h, shops/stalls ~10:00–22:00"
     cost: "Free"
@@ -106,7 +106,7 @@ pois:
       - 35.0722
     description: Busan's first public beach (1913). Songdo Skywalk extends over the ocean, cable car connects to Amnam Park. Less touristy than Haeundae with rocky coastline views.
     category: nature
-    image: "https://images.unsplash.com/photo-1596937447609-6e6c1e4a4a1f?w=800"
+    image: "https://images.unsplash.com/photo-1657073025790-a948e653ce2c?w=800"
     url: https://www.visitbusan.net/en/index.do?menuCd=DOM_000000301001001000&uc_seq=361
     hours: "Beach open 24h, Skywalk 06:00–23:00, Cable car 09:00–22:00"
     cost: "Beach free, cable car 17,000 KRW round trip"
@@ -138,7 +138,7 @@ pois:
       - 35.1532
     description: Urban beach with iconic view of Gwangan Bridge, especially stunning at night when lit up. Cafes and restaurants line the beachfront. Less crowded than Haeundae.
     category: nature
-    image: "https://images.unsplash.com/photo-1596937447609-6e6c1e4a4a1f?w=800"
+    image: "https://images.unsplash.com/photo-1716563751789-5d3f3c689887?w=800"
     url: https://www.visitbusan.net/en/index.do?menuCd=DOM_000000301001001000&uc_seq=362
     hours: "Open 24h, swimming season Jun–Sep"
     cost: "Free"
@@ -154,7 +154,7 @@ pois:
       - 35.1695
     description: Premium jjimjilbang inside Shinsegae Centum City (world's largest department store). 22 themed spa rooms, indoor/outdoor hot springs, Finnish sauna, salt room, and kids' zone.
     category: attraction
-    image: "https://images.unsplash.com/photo-1540555700478-4be289fbec6d?w=800"
+    image: "https://images.unsplash.com/photo-1660735698223-23a4edefa264?w=800"
     url: https://www.shinsegae.com/store/spaland
     hours: "06:00–24:00 daily (last entry 22:30)"
     cost: "18,000 KRW weekday, 22,000 KRW weekend"
@@ -170,7 +170,7 @@ pois:
       - 35.0519
     description: Dramatic coastal cliffs with lighthouse at Yeongdo's southern tip. Paved loop trail through forest, or ride the Danubi train. Clear days reveal Japan across the strait.
     category: nature
-    image: "https://images.unsplash.com/photo-34E4_lyavMM?w=800"
+    image: "https://images.unsplash.com/photo-1595320253230-3232aebd769c?w=800"
     url: https://www.visitbusan.net/index.do?menuCd=DOM_000000301001001000&uc_seq=258&lang_cd=en
     hours: "04:00–24:00 (Mar–Oct), 05:00–24:00 (Nov–Feb)"
     cost: "Free (Danubi train 3,000 KRW)"
@@ -186,7 +186,7 @@ pois:
       - 35.1147
     description: 5km cliffside trail ending at Oryukdo Skywalk — a glass-bottom platform 35m above the ocean. 80-million-year-old volcanic rocks, sea caves, and unbroken ocean views the whole way.
     category: nature
-    image: "https://images.unsplash.com/photo-UckC7HDWnEM?w=800"
+    image: "https://images.unsplash.com/photo-1597409114326-4bb9acf04d09?w=800"
     url: https://www.visitbusan.net/en/index.do?menuCd=DOM_000000301001001000&uc_seq=379
     hours: "24h (Oryukdo Skywalk 09:00–18:00, closed Mon)"
     cost: "Free"
@@ -203,7 +203,7 @@ pois:
       - 34.8806
     description: Korea's 2nd largest island with dramatic sea cliffs at Haegeumgang, Windy Hill viewpoint, and Oedo Botania botanical island by ferry. Connected to mainland by bridge.
     category: nature
-    image: "https://images.unsplash.com/photo-LEYuE-06nwk?w=800"
+    image: "https://images.unsplash.com/photo-1720934009769-1c6367951080?w=800"
     url: https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=110618
     hours: "Daylight hours, ferry tours 09:00–16:00"
     cost: "Oedo ferry ~15,000 KRW adult, ~8,000 KRW child"
