@@ -149,9 +149,6 @@ itinerary:
       neighborhood: ""
       type: ""
       config: ""
-      coordinates:
-        - 126.9857
-        - 37.5636
       checkIn: "2026-07-19"
       checkOut: "2026-07-19"
       status: done
@@ -225,8 +222,8 @@ itinerary:
       type: Korean-style house
       config: 4BR/2BA, max 9
       coordinates:
-        - 129.0396
-        - 35.1152
+        - 129.03601
+        - 35.11358
       checkIn: "2026-07-19"
       checkOut: "2026-07-23"
       status: booked
@@ -320,15 +317,16 @@ itinerary:
     id: seoul-stay
     location: seoul
     accommodation:
-      neighborhood: ""
+      neighborhood: Jongno
+      address: "청계천로 307 407호 신발상가B동, Seoul 03119"
       type: ""
       config: ""
       coordinates:
-        - 126.9857
-        - 37.5636
+        - 127.0210
+        - 37.5721
       checkIn: "2026-07-23"
-      checkOut: "2026-07-31"
-      status: open
+      checkOut: "2026-07-27"
+      status: booked
     days:
       - title: Arrival in Seoul
         status: open
