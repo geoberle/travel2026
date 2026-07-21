@@ -142,13 +142,32 @@ itinerary:
         city: Helsinki
         duration: 4h 25m
     totalDuration: 18h 50m
+  - type: stay
+    id: seoul-arrival-stay
+    location: seoul
+    accommodation:
+      neighborhood: ""
+      type: ""
+      config: ""
+      coordinates:
+        - 126.9857
+        - 37.5636
+      checkIn: "2026-07-19"
+      checkOut: "2026-07-19"
+      status: done
+    days:
+      - title: Myeongdong after Landing
+        status: done
+        activities:
+          - poi: myeongdong-market
+            notes: Strolled Myeongdong before KTX to Busan
+        notes: Explored Myeongdong after arriving at ICN.
   - type: transit
     id: seoul-busan
     label: Seoul → Busan
     from: Seoul
     to: Busan
     date: "2026-07-19"
-    notes: Explored Myeongdong before KTX departure.
     status: done
     legs:
       - mode: train
