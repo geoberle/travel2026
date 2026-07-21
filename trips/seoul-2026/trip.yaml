@@ -225,7 +225,7 @@ itinerary:
         - 129.03601
         - 35.11358
       checkIn: "2026-07-19"
-      checkOut: "2026-07-23"
+      checkOut: "2026-07-24"
       status: booked
     days:
       - title: Arrival
@@ -249,6 +249,20 @@ itinerary:
           - poi: biff-square
             notes: Dinner — loved it so much we came back
         notes: Gamcheon Culture Village, Songdo Beach, BIFF Square dinner.
+      - title: Gyeongju Day Trip
+        status: open
+        activities:
+          - poi: bulguksa-temple
+            notes: ""
+          - poi: gyeongju-gyochon
+            notes: ""
+          - poi: hwangnidan-gil
+            notes: ""
+          - poi: daereungwon-tombs
+            notes: ""
+          - poi: donggung-wolji
+            notes: Evening, lit up reflections
+        notes: Day trip to Gyeongju. Bulguksa Temple, Gyochon Village, Hwangnidan-gil, Daereungwon Tombs, Donggung Palace & Wolji Pond at night.
       - title: Temple, Beach & Aquarium
         status: open
         activities:

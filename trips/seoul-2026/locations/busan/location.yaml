@@ -115,6 +115,86 @@ pois:
     reservation: none
     neighborhood: Seo-gu
     tags: [beach, viewpoint, family-friendly, free-entry]
+  - id: bulguksa-temple
+    name: Bulguksa Temple
+    coordinates:
+      - 129.3325
+      - 35.7901
+    description: UNESCO World Heritage Buddhist temple (774 AD). Stone pagodas, wooden halls, and serene grounds at the foot of Mt. Toham. One of Korea's most significant cultural sites.
+    category: culture
+    image: "https://images.unsplash.com/photo-1684134549350-be5fd0d8feaa?w=800"
+    url: https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=31236
+    hours: "07:00–18:00 (Mar–Sep), 07:00–17:00 (Oct–Feb)"
+    cost: "6,000 KRW adult, 4,000 KRW child"
+    duration: "1.5-2 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Gyeongju
+    tags: [temple, unesco, photography, culture]
+  - id: gyeongju-gyochon
+    name: Gyeongju Gyochon Village
+    coordinates:
+      - 129.2195
+      - 35.8310
+    description: Traditional hanok village preserving Silla-era heritage. Try Gyeongju bread (hwangnam-ppang), browse craft shops, and walk among 300-year-old tiled-roof houses.
+    category: culture
+    image: "https://images.unsplash.com/photo-1668999980247-db74bc8be117?w=800"
+    url: https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=111058
+    hours: "Open 24h (shops ~10:00–18:00)"
+    cost: "Free"
+    duration: "1-1.5 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Gyeongju
+    tags: [traditional-village, street-food, family-friendly, free-entry]
+  - id: hwangnidan-gil
+    name: Hwangnidan-gil
+    coordinates:
+      - 129.2162
+      - 35.8270
+    description: Trendy street near Daereungwon with cafes in renovated hanok houses, boutique shops, and fusion Korean food. Gyeongju's hip neighborhood.
+    category: food
+    image: "https://images.unsplash.com/photo-1703825864792-5880081beaaf?w=800"
+    url: https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=124021
+    hours: "Shops/cafes ~10:00–21:00"
+    cost: "Free to walk, cafes 5,000–15,000 KRW"
+    duration: "1-2 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Gyeongju
+    tags: [street-food, shopping, cafe, family-friendly]
+  - id: daereungwon-tombs
+    name: Daereungwon Tomb Complex
+    coordinates:
+      - 129.2160
+      - 35.8343
+    description: 23 royal burial mounds from the Silla Kingdom (57 BC–935 AD). Walk among massive grass-covered tombs. Cheonmachong tomb open to enter and see golden artifacts.
+    category: culture
+    image: "https://images.unsplash.com/photo-1674567874679-371001c76f25?w=800"
+    url: https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=30803
+    hours: "09:00–22:00 daily"
+    cost: "3,000 KRW adult, 1,000 KRW child"
+    duration: "1-1.5 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Gyeongju
+    tags: [history, photography, family-friendly]
+  - id: donggung-wolji
+    name: Donggung Palace & Wolji Pond
+    coordinates:
+      - 129.2265
+      - 35.8327
+    description: Silla-era palace ruins and Wolji Pond, spectacular at night when lit up with reflections. Originally built in 674 AD as a banquet hall for royalty.
+    category: culture
+    image: "https://images.unsplash.com/photo-1612192621943-80f75d5efd7a?w=800"
+    url: https://english.visitkorea.or.kr/svc/whereToGo/locIntrdn/rgnContentsView.do?vcontsId=30785
+    hours: "09:00–22:00 (last entry 21:30)"
+    cost: "3,000 KRW adult, 1,000 KRW child"
+    duration: "1-1.5 hours"
+    setting: outdoor
+    reservation: none
+    neighborhood: Gyeongju
+    tags: [palace, photography, night-view, history]
   - id: sealife-busan-aquarium
     name: SEA LIFE Busan Aquarium
     coordinates:
